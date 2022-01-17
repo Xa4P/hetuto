@@ -8,12 +8,7 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include = FALSE}
-if (!requireNamespace("learnr", quietly = TRUE)) {
-    stop(
-      "Package \"learnr\" must be installed to use this function.",
-      call. = FALSE
-    )
-}
+require(learnr)
 if (!requireNamespace("knitr", quietly = TRUE)) {
     stop(
       "Package \"knitr\" must be installed to use this function.",
