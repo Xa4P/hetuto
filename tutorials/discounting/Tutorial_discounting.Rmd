@@ -144,7 +144,8 @@ Calculate the **undiscounted** ICERS for each of these interventions using the t
 
 ```{r cacl_icer_undisc, exercise = TRUE}
 v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))]) # calculates the total UNDISCOUNTED costs and QALYs
-v_icer_undisc
+# calculate undiscounted ICERs
+
 ```
 
 ```{r cacl_icer_undisc-hint}
@@ -186,8 +187,10 @@ There are no differences concerning the **undiscounted** ICERs between the diffe
 ### Discount costs and effects
 Define the discount weight as 5%, and call it `r_disc`. Use `r_disc` to create a vector of discount weights for Years 0 to 12, and save it as `v_disc`. Use the following formula to determine the discount weights:  $$w_i = \frac{1} {(1+r)^{t_i}}$$ where $w_i$ is the discount weight in year $i$, $r$ the discount rate, and $t_i$ year $i$.  
 ```{r create_v_disc, exercise = TRUE}
-r_disc
-v_disc
+# define r_disc
+
+# define v_disc
+
 ```
 
 ```{r create_v_disc-solution}
@@ -230,12 +233,7 @@ v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
 ```
 
 ```{r calc_disc_inc, exercise = TRUE, exercise.setup = "setup_disc_calc"}
-df_thx$Inc_cost_A_d
-df_thx$Inc_QALY_A_d
-df_thx$Inc_cost_B_d
-df_thx$Inc_QALY_B_d
-df_thx$Inc_cost_C_d
-df_thx$Inc_QALY_C_d
+# define df_thx$Inc_cost_A_d, df_thx$Inc_QALY_A_d, ...
 ```
 
 ```{r calc_disc_inc-hint}
@@ -267,8 +265,7 @@ df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
 Calculate the total **discounted** incremental costs and effects, and ICERs for each intervention, store the **discounted** incremental costs and effects in the vector `v_res_disc`, and the ICERs in the vector `v_icer_disc`. The columns containing the discounted effects and costs have been added to the `df_thx` dataframe and are named as in the previous assignmend (for strategy A: `Inc_cost_A_d` and `Inc_QALY_A_d`).
 
 ```{r calc_res_disc, exercise = TRUE, exercise.setup = "setup_t_disc_calc"}
-v_res_disc
-v_icer_disc
+# define v_res_disc and v_icer_disc
 ```
 
 ```{r, include = FALSE}
