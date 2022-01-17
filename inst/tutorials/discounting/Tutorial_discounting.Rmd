@@ -1,0 +1,403 @@
+---
+title: "Tutorial discounting"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+library(learnr)
+library(knitr)
+library(tidyverse)
+library(shiny)
+knitr::opts_chunk$set(echo = FALSE)
+
+df_thx <- as.data.frame(cbind(
+  Year = c(0:12),
+  Inc_cost_A = c(rep(20000, 3), rep(0, 10)),
+  Inc_QALY_A = c(0, rep(1, 4), rep(0, 8)),
+  Inc_cost_B = c(rep(20000, 3), rep(0, 10)),
+  Inc_QALY_B = c(rep(0, 9), rep(1, 4)),
+  Inc_cost_C = c(rep(10000, 6), rep(0, 7)),
+  Inc_QALY_C = c(0, rep(0.5, 8), rep(0, 4))
+))
+```
+
+
+## Discounting
+
+### Before starting
+Watch the video explaining discounting and why we discount in health economic evaluations (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+![](https://vimeo.com/453418628/ad1222ead5){width="70%"}
+Link to the video: https://vimeo.com/453418628/ad1222ead5
+
+### Aims and instructions
+This assignment aims to introduce you to the concept of discounting in health economic evaluations, using a fictive example containing 3 interventions.  
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the . Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.    
+
+```{r, fig.align = 'center', out.width = "70%", echo = F}
+knitr::include_graphics("Tutorial_discounting_files/images/Image_hint.png")
+```
+
+```{r, fig.align = 'center', out.width = "70%", echo = F}
+knitr::include_graphics("Tutorial_discounting_files/images/Image_solution.png")
+```
+
+[Link to figures](https://education.rstudio.com/blog/2020/05/learnr-for-remote/)
+
+### The data
+The assignment uses the `df_thx` object, which is already loaded in this tutorial. 
+
+The `df_thx` object contains 7 variables:  
+
+- Year = the year in which incremental costs and effects have been incurred (from Year 0 to 12) 
+- Inc_cost_A = INCREMENTAL costs (in euros) of intervention A in the different years  
+- Inc_QALY_A = INCREMENTAL effects (QALYs) of intervention A in the different years  
+- Inc_cost_B = INCREMENTAL costs (in euros) of intervention B in the different years  
+- Inc_QALY_B = INCREMENTAL effects (QALYs) of intervention B in the different years  
+- Inc_cost_C = INCREMENTAL costs (in euros) of intervention C in the different years  
+- Inc_QALY_C = INCREMENTAL effects (QALYs) of intervention C in the different years  
+
+**Assume that all incremental costs and QALYs of these interventions are calculated against usual care.**
+
+The `df_thx` object is displayed herebelow. Have a look at this data.frame before starting the assignment.
+```{r show_data}
+df_thx
+```
+
+### Total undiscounted costs and effects
+Before discounting the effects and costs, calculate the total **undiscounted** incremental costs and effects of each intervention. Store the results in the `v_res_undisc` vector, and have a look at your results.  
+
+```{r calc_res_undisc, exercise = TRUE}
+v_res_undisc
+```
+
+```{r calc_res_undisc-hint-1}
+"Total incremental effects and costs are obtained by calculating the sum of each column."
+```
+
+```{r calc_res_undisc-hint-2}
+"Use the sum() or colSums() function."
+```
+
+```{r calc_res_undisc-solution}
+v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))])
+v_res_undisc
+```
+
+### Question
+The correct undiscounted results are provided below (you can use these results to check your answer).
+```{r show_totals_undisc}
+df <- data.frame(
+  Outcome = c("Incremental costs Intervention A", "Incremental QALYs Intervention A", "Incremental costs  Intervention B", "Incremental QALYs B", "Incremental costs Intervention C", "Incremental QALYs Intervention C"),
+  Value = unname(colSums(df_thx[, c(2:ncol(df_thx))]))
+)
+df
+rm(df)
+```
+```{r undisc_incrementals}
+quiz(
+question("Based on these results, which intervention provides the most health benefits in terms of QALYs?",
+  answer("A"),
+  answer("B"),
+  answer("C"),
+  answer("None", correct = TRUE)
+),
+question("Based on these results, which intervention costs the most?",
+  answer("A"),
+  answer("B"),
+  answer("C"),
+  answer("None", correct = TRUE)
+)
+)
+```
+
+### Explanation answers
+As can be seen in the table above, there are no differences concerning the UNDISCOUNTED incremental costs (`r paste("\u20ac", sum(df_thx[, 2]))`) and effects (`r sum(df_thx[, 3])` QALYs) between the different interventions. 
+
+### Undiscounted ICERs
+Calculate the **undiscounted** ICERS for each of these interventions using the total incremental costs and effects you calculated in the previous step, or using the original `df_thx` object. Suggestion: store the results in the `v_icer_undisc` for instance. 
+
+```{r cacl_icer_undisc, exercise = TRUE}
+v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))]) # calculates the total UNDISCOUNTED costs and QALYs
+v_icer_undisc
+```
+
+```{r cacl_icer_undisc-hint}
+"Since the different columns contain the incremental results. You have to divide total incremental costs by tot incremental effects for each intervention separately."
+```
+
+```{r cacl_icer_undisc-solution}
+v_res_undisc <- unname(v_res_undisc) # removes names, for clarity
+v_icer_undisc <- c(ICER_A = v_res_undisc[1]/v_res_undisc[2],
+                   ICER_B = v_res_undisc[3]/v_res_undisc[4],
+                   ICER_C = v_res_undisc[5]/v_res_undisc[6]
+)
+```
+
+### Question
+The table below provides the ICERs for the different interventions. 
+```{r, echo = FALSE}
+v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))])
+v_res_undisc <- unname(v_res_undisc) # removes names, for clarity
+df_icer_undisc <- data.frame(ICER_A = v_res_undisc[1]/v_res_undisc[2],
+                   ICER_B = v_res_undisc[3]/v_res_undisc[4],
+                   ICER_C = v_res_undisc[5]/v_res_undisc[6]
+)
+df_icer_undisc
+```
+
+```{r quest_icer_undisc}
+question("Which intervention provides the best value for money (most favourable ICER) based on these **undiscounted** incremental costs and effects?",
+  answer("A"),
+  answer("B"),
+  answer("C"),
+  answer("None", correct = TRUE)
+)
+```
+
+### Explanation answers
+There are no differences concerning the **undiscounted** ICERs between the different interventions, because there are no differences between the **undiscounted** incremental costs and effects.  
+
+### Discount costs and effects
+Define the discount weight as 5%, and call it `r_disc`. Use `r_disc` to create a vector of discount weights for Years 0 to 12, and save it as `v_disc`. Use the following formula to determine the discount weights:  $$w_i = \frac{1} {(1+r)^{t_i}}$$ where $w_i$ is the discount weight in year $i$, $r$ the discount rate, and $t_i$ year $i$.  
+```{r create_v_disc, exercise = TRUE}
+r_disc
+v_disc
+```
+
+```{r create_v_disc-solution}
+r_disc <- 0.05
+v_disc <- 1/(1 + r_disc) ^ df_thx$Year
+```
+
+### Vector of discount weights
+The following table and figure show how the discount weights changes over the years (correct code and answer).
+```{r v_disc_show, echo = TRUE}
+r_disc <- 0.05
+v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
+
+data.frame(
+  Year = df_thx$Year,
+  Discount_weight = round(v_disc, digits = 3)
+  )
+
+plot(v_disc, type = 'l',
+     xlab = "Time (in years)",
+     ylab = "Discount weight")
+```
+
+### Question
+```{r quest_v_disc}
+question("Please select how and why the discount weights change over time",
+  answer("The discount weights increase over time, meaning that the present value of future costs and effects increases over time"),
+  answer("The discount weights increase over time, meaning that the present value of future costs and effects decreases over time"),
+  answer("The discount weights decrease over time, meaning that the present value of future costs and effects decreases over time ", correct = TRUE),
+  answer("The discount weights decrease over time, meaning that the present value of future costs and effects increases over time")
+)
+```
+
+### Discount costs and effects
+Apply discounting on the incremental effects and costs to convert them to their present value. Assign the discounted effects and costs to new columns of `df_thx` called `Inc_cost_A_d`, `Inc_QALY_A_d`, `Inc_cost_B_d`, `Inc_QALY_B_d`, `Inc_cost_C_d`, `Inc_QALY_C_d`.  You can use the vector `v_disc` (defined in the previous code chunk) to do so.  
+
+```{r setup_disc_calc, include = FALSE}
+r_disc <- 0.05
+v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
+```
+
+```{r calc_disc_inc, exercise = TRUE, exercise.setup = "setup_disc_calc"}
+df_thx$Inc_cost_A_d
+df_thx$Inc_QALY_A_d
+df_thx$Inc_cost_B_d
+df_thx$Inc_QALY_B_d
+df_thx$Inc_cost_C_d
+df_thx$Inc_QALY_C_d
+```
+
+```{r calc_disc_inc-hint}
+"Multiply each column by the vector of discount weights to calculate discounted outcomes."
+```
+
+```{r calc_disc_inc-solution}
+df_thx$Inc_cost_A_d <- df_thx$Inc_cost_A * v_disc
+df_thx$Inc_QALY_A_d <- df_thx$Inc_QALY_A * v_disc
+df_thx$Inc_cost_B_d <- df_thx$Inc_cost_B * v_disc
+df_thx$Inc_QALY_B_d <- df_thx$Inc_QALY_B * v_disc
+df_thx$Inc_cost_C_d <- df_thx$Inc_cost_C * v_disc
+df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
+```
+
+```{r setup_t_disc_calc, include = FALSE}
+r_disc <- 0.05
+v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
+
+df_thx$Inc_cost_A_d <- df_thx$Inc_cost_A * v_disc
+df_thx$Inc_QALY_A_d <- df_thx$Inc_QALY_A * v_disc
+df_thx$Inc_cost_B_d <- df_thx$Inc_cost_B * v_disc
+df_thx$Inc_QALY_B_d <- df_thx$Inc_QALY_B * v_disc
+df_thx$Inc_cost_C_d <- df_thx$Inc_cost_C * v_disc
+df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
+```
+
+### Calculate total discounted costs, effects, and ICERs
+Calculate the total **discounted** incremental costs and effects, and ICERs for each intervention, store the **discounted** incremental costs and effects in the vector `v_res_disc`, and the ICERs in the vector `v_icer_disc`. The columns containing the discounted effects and costs have been added to the `df_thx` dataframe and are named as in the previous assignmend (for strategy A: `Inc_cost_A_d` and `Inc_QALY_A_d`).
+
+```{r calc_res_disc, exercise = TRUE, exercise.setup = "setup_t_disc_calc"}
+v_res_disc
+v_icer_disc
+```
+
+```{r, include = FALSE}
+r_disc <- 0.05
+v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
+
+df_thx$Inc_cost_A_d <- df_thx$Inc_cost_A * v_disc
+df_thx$Inc_QALY_A_d <- df_thx$Inc_QALY_A * v_disc
+df_thx$Inc_cost_B_d <- df_thx$Inc_cost_B * v_disc
+df_thx$Inc_QALY_B_d <- df_thx$Inc_QALY_B * v_disc
+df_thx$Inc_cost_C_d <- df_thx$Inc_cost_C * v_disc
+df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
+```
+
+```{r calc_res_disc-solution}
+v_res_disc <- colSums(df_thx[, c("Inc_cost_A_d", "Inc_QALY_A_d",
+                                 "Inc_cost_B_d", "Inc_QALY_B_d",
+                                 "Inc_cost_C_d", "Inc_QALY_C_d")]) # calculate totals - discounted
+v_res_disc <- unname(v_res_disc) # [OPTIONAL]: remove names
+
+v_icer_disc <- c(ICER_A = v_res_disc[1]/v_res_disc[2],
+                   ICER_B = v_res_disc[3]/v_res_disc[4],
+                   ICER_C = v_res_disc[5]/v_res_disc[6]
+) 
+```
+
+### Questions
+The **discounted** results should be the following.
+```{r show_res_disc, include = TRUE}
+v_res_disc <- colSums(df_thx[, c("Inc_cost_A_d", "Inc_QALY_A_d",
+                                 "Inc_cost_B_d", "Inc_QALY_B_d",
+                                 "Inc_cost_C_d", "Inc_QALY_C_d")]) # calculate totals - discounted
+v_res_disc <- unname(v_res_disc) # [OPTIONAL]: remove names
+
+v_icer_disc <- c(ICER_A = v_res_disc[1]/v_res_disc[2],
+                   ICER_B = v_res_disc[3]/v_res_disc[4],
+                   ICER_C = v_res_disc[5]/v_res_disc[6]
+) 
+df <- data.frame(
+  Outcome = c("Incremental costs Intervention A", "Incremental QALYs Intervention A", "Incremental costs  Intervention B", "Incremental QALYs B", "Incremental costs Intervention C", "Incremental QALYs Intervention C"),
+  Value = v_res_disc
+)
+df
+v_icer_disc
+```
+
+```{r quest_disc}
+quiz(
+  question("Based on these results, which intervention provides the most health benefits in terms of QALYs?",
+  answer("A", correct = TRUE),
+  answer("B"),
+  answer("C"),
+  answer("None")
+),
+question("Based on these results, which intervention costs the most?",
+  answer("A", correct = TRUE),
+  answer("B", correct = TRUE),
+  answer("C"),
+  answer("None")
+),
+  question("Which intervention provides the best value for money (most favourable ICER) based on these **undiscounted** incremental costs and effects?",
+  answer("A", correct = TRUE),
+  answer("B"),
+  answer("C"),
+  answer("None")
+)
+)
+```
+
+### Explanations
+The discounted incremental costs of A and B are equal and remain higher than discounted incremental costs of C. Intervention A provides the highest discounted incremental effects followed by C and B. The discounted ICER of intervention A is the lowest (best value for money), followed by C and then B.  
+
+### Follow-up question
+```{r quest_disc_diff}
+question("Can you explain the difference between the undiscounted and discounted results? ",
+  answer("All ICERs, calculated based on discounted costs and effects, increase because the health effects of all interventions are more heavily discounted than the costs because the incremental effects occurs later in the future than the costs. Hence, their present value is more heavily discounted than the incremental costs, and the ICERs increase.", correct = TRUE),
+  answer("All ICERs, calculated based on discounted costs and effects, increase because the health effects of all interventions are less heavily discounted than the costs because the incremental effects occurs later in the future than the costs. Hence, their present value is less heavily discounted than the incremental costs, and the ICERs increase.")
+)
+```
+
+### Changing the discount rate
+The following graph shows both the undiscounted results and discounted results for all three interventions, based on a user-defined discount rate. Answer the questions below by changing the discount rate appropriately. The default value is 5% (0.05) as in the exercises above.    
+```{r plot_disc, context = "render", echo = FALSE}
+numericInput("r_disc", "Discount rate", min = 0, max = 1, value = 0.05)
+plotOutput("plot_disc")
+```
+
+```{r plot_disc_serv, context = "server", echo = FALSE}
+output$plot_disc <- renderPlot({
+  
+  v_disc <- 1/(1 + input$r_disc) ^ df_thx$Year # create vector of discount rates
+
+  v_res_undisc <- colSums(df_thx[, c("Inc_cost_A", "Inc_QALY_A",
+                                 "Inc_cost_B", "Inc_QALY_B",
+                                 "Inc_cost_C", "Inc_QALY_C")])
+  v_res_undisc <- unname(v_res_undisc)
+  v_icer_undisc <- c(ICER_A = v_res_undisc[1]/v_res_undisc[2],
+                     ICER_B = v_res_undisc[3]/v_res_undisc[4],
+                     ICER_C = v_res_undisc[5]/v_res_undisc[6]
+) # calculate undiscounted ICERs
+  
+  v_res_disc <- apply(df_thx[, c("Inc_cost_A", "Inc_QALY_A",
+                                 "Inc_cost_B", "Inc_QALY_B",
+                                 "Inc_cost_C", "Inc_QALY_C")], 2, function(x) x %*% v_disc) # matrix multiplication of vector of costs and effects x vector dicsount rates
+  v_res_disc <- unname(v_res_disc)
+  v_icer_disc <- c(ICER_A = v_res_disc[1]/v_res_disc[2],
+                   ICER_B = v_res_disc[3]/v_res_disc[4],
+                   ICER_C = v_res_disc[5]/v_res_disc[6]
+) # calculate discounted ICERs, with 10% discount rate
+
+# Comparison all results
+m_res_total <- rbind(v_icer_undisc,
+                   v_icer_disc)
+
+df_res <- data.frame(cbind(Analysis = c("Undiscounted", "Discounted")),
+                     m_res_total)
+df_plot <- df_res %>% 
+    pivot_longer(c(ICER_A, ICER_B, ICER_C), names_to = "Intervention", values_to = "ICER")
+
+# Plot
+ plot_res <- ggplot(data = df_plot, aes(x = Intervention, y = ICER, fill = Analysis)) +
+   geom_bar(stat = "identity", position = position_dodge()) + 
+   #ylim(0, 60000) +
+   theme_bw()
+ 
+ plot_res
+})
+```
+
+### Questions
+```{r quest_disc_alt}
+question("Now apply a discount rate of 15% (0.15)  using the graph above. Which intervention provides the most value for money based on the discounted results?",
+         answer("A", correct = TRUE),
+         answer("B"), 
+         answer("C"),
+         answer("None")
+)
+```
+
+A. Can you explain these results? Are these comparable with results obtained the previous step?  
+```{r, echo = FALSE}
+textInput("Answer_A", "Enter your answer")
+```
+
+B. Can you explain why, even with a small discount rate (for example 0.1%), the cost-effectiveness with discounting is always worse than cost-effectiveness without discounting for these three strategies? 
+```{r, echo = FALSE}
+textInput("Answer_B", "Enter your answer")
+```
+
+### Explanations
+A. The effect observed in the previous step is only reinforced due to the higher yearly discount rate. Changing the discount rate does not change the order (in terms of ICER) of the interventions.  
+B. For all three programmes, costs are incurred earlier (in earlier years) than health benefits are gained. Consequently, when future costs and future effects are discounted, the present value of health effects decreases more than the present value of costs. Given that health benefits are discounted more heavily than than costs, the cost-effectiveness deteriorates (the ICERs go up) whenever any discount rate >0 % is applied.  
+
+**THE END**
