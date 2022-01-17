@@ -8,10 +8,31 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include = FALSE}
-library(learnr)
-library(knitr)
-library(tidyverse)
-library(shiny)
+if (!requireNamespace("learnr", quietly = TRUE)) {
+    stop(
+      "Package \"learnr\" must be installed to use this function.",
+      call. = FALSE
+    )
+}
+if (!requireNamespace("knitr", quietly = TRUE)) {
+    stop(
+      "Package \"knitr\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop(
+      "Package \"ggplot2\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+if (!requireNamespace("shiny", quietly = TRUE)) {
+    stop(
+      "Package \"shiny\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+
 knitr::opts_chunk$set(echo = FALSE)
 
 df_thx <- as.data.frame(cbind(
