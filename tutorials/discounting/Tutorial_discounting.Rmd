@@ -212,7 +212,8 @@ question("Please select how and why the discount weights change over time",
 )
 ```
 
-Now increase the discount rate to 10% (0.1) and decrease it to 1% (0.01) in the graph above, can you explain what happens with the discount weight over time? Can you explain what it means for the discounted costs and effects?
+Now increase the discount rate to 10% (0.1) and decrease it to 1% (0.01) in the graph above using the user-defined field under **Discount rate**.  
+Can you explain what happens with the discount weight over time? Can you explain what it means for the discounted costs and effects?
 ```{r, echo = FALSE}
 textInput("Answer_0", "Enter your answer")
 ```
