@@ -8,25 +8,10 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include = FALSE}
-require(learnr)
-if (!requireNamespace("knitr", quietly = TRUE)) {
-    stop(
-      "Package \"knitr\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    stop(
-      "Package \"ggplot2\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-if (!requireNamespace("shiny", quietly = TRUE)) {
-    stop(
-      "Package \"shiny\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
+require(learnr, quietly = TRUE)
+require(knitr, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(shiny, quietly = TRUE)
 
 knitr::opts_chunk$set(echo = FALSE)
 
