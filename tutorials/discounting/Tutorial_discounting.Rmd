@@ -69,7 +69,7 @@ df_thx
 ```
 
 ### Total undiscounted costs and effects
-Before discounting the effects and costs, calculate the total **undiscounted** incremental costs and effects of each intervention. Store the results in the `v_res_undisc` vector, and have a look at your results.  
+Before discounting the effects and costs, calculate the total **undiscounted** incremental costs and effects of each intervention.  
 
 ```{r calc_res_undisc, exercise = TRUE}
 # calculate undiscounted incremental costs and effects
@@ -85,8 +85,10 @@ Before discounting the effects and costs, calculate the total **undiscounted** i
 ```
 
 ```{r calc_res_undisc-solution}
-v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))])
-v_res_undisc
+colSums(df_thx[, c(2:ncol(df_thx))])
+
+## alternative: c(sum(df_thx[, "Inc_cost_A"]), sum(df_thx[, "Inc_QALY_A"]), sum(df_thx[, "Inc_cost_B"]), 
+##                sum(df_thx[, "Inc_QALY_B"]), sum(df_thx[, "Inc_cost_C"]), sum(df_thx[, "Inc_QALY_C"]))
 ```
 
 ### Question
@@ -120,10 +122,10 @@ question("Based on these results, which intervention costs the most?",
 As can be seen in the table above, there are no differences concerning the UNDISCOUNTED incremental costs (`r paste("\u20ac", sum(df_thx[, 2]))`) and effects (`r sum(df_thx[, 3])` QALYs) between the different interventions. 
 
 ### Undiscounted ICERs
-Calculate the **undiscounted** ICERS for each of these interventions using the total incremental costs and effects you calculated in the previous step, or using the original `df_thx` object. Suggestion: store the results in the `v_icer_undisc` for instance. 
+Calculate the **undiscounted** ICERS for each of these interventions using the total incremental costs and effects you calculated in the previous step, or using the original `df_thx` object. Suggestion: store the results in the `v_icer_undisc` for instance. `v_res_undisc` contains the total **undiscounted** costs and QALYs for each strategy.
 
 ```{r cacl_icer_undisc, exercise = TRUE}
-v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))]) # calculates the total UNDISCOUNTED costs and QALYs
+v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))]) # contains the total UNDISCOUNTED costs and QALYs
 # calculate undiscounted ICERs
 
 ```
@@ -168,9 +170,9 @@ There are no differences concerning the **undiscounted** ICERs between the diffe
 Define the discount weight as 5%, and call it `r_disc`. Use `r_disc` to create a vector of discount weights for Years 0 to 12, and save it as `v_disc`. Use the following formula to determine the discount weights:  $$w_i = \frac{1} {(1+r)^{t_i}}$$ where $w_i$ is the discount weight in year $i$, $r$ the discount rate, and $t_i$ year $i$.  
 ```{r create_v_disc, exercise = TRUE}
 # define r_disc
-
+r_disc
 # define v_disc
-
+v_disc
 ```
 
 ```{r create_v_disc-solution}
@@ -180,21 +182,26 @@ v_disc <- 1/(1 + r_disc) ^ df_thx$Year
 
 ### Vector of discount weights
 The following table and figure show how the discount weights changes over the years (correct code and answer).
-```{r v_disc_show, echo = TRUE}
-r_disc <- 0.05
-v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
 
-data.frame(
-  Year = df_thx$Year,
-  Discount_weight = round(v_disc, digits = 3)
-  )
-
-plot(v_disc, type = 'l',
-     xlab = "Time (in years)",
-     ylab = "Discount weight")
+```{r plot_v_disc, context = "render", echo = FALSE}
+numericInput("r_disc1", "Discount rate", min = 0, max = 1, value = 0.05)
+plotOutput("plot_v_disc")
 ```
 
-### Question
+
+```{r plot_v_disc_serv, context = "server", echo = TRUE}
+
+output$plot_v_disc <- renderPlot({
+  v_disc <- 1/(1 + input$r_disc1) ^ df_thx$Year # create vector of discount weights
+  
+  
+  plot(v_disc, type = 'l',
+     xlab = "Time (in years)",
+     ylab = "Discount weight")
+})
+```
+
+### Questions
 ```{r quest_v_disc}
 question("Please select how and why the discount weights change over time",
   answer("The discount weights increase over time, meaning that the present value of future costs and effects increases over time"),
@@ -203,6 +210,14 @@ question("Please select how and why the discount weights change over time",
   answer("The discount weights decrease over time, meaning that the present value of future costs and effects increases over time")
 )
 ```
+
+Now increase the discount rate to 10% and decrease it to 1% in the graph above, can you explain what happens with the discount weight over time? Can you explain what it means for the discounted costs and effects?
+```{r, echo = FALSE}
+textInput("Answer_0", "Enter your answer")
+```
+
+### Explanations
+When increasing the discount rate, the discount weights decrease faster over time, meaning that the costs and effects occuring in the future will be more heavily discounted (will be worth "less"). The opposite happens when we decrease the discount rate, the future costs and effects will be less heavily discounted (meaning that their current value increases compared when a higher discount rate is used).  
 
 ### Discount costs and effects
 Apply discounting on the incremental effects and costs to convert them to their present value. Assign the discounted effects and costs to new columns of `df_thx` called `Inc_cost_A_d`, `Inc_QALY_A_d`, `Inc_cost_B_d`, `Inc_QALY_B_d`, `Inc_cost_C_d`, `Inc_QALY_C_d`.  You can use the vector `v_disc` (defined in the previous code chunk) to do so.  
