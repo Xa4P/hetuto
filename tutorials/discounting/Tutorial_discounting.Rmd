@@ -189,16 +189,17 @@ plotOutput("plot_v_disc")
 ```
 
 
-```{r plot_v_disc_serv, context = "server", echo = TRUE}
+```{r plot_v_disc_serv, context = "server", echo = FALSE}
 
 output$plot_v_disc <- renderPlot({
-  v_disc <- 1/(1 + input$r_disc1) ^ c(1,50) # create vector of discount weights
   
+  v_disc <- 1/(1 + input$r_disc1) ^ c(1:50) # create vector of discount weights
   
   plot(v_disc, type = 'l',
      xlab = "Time (in years)",
      ylab = "Discount weight",
-     xlim = c(0,1))
+     ylim = c(0,1),
+     xlim = c(0, 50))
 })
 ```
 
@@ -212,7 +213,7 @@ question("Please select how and why the discount weights change over time",
 )
 ```
 
-Now increase the discount rate to 10% (0.1) and decrease it to 1% (0.01) in the graph above using the user-defined field under **Discount rate**.  
+Now increase the discount rate to 20% (0.2) and decrease it to 1% (0.01) in the graph above using the user-defined field under **Discount rate**.  
 Can you explain what happens with the discount weight over time? Can you explain what it means for the discounted costs and effects?
 ```{r, echo = FALSE}
 textInput("Answer_0", "Enter your answer")
