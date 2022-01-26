@@ -12,11 +12,12 @@ require(learnr, quietly = TRUE)
 require(knitr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(shiny, quietly = TRUE)
+load("Tutorial_ceaf_files/R/question_numeric.R")
 
 knitr::opts_chunk$set(echo = FALSE)
 
 df_thx <- as.data.frame(cbind(
-  Treatment = c(1:9),
+  Strategy = c(1:9),
   Name = c("No screening (REF)",  
            "Screening once, at age 40",
            "Screening once, at age 60",  
@@ -31,7 +32,7 @@ df_thx <- as.data.frame(cbind(
 ))
 
 df_thx[, c("Costs", "QALYs")] <- apply(df_thx[, c("Costs", "QALYs")], 2, function(x) as.numeric(as.character(x)))
-df_thx[, "Treatment"] <- as.factor(as.character(df_thx[, "Treatment"]))
+df_thx[, "Strategy"] <- as.factor(as.character(df_thx[, "Strategy"]))
 ```
 
 
@@ -61,7 +62,7 @@ The assignment uses the `df_thx` object, which is already loaded in this tutoria
 
 The `df_thx` object contains 4 variables and 9 observations (the outcomes of the strategies to compare):  
 
-- Treatment = the number identifying the screening strategy  
+- Strategy = the number identifying the screening strategy  
 - Name = the name of the screening strategy  
 - Costs = the total costs of the screening strategy    
 - QALYs = the total QALYs gained through the screening strategy 
@@ -71,7 +72,7 @@ The `df_thx` object is displayed herebelow. Have a look at this data.frame and b
 ```{r show_data}
 df_thx
 
-ggplot(data = df_thx, aes(x = QALYs, Costs, colour = Treatment)) +
+ggplot(data = df_thx, aes(x = QALYs, Costs, colour = Strategy)) +
   geom_point() + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
   geom_vline(xintercept = 0, linetype = "dashed", color = "grey") +
@@ -127,14 +128,12 @@ Calculate the fully incremental ICERs of these screening strategies against each
 9.	Calculate the Net Monetary Benefit (NMB) for each strategy for a WTP threshold of €20,000/QALY. Which strategy has the highest NMB? Does this correspond with your answer to question 4?  
 
 ### Step 1: order the strategies by increasing total QALYs
-
 ```{r order, echo = TRUE}
 df_thx <- df_thx[order(df_thx$QALYs),]
 df_thx
 ```
 
 ### Step 2: identify the dominated strategies
-
 ```{r quiz_dominated}
 question("Based on the table where strategies are ordered by incresing total number of QALYs, which strategy is dominated?",
   answer("Strategy 1"),
@@ -150,7 +149,6 @@ question("Based on the table where strategies are ordered by incresing total num
 )
 ```
 
-
 Can you explain why this (these) strategy(ies) are dominated
 ```{r, echo = FALSE}
 textInput("Answer_1", "Enter your answer")
@@ -160,7 +158,85 @@ textInput("Answer_1", "Enter your answer")
 Strategy 4 is dominated by Strategy 1 because Strategy 1 provides more health benefits (QALYs) at a lower costs.  
 
 ### Step 3: Calculate ICERs
+Since strategy 4 is dominated, it will not be used further in the comparison of the strategies. It is now time to calculate the different ICERs.
+```{r}
+df_thx <- df_thx[order(df_thx$QALYs),]
+rownames(df_thx) <- NULL
+df_thx[which(df_thx$Strategy !=4), ]
+```
+
+Calculate the ICERs of strategies 3, 2, 5, 7, 6, 9, 8. You can use a calculator or the R code chunk below to calculate them. Round your results to the closest euro. Check your answers in the quiz!
+
+```{r calc_icers_1, exercise = TRUE}
+
+```
+
+```{r calc_icers_1-solution}
+# EXAMPLE: ICER of 3 versus 1
+diff_costs <- df_thx[which(df_thx$Strategy == 3), "Costs"] - df_thx[which(df_thx$Strategy == 1), "Costs"] # difference in costs between strategy 3 and 1
+diff_effects <- df_thx[which(df_thx$Strategy == 3), "QALYs"] - df_thx[which(df_thx$Strategy == 1), "QALYs"] # difference in effects between strategy 3 and 1
+
+icer <- diff_costs / diff_effects # ratio of the difference in costs by the difference in effect
+icer_rounded <- round(icer) # rounding off
+icer_rounded # shows results
+```
 
 
 
+```{r calc_icer1, echo = FALSE}
+numericInput("icer_3", "ICER strategy 3", min = -Inf, max = Inf, value = 0)
+numericInput("icer_2", "ICER strategy 2", min = -Inf, max = Inf, value = 0)
+numericInput("icer_5", "ICER strategy 5", min = -Inf, max = Inf, value = 0)
+numericInput("icer_7", "ICER strategy 7", min = -Inf, max = Inf, value = 0)
+numericInput("icer_6", "ICER strategy 6", min = -Inf, max = Inf, value = 0)
+numericInput("icer_9", "ICER strategy 9", min = -Inf, max = Inf, value = 0)
+numericInput("icer_8", "ICER strategy 8", min = -Inf, max = Inf, value = 0)
+actionButton(inputId = "check_res_icer1",
+             label = "Push to check your results!")
+```
+
+```{r quiz_icers1}
+question_numeric("What is the ICER of strategy 3?",
+              answer(13889, correct = TRUE),
+              allow_retry = TRUE
+     )
+
+# question_numeric("What is the ICER of strategy 2?",
+#          answer(55000, correct = TRUE),
+#          allow_retry = TRUE)
+# question_numeric("What is the ICER of strategy 5?",
+#          answer(15625, correct = TRUE),
+#          allow_retry = TRUE)
+# question_numeric("What is the ICER of strategy 7?",
+#          answer(16538, correct = TRUE),
+#          allow_retry = TRUE)
+# question_numeric("What is the ICER of strategy 6?",
+#          answer(100000, correct = TRUE),
+#          allow_retry = TRUE)
+# question_numeric("What is the ICER of strategy 9?",
+#          answer(29286, correct = TRUE),
+#          allow_retry = TRUE)
+# question_numeric("What is the ICER of strategy 8?",
+#          answer(250000, correct = TRUE),
+#          allow_retry = TRUE)
+
+
+```
+
+```{r, echo = FALSE}
+v_icer1_check <- eventReactive(input$check_res_icer1, {
+  res_1 <- as.character(ifelse(input$icer_3 == 13889, "Correct", "Try again"))
+  res_2 <- as.character(ifelse(input$icer_2 == 55000, "Correct", "Try again"))
+  res_5 <- as.character(ifelse(input$icer_5 == 15625, "Correct", "Try again"))
+  res_7 <- as.character(ifelse(input$icer_7 == 16538, "Correct", "Try again"))
+  res_6 <- as.character(ifelse(input$icer_6 == 100000, "Correct", "Try again"))
+  res_9 <- as.character(ifelse(input$icer_9 == 29286, "Correct", "Try again"))
+  res_8 <- as.character(ifelse(input$icer_8 == 250000, "Correct", "Try again"))
+  
+  v_res <- c(res_1, res_2, res_5, res_7, res_6, res_9, res_8)
+  return(v_res)
+}
+)
+
+```
 **THE END**
