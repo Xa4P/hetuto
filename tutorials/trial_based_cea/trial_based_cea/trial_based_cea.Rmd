@@ -13,6 +13,7 @@ require(knitr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(shiny, quietly = TRUE)
 require(boot, quietly = TRUE)
+require(dplyr, quietly = TRUE)
 
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -34,8 +35,8 @@ df$Qol <- ifelse(df$Death == 1, 0, df$Qol)
 c_Robot <- 3000 
 c_Open <- 2000 
 c_OK_hour <- 500 
-c_Major_Compl <- 10000 
-c_Minor_Compl <- 1500 
+c_Major_compl <- 10000 
+c_Minor_compl <- 1500 
 c_ICU_day <- 1250 
 c_MCU_day <- 550 
 ```
@@ -55,8 +56,9 @@ The aim of this practical assignment is to perform a health economic analysis us
 ### Required knowledge
 To perform this assignment, you should be able to:  
 
-- use the functions `group_by` and `summarise` from the `tidyverse` package.   
-- use functions such as `mean()`, `sum()`
+- create new variables in a dataframe  
+- use the functions `group_by` and `summarise` (`dyplr` package)   
+- use functions: `mean()`, `sum()`, `ifelse()` (base R)  
 
 
 ### Objects of this practical
@@ -64,20 +66,27 @@ Different objects have already been loaded in R's memory to perform this practic
 
 A dataframe `df`. This dataframe contains 9 variables, each row of the dataframe contains the outcomes from one participant:  
 
-- ID = Participant ID  
-- Procedure  = Group to which the participant belongs; 1 = usual care (open transthoracic esophagectomy), 2 = the new intervention (robot-assisted thoraco-laparoscopic esophagectomy)  
-- OR_time = Operating time, in minutes  
-- Major_compl = 'Did the participant experience a major complication?'; 1 = yes, 0 = no  
-- Minor_compl = 'Did the participant experience a minor complication?'; 1 = yes, 0 = no  
-- Length_icu = Length of stay at the intensive care unit (ICU) in days  
-- Length_mcu = Length of stay at the intensive care unit (MCU) in days  
-- Death      = 'Did the participant experience die at the hospital?'; 1 = yes, 0 = no   
-- Qol = Quality of life of the participant after the procedure  
+- `ID` = Participant ID  
+- `Procedure`  = Group to which the participant belongs; 1 = usual care (open transthoracic esophagectomy), 2 = the new intervention (robot-assisted thoraco-laparoscopic esophagectomy)  
+- `OR_time` = Operating time, in minutes  
+- `Major_compl` = 'Did the participant experience a major complication?'; 1 = yes, 0 = no  
+- `Minor_compl` = 'Did the participant experience a minor complication?'; 1 = yes, 0 = no  
+- `Length_icu` = Length of stay at the intensive care unit (ICU) in days  
+- `Length_mcu` = Length of stay at the intensive care unit (MCU) in days  
+- `Death`      = 'Did the participant experience die at the hospital?'; 1 = yes, 0 = no   
+- `Qol` = Quality of life of the participant after the procedure  
+
+The following tables show the dataframe `df`. Familiarise yourself with it.  
+
+```{r show_df}
+df
+```
+
 
 Other objects, which represent the costs of the surgeries, hospital days, adverse events, and hourly costs of using the operating room:  
 
-- `c_Open` =  costs of the open surgery (usual care)  
-- `c_Robot` = costs of the new intervention (robot-assisted thoraco-laparoscopic esophagesctomy)  
+- `c_Open` =  costs of the open transthoracic esophagectomy (usual care)  
+- `c_Robot` = costs of the robot-assisted thoraco-laparoscopic esophagesctomy (new intervention)  
 - `c_ICU_day` = costs of one day at the ICU  
 - `c_MCU_day` = costs of one day at the MCU  
 - `c_Major_compl` = costs of a major complication  
@@ -88,6 +97,7 @@ Other objects, which represent the costs of the surgeries, hospital days, advers
 Calculate the mean operating time, risk of complications, length of stay at ICU and MCU, risk of death, and quality of life after procedure, for both trial arms.    
 
 ```{r mean_eff, exercise = TRUE}
+
 ```
 
 ```{r mean_eff-hint}
@@ -142,11 +152,85 @@ quiz(
            )
 )
 ```
-2. Create three new variables in `df` called Cost_procedure, Cost_compl, Cost_hosp, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalization for each participant. To do so, use the objects beginning with `c_`.   *Hint: Multiply the column of the dataframe `df` by the corresponding objects.*  
-3. Create a new variable in `df` called Total_costs, which contains the total costs per participant. Calculate the mean costs per group. Based on this information:  
-3.a. Which treatment is cheaper on average, given the observed trial data?  
-3.b. What do you think is the probability that the new intervention is cheaper?  
-3.c. What do you think is the probability that the new intervention leads to health gain?  
-4. Calculate the difference in mean quality of life and mean total costs between the new intervention and usual care (i.e. the incremental effects and incremental costs). Calculate the ICER using this information. *Hint: use the results you obtained in previous steps*.   
+
+### Assignment 2
+Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group.  
+
+```{r calc_t_costs, exercise = TRUE}
+
+
+```
+
+```{r calc_t_costs-hint-1}
+"To fill in the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, multiply the column of the dataframe `df` by the corresponding objects. For `Cost_procedure`, the ifelse() function should be used to make a difference between the costs of open transthoracic esophagectomy and robot-assisted thoraco-laparoscopic esophagesctomy. For the `Total_costs`, the sum of the other columns should be calculated.  "
+```
+
+```{r calc_t_costs-hint-2}
+# Example for calculating the new variable `Cost_procedure`
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time * c_OK_hour, c_Robot + df$OR_time * c_OK_hour)
+```
+
+```{r calc_t_costs-solution}
+# Creating new columns
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+df %>% 
+  group_by(Procedure) %>%
+  summarise(Tot_costs = mean(Total_costs))
+
+
+# Alternative tidyverse-style
+df %>%
+  summarise(Procedure = Procedure,
+            Cost_procedure = ifelse(Procedure == 1, c_Open + OR_time / 60 * c_OK_hour, c_Robot + OR_time / 60 * c_OK_hour),
+            Cost_compl = Major_compl * c_Major_compl + Minor_compl * c_Minor_compl,
+            Cost_hosp = Length_icu * c_ICU_day + Length_mcu * c_MCU_day,
+            Total_costs = Cost_procedure + Cost_compl + Cost_hosp) %>%
+  group_by(Procedure) %>%
+  summarise(Mean_total_costs = mean(Total_costs))
+```
+
+### Assignment 2 - questions
+The correct results are displayed here below. You can check your answer based in these results and answer the questions of the quizz.
+
+```{r calc_to_c_good}
+df %>%
+  summarise(Procedure = Procedure,
+            Cost_procedure = ifelse(Procedure == 1, c_Open + OR_time / 60 * c_OK_hour, c_Robot + OR_time / 60 * c_OK_hour),
+            Cost_compl = Major_compl * c_Major_compl + Minor_compl * c_Minor_compl,
+            Cost_hosp = Length_icu * c_ICU_day + Length_mcu * c_MCU_day,
+            Total_costs = Cost_procedure + Cost_compl + Cost_hosp) %>%
+  group_by(Procedure) %>%
+  summarise(Mean_cost_procedure = mean(Cost_procedure),
+            Mean_cost_compl = mean(Cost_compl),
+            Mean_cost_hosp = mean(Cost_hosp),
+            Mean_total_costs = mean(Total_costs))
+```
+
+```{r quiz_tot_costs}
+quiz(
+  question("Which treatment is cheaper on average, given the observed trial data?", 
+           answer("Open transthoracic esophagectomy (usual care)", correct = TRUE),
+           answer("Robot-assisted surgery (new intervention)"),
+           incorrect = "Too bad, this is incorrect. Open transthoracic esophagectomy is cheaper sinds the mean total costs of this procedure are lower than the mean total costs of the robot-assisted surgery procedure")
+)
+```
+
+What do you think is the probability that the new intervention is cheaper?  
+
+```{r open_q_1}
+textInput("Answer_1", "Enter your answer")
+```
+
+What do you think is the probability that the new intervention leads to health gain?  
+
+```{r open_q_2}
+textInput("Answer_2", "Enter your answer")
+```
+
+### Assignment 3  
+Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery) (i.e. the incremental effects and incremental costs). Calculate the ICER using this information. *Hint: use the results you obtained in previous steps*.   
 5. Save your dataframe `df` as a .csv file. Ensure that your total effects per participants are in the `Qol` variable and the total costs in the `Total_costs` variable.  
 6. Open the R shiny app using the following command in R and follow the instructions.  
