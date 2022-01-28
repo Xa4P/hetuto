@@ -58,7 +58,7 @@ To perform this assignment, you should be able to:
 
 - create new variables in a dataframe  
 - use the functions `group_by` and `summarise` (`dyplr` package)   
-- use functions: `mean()`, `sum()`, `ifelse()` (base R)  
+- use functions: `mean()`, `sum()`, `ifelse()`, `which()` (base R)  
 
 
 ### Objects of this practical
@@ -167,7 +167,7 @@ Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_
 
 ```{r calc_t_costs-hint-2}
 # Example for calculating the new variable `Cost_procedure`
-df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time * c_OK_hour, c_Robot + df$OR_time * c_OK_hour)
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour)
 ```
 
 ```{r calc_t_costs-solution}
@@ -233,6 +233,7 @@ textInput("Answer_2", "Enter your answer")
 ### Assignment 2 - discussion questions
 What do you think is the probability that the new intervention is cheaper?  
 **Discussion:** This question is hard to answer, all we know is that some patients in the intervention strategy (robot-assisted) have lower cost than some patients in the usual care arm. On average the intervention is more expensive so we would guess that this probability is less than 50% but we don’t know yet.  
+
 What do you think is the probability that the new intervention leads to health gain?  
 **Discussion:** This question is also hard to answer. On average the intervention is leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
 
@@ -254,21 +255,19 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 "Calculate first the mean outcomes per patient for each strategy and then calculate the difference. To calculate the ICER, divide the difference in costs by the difference in effects between the two strategies."
 ```
 
-
-```{r calc_icer-int-2}
+```{r calc_icer-int-2, eval = FALSE}
 t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
-t_qol_open <- -- # mean costs per patient in the open surgery strategy
+t_qol_open # mean costs per patient in the open surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
-t_costs_open  <- -- # mean costs per patient in the open surgery strategy
+t_costs_open  # mean costs per patient in the open surgery strategy
 
-diff_qol   <- t_qol_robot - t_qol_open
-diff_costs <- --
+diff_qol   <- t_qol_robot - t_qol_open # difference in Qol
+diff_costs # difference in costs
 
-ICER <- diff_costs / diff_qol
-ICER
+ICER # difference in costs / difference in Qol
 ```
 
-```{r calc_icer-solution, exercise = TRUE}
+```{r calc_icer-solution}
 t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
 t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean costs per patient in the open surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
@@ -282,6 +281,7 @@ ICER <- diff_costs / diff_qol
 
 ### Assignment 3 - question
 The correct results are provided here below.
+
 ```{r}
 df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
 df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
