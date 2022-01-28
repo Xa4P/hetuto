@@ -230,7 +230,108 @@ What do you think is the probability that the new intervention leads to health g
 textInput("Answer_2", "Enter your answer")
 ```
 
+### Assignment 2 - discussion questions
+What do you think is the probability that the new intervention is cheaper?  
+**Discussion:** This question is hard to answer, all we know is that some patients in the intervention strategy (robot-assisted) have lower cost than some patients in the usual care arm. On average the intervention is more expensive so we would guess that this probability is less than 50% but we don’t know yet.  
+What do you think is the probability that the new intervention leads to health gain?  
+**Discussion:** This question is also hard to answer. On average the intervention is leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
+
 ### Assignment 3  
-Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery) (i.e. the incremental effects and incremental costs). Calculate the ICER using this information. *Hint: use the results you obtained in previous steps*.   
-5. Save your dataframe `df` as a .csv file. Ensure that your total effects per participants are in the `Qol` variable and the total costs in the `Total_costs` variable.  
-6. Open the R shiny app using the following command in R and follow the instructions.  
+Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
+
+```{r setup_calc_icer}
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+```
+
+```{r calc_icer, exercise = TRUE, exercise.setup = "setup_calc_icer"}
+
+```
+
+```{r calc_icer-int-1}
+"Calculate first the mean outcomes per patient for each strategy and then calculate the difference. To calculate the ICER, divide the difference in costs by the difference in effects between the two strategies."
+```
+
+
+```{r calc_icer-int-2}
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_qol_open <- -- # mean costs per patient in the open surgery strategy
+t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
+t_costs_open  <- -- # mean costs per patient in the open surgery strategy
+
+diff_qol   <- t_qol_robot - t_qol_open
+diff_costs <- --
+
+ICER <- diff_costs / diff_qol
+ICER
+```
+
+```{r calc_icer-solution, exercise = TRUE}
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean costs per patient in the open surgery strategy
+t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
+t_costs_open  <- mean(df[which(df$Procedure == 1), "Total_costs"]) # mean costs per patient in the open surgery strategy
+
+diff_qol   <- t_qol_robot - t_qol_open
+diff_costs <- t_costs_robot - t_costs_open
+
+ICER <- diff_costs / diff_qol
+```
+
+### Assignment 3 - question
+The correct results are provided here below.
+```{r}
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean costs per patient in the open surgery strategy
+t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
+t_costs_open  <- mean(df[which(df$Procedure == 1), "Total_costs"]) # mean costs per patient in the open surgery strategy
+
+diff_qol   <- t_qol_robot - t_qol_open
+diff_costs <- t_costs_robot - t_costs_open
+
+ICER <- diff_costs / diff_qol
+ICER
+```
+
+```{r icer_question}
+quiz(
+  question(
+    "Considering this ICER, would you say that the robot-assisted surgery is cost effective compared to the open surgery at a 20,000 euro per QALY willingness to pay threshold?",
+    answer("Yes", correct = TRUE),
+    answer("No"),
+    incorrect = "The answer is yes because the ICER is below the willingness-to-pay threshold."
+  )
+)
+```
+
+### Assignment 4
+The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments.
+
+```{r bootstrap}
+ numericInput(inputId = "num_it",
+              label = "Number of bootstrap samples",
+              value = 0,
+              min = 0,
+              max = 20000)
+numericInput(inputId = "seed_num",
+             label = "Seed number to use",
+             value = 1,
+             min = 0,
+             max = Inf)
+actionButton(inputId = "run_boot",
+             label = "Run bootstrap analysis")
+```
+
+7. Run the bootstrap analysis by pushing the "Run bootstrap analysis" in the Shiny app, after having uploaded the file you just created (if this doesn't work, you can use the `df_trial_cea.csv` file that is provided in the map of this assignment. To do so, choose a number of bootstrap samples (at least 1,000 and up to 20,000) and a random seed number (between 1 and infinity). Wait a couple of seconds that the analysis runs. The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided.    
+7.a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data?  
+7.b. Check the confidence intervals for the additional health effects and for the additional costs of the intervention. Can you explain why they are so wide?  
+7.c. Check the probabilities of a cost-effectiveness outcome in each one of the four quadrants. How well did you guess the probability that the new intervention is cheaper, or improves health (questions 3b and c)?  
+7.d. No confidence interval is given for the ICER, can you explain why such a confidence interval is not informative by looking at the incremental cost-effectiveness plane ?  
+7.e. Rerun the bootstrap procedure 3 times using different seed numbers. Do the results of the bootstrap analysis change substantially? What would we need to do to reduce this variation in outcomes?  
