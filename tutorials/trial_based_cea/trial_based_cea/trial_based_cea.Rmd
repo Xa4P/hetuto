@@ -1,0 +1,53 @@
+---
+title: "Tutorial trial-based CEA"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+require(learnr, quietly = TRUE)
+require(knitr, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(shiny, quietly = TRUE)
+require(boot, quietly = TRUE)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+df <- data.frame(cbind(
+  ID         = rep(1:100, 2),
+  Procedure  = c(rep(1, 100), rep(2, 100)),
+  OR_time    = c(rnorm(100, 140, 10), rnorm(100, 120, 20)),
+  Major_compl = c(ifelse(runif(100) <= 0.25, 1, 0), ifelse(runif(100) <= 0.12, 1, 0)),
+  Minor_compl = c(ifelse(runif(100) <= 0.35, 1, 0), ifelse(runif(100) <= 0.5, 1, 0)),
+  Length_icu = c(ifelse(runif(100) <= 0.7, 0, rpois(100, 5)), ifelse(runif(100) <= 0.7, 0, rpois(100, 4))),
+  Length_mcu = c(rpois(100, 14), rpois(100, 15)),
+  Death      = c(ifelse(runif(100) <= 0.15, 1, 0), ifelse(runif(100) <= 0.10, 1, 0)),
+  Qol = c(rbeta(100, 0.5, 0.5), rbeta(100, 0.6, 0.5))
+)
+)
+df$Qol <- ifelse(df$Death == 1, 0, df$Qol)
+
+# Declare inputs of the analysis
+c_Robot <- 3000 
+c_Open <- 2000 
+c_OK_hour <- 500 
+c_Major_Compl <- 10000 
+c_Minor_Compl <- 1500 
+c_ICU_day <- 1250 
+c_MCU_day <- 550 
+```
+
+
+## Trial-based CEA
+
+### Before starting
+1. Watch the video explaining the difference between trial-based and m0del-based economic cost-effectiveness analyses (CEA) (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+![](https://vimeo.com/453418735/b3dfb1f3e4){width="70%"}
+Link to the video: https://vimeo.com/453418735/b3dfb1f3e4.  
+
+### Aims and instructions
+The aim of this practical assignment is to perform a health economic analysis using data collected during a clinical trials. The data used in this assignment was obtained during a randomised controlled trial (RCT) comparing two interventions for treating esophageal cancer. In total, 200 patients were randomized between usual care (open transthoracic esophagectomy) and the new intervention (robot-assisted thoraco-laparoscopic esophagectomy). For each patient, data was collected on the time required for the procedure in the operating room, the occurrence of complications, the length of stay in the hospital, and the quality of life after the procedure. In addition, data on the cost of resources was collected from the literature.  
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.    
