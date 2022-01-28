@@ -376,9 +376,16 @@ numericInput(inputId = "seed_num",
 actionButton(inputId = "run_boot",
              label = "Run bootstrap analysis")
 
+h3("Incremental cost-effectiveness plane")
 plotOutput("boot_ice")
+tags$hr()
+h3("Mean outcomes of the bootstrap and 95% CI")
 tableOutput("boot_tbl")
+tags$hr()
+h3("Percentage iterations in each quadrant")
 tableOutput("perc_tbl")
+tags$hr()
+h3("Mean outcomes of the sample")
 tableOutput("det_tbl")
 ```
 
