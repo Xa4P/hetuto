@@ -50,4 +50,103 @@ Link to the video: https://vimeo.com/453418735/b3dfb1f3e4.
 
 ### Aims and instructions
 The aim of this practical assignment is to perform a health economic analysis using data collected during a clinical trials. The data used in this assignment was obtained during a randomised controlled trial (RCT) comparing two interventions for treating esophageal cancer. In total, 200 patients were randomized between usual care (open transthoracic esophagectomy) and the new intervention (robot-assisted thoraco-laparoscopic esophagectomy). For each patient, data was collected on the time required for the procedure in the operating room, the occurrence of complications, the length of stay in the hospital, and the quality of life after the procedure. In addition, data on the cost of resources was collected from the literature.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.    
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
+
+### Required knowledge
+To perform this assignment, you should be able to:  
+
+- use the functions `group_by` and `summarise` from the `tidyverse` package.   
+- use functions such as `mean()`, `sum()`
+
+
+### Objects of this practical
+Different objects have already been loaded in R's memory to perform this practical assignment.  
+
+A dataframe `df`. This dataframe contains 9 variables, each row of the dataframe contains the outcomes from one participant:  
+
+- ID = Participant ID  
+- Procedure  = Group to which the participant belongs; 1 = usual care (open transthoracic esophagectomy), 2 = the new intervention (robot-assisted thoraco-laparoscopic esophagectomy)  
+- OR_time = Operating time, in minutes  
+- Major_compl = 'Did the participant experience a major complication?'; 1 = yes, 0 = no  
+- Minor_compl = 'Did the participant experience a minor complication?'; 1 = yes, 0 = no  
+- Length_icu = Length of stay at the intensive care unit (ICU) in days  
+- Length_mcu = Length of stay at the intensive care unit (MCU) in days  
+- Death      = 'Did the participant experience die at the hospital?'; 1 = yes, 0 = no   
+- Qol = Quality of life of the participant after the procedure  
+
+Other objects, which represent the costs of the surgeries, hospital days, adverse events, and hourly costs of using the operating room:  
+
+- `c_Open` =  costs of the open surgery (usual care)  
+- `c_Robot` = costs of the new intervention (robot-assisted thoraco-laparoscopic esophagesctomy)  
+- `c_ICU_day` = costs of one day at the ICU  
+- `c_MCU_day` = costs of one day at the MCU  
+- `c_Major_compl` = costs of a major complication  
+- `c_Minor_compl` = costs of a minor complication  
+- `c_OK_hour` = costs of operating in the OK, per hour
+
+### Assignment 1
+Calculate the mean operating time, risk of complications, length of stay at ICU and MCU, risk of death, and quality of life after procedure, for both trial arms.    
+
+```{r mean_eff, exercise = TRUE}
+```
+
+```{r mean_eff-hint}
+"Use the combination of functions `group_by()` (dplyr package), `summarise()` (dplyr package), `mean()` (base R) to do so."
+```
+
+```{r mean_eff-solution}
+df %>%
+  group_by(Procedure) %>% # grouping per Procedure
+  summarise(mean_OR_time = mean(OR_time),
+            mean_Major_compl = mean(Major_compl),
+            mean_Minor_compl = mean(Minor_compl),
+            mean_Length_icu  = mean(Length_icu),
+            mean_Length_mcu  = mean(Length_mcu),
+            mean_p_death = mean(Death),
+            mean_Qol = mean(Qol)) # Mean calculations
+```
+
+### Assignment 1 - questions
+The correct answer are provided below. Use these results to check your answers and answer the questions below.  
+
+```{r}
+round(df %>%
+  group_by(Procedure) %>% # grouping per Procedure
+  summarise(mean_OR_time = mean(OR_time),
+            mean_Major_compl = mean(Major_compl),
+            mean_Minor_compl = mean(Minor_compl),
+            mean_Length_icu  = mean(Length_icu),
+            mean_Length_mcu  = mean(Length_mcu),
+            mean_p_death = mean(Death),
+            mean_Qol = mean(Qol)
+            ), # Mean calculations
+  2)
+
+```
+
+```{r quiz_mean_eff}
+quiz(
+  question("Which treatment provides the best health outcomes (in terms of quality of life)?", 
+           answer("Open transthoracic esophagectomy (usual care)"),
+           answer("Robot-assisted surgery (new intervention)", correct = TRUE)),
+  question("Is robot-assisted surgery an improvement upon usual care with respect to all outcomes displayed above? Select the outcomes for which open transthoracic esophagectomy (usual care) provides better results.",
+           answer("OR time"),
+           answer("Occurence of major complications"),
+           answer("Occurence of minor complications", correct = TRUE),
+           answer("Length of stay at the ICU"),
+           answer("Length of stay at the MCU", correct = TRUE),
+           answer("Occurence of death"),
+           answer("Quality of life"),
+           answer("None"),
+           incorrect = "Too bad, this is not correct. The correct answers were: 'Occurence of minor complications' and Length of stay at the MCU', since robot-assisted surgery leads to more minor complications and longer length of stay at the MCU"
+           )
+)
+```
+2. Create three new variables in `df` called Cost_procedure, Cost_compl, Cost_hosp, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalization for each participant. To do so, use the objects beginning with `c_`.   *Hint: Multiply the column of the dataframe `df` by the corresponding objects.*  
+3. Create a new variable in `df` called Total_costs, which contains the total costs per participant. Calculate the mean costs per group. Based on this information:  
+3.a. Which treatment is cheaper on average, given the observed trial data?  
+3.b. What do you think is the probability that the new intervention is cheaper?  
+3.c. What do you think is the probability that the new intervention leads to health gain?  
+4. Calculate the difference in mean quality of life and mean total costs between the new intervention and usual care (i.e. the incremental effects and incremental costs). Calculate the ICER using this information. *Hint: use the results you obtained in previous steps*.   
+5. Save your dataframe `df` as a .csv file. Ensure that your total effects per participants are in the `Qol` variable and the total costs in the `Total_costs` variable.  
+6. Open the R shiny app using the following command in R and follow the instructions.  
