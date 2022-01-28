@@ -17,6 +17,7 @@ require(dplyr, quietly = TRUE)
 
 knitr::opts_chunk$set(echo = FALSE)
 
+set.seed(400)
 df <- data.frame(cbind(
   ID         = rep(1:100, 2),
   Procedure  = c(rep(1, 100), rep(2, 100)),
@@ -39,8 +40,54 @@ c_Major_compl <- 10000
 c_Minor_compl <- 1500 
 c_ICU_day <- 1250 
 c_MCU_day <- 550 
-```
 
+# Bootstrap function
+bootstrap_effects_costs <- function(df, num_it = 5000) {
+  
+  m_result <- matrix(NA, nrow = num_it, ncol = 6, 
+                     dimnames = list(c(1:num_it),
+                                     c("Qol_Open", "Qol_Robot",
+                                       "Cost_Open", "Cost_Robot",
+                                       "Inc_Qol", "Inc_Cost")
+                     )
+  )
+  
+  progress_bar <- txtProgressBar(min = 0, max = num_it, style = 3)
+  
+  for(i in 1:num_it){
+    n_pt <- nrow(df[which(df$Procedure == 1),]) # number of patients in each group
+    v_id <- sample(x = 1:n_pt, size = n_pt, replace = TRUE)# vector of patient to select to compute
+    
+    # Select participants in each group
+    df_open <- subset(df, df$Procedure == 1)
+    df_open <- df_open[v_id,]
+    df_robot <- subset(df, df$Procedure == 2)
+    df_robot <- df_robot[v_id,]
+    
+    df_boot <- rbind(df_open, df_robot)
+    
+    df_res <- df_boot %>%
+      group_by(Procedure) %>%
+      summarise(Effect = mean(Qol),
+                Cost = mean(Total_costs)
+      )
+    inc_effect <- df_res$Effect[2] - df_res$Effect[1]
+    inc_cost <- df_res$Cost[2] - df_res$Cost[1]
+    
+    m_result[i,] <- c(df_res$Effect[1], df_res$Effect[2], df_res$Cost[1], df_res$Cost[2], inc_effect, inc_cost)
+    
+    # update progress bar
+    setTxtProgressBar(progress_bar, i)
+    
+  }
+  
+  close(progress_bar)
+  
+  df_result <- as.data.frame(m_result)
+  return(df_result)
+  
+}
+```
 
 ## Trial-based CEA
 
@@ -251,11 +298,11 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 
 ```
 
-```{r calc_icer-int-1}
+```{r calc_icer-hint-1}
 "Calculate first the mean outcomes per patient for each strategy and then calculate the difference. To calculate the ICER, divide the difference in costs by the difference in effects between the two strategies."
 ```
 
-```{r calc_icer-int-2, eval = FALSE}
+```{r calc_icer-hint-2, eval = FALSE}
 t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
 t_qol_open # mean costs per patient in the open surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
@@ -312,14 +359,15 @@ quiz(
 ```
 
 ### Assignment 4
-The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments.
+The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments.  
+To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several minutes). Answer the questions below.  
 
 ```{r bootstrap}
- numericInput(inputId = "num_it",
-              label = "Number of bootstrap samples",
-              value = 0,
-              min = 0,
-              max = 20000)
+numericInput(inputId = "num_it",
+             label = "Number of bootstrap samples",
+             value = 0,
+             min = 0,
+             max = 20000)
 numericInput(inputId = "seed_num",
              label = "Seed number to use",
              value = 1,
@@ -327,6 +375,116 @@ numericInput(inputId = "seed_num",
              max = Inf)
 actionButton(inputId = "run_boot",
              label = "Run bootstrap analysis")
+
+plotOutput("boot_ice")
+tableOutput("boot_tbl")
+tableOutput("perc_tbl")
+tableOutput("det_tbl")
+```
+
+```{r bootstrap_serv, context = "server"}
+bootstrap <- eventReactive(input$run_boot, {
+    
+  set.seed(as.numeric(as.character(input$seed_num)))
+  
+  df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+  df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+  df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+  df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+  
+  df_res <- bootstrap_effects_costs(df, num_it = as.numeric(as.character(input$num_it)))
+    
+   return(df_res)
+      
+  }
+  )
+ 
+output$boot_ice <- renderPlot({
+    df_res <- bootstrap()
+    
+    ggplot(df_res) + 
+      #ggtitle("Incremental cost-effectiveness plane") +
+      geom_point(aes(x = Inc_Qol, y = Inc_Cost, colour = "Incrementals"), shape = 1) + 
+      geom_point(aes(x = mean(Inc_Qol), y = mean(Inc_Cost), colour = "Mean"), size = 2) +
+      xlab ("Incremental effects") + 
+      ylab("Incremental costs") +
+      geom_hline(yintercept = 0,  
+                 color = "black") +
+      geom_vline(xintercept = 0,  
+                 color = "black") + 
+      geom_abline(intercept = 0, slope = 20000, linetype= "dashed", 
+                  color = "black") + # 20,000 per QALY threshold line
+      #xlim(c(0,1)) +
+      #scale_y_continuous(labels = dollar_format(prefix = "\u20ac ", suffix = "")) +
+      scale_colour_manual(name = "",
+                          values = c(Incrementals = "grey", 
+                                     Mean = "darkblue"
+                          )) +
+      theme_bw() + 
+      theme(legend.position="bottom") 
+    
+    
+  })
+  
+  output$boot_tbl<- renderTable({
+    
+    df_res <- bootstrap()
+    
+    # Compute summary statistics
+    df <- data.frame(cbind(
+      Estimate = c(names(df_res), "ICER"),
+      Mean = round(c(unname(colSums(df_res)/nrow(df_res)), mean(df_res$Inc_Cost) / mean(df_res$Inc_Qol)), 2),
+      `Lower bound 95%CI` = c(round(apply(df_res, 2, function (x) quantile(x, 0.025)), 2), "-"),
+      `Higher bound 95%CI` = c(round(apply(df_res, 2, function (x) quantile(x, 0.975)), 2), "-")
+    )
+    )
+    
+    df
+  })
+  
+output$perc_tbl<- renderTable({
+    
+    df_res <- bootstrap()
+    
+    # Compute percentage in each quadrant statistics
+    df_perc <- data.frame(cbind(
+      Quandrant = c("NorthEast (more effective, more expensive)", "SouthEast (more effective, less expensive)",
+                    "SouthWest (less effective, less expensive)", "NorthWest (less effective, more expensive)"),
+      `Percentage iterations` = c(paste0(round(length(which(df_res$Inc_Qol > 0 &
+                                                              df_res$Inc_Cost > 0)) / nrow(df_res),2)*100, "%"),
+                                  paste0(round(length(which(df_res$Inc_Qol > 0 &
+                                                              df_res$Inc_Cost < 0)) / nrow(df_res),2)*100, "%"),
+                                  paste0(round(length(which(df_res$Inc_Qol < 0 &
+                                                              df_res$Inc_Cost < 0)) / nrow(df_res),2)*100, "%"),
+                                  paste0(round(length(which(df_res$Inc_Qol < 0 &
+                                                              df_res$Inc_Cost > 0)) / nrow(df_res),2)*100, "%")
+      )
+    ))
+    df_perc
+ 
+  }
+)
+
+output$det_tbl<- renderTable({
+  
+  df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+  df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+  df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+  df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+  
+  # Compute summary statistics - sample
+  res_tbl <- df %>%
+    group_by(Procedure) %>%
+    summarise(Mean_Qol = round(mean(Qol), 2),
+              Mean_Total_Cost = round(mean(Total_costs), 2),
+    )
+  res_tbl <- cbind(res_tbl,
+                   Inc_Qol = c("", round(as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1])), 2)),
+                   Inc_Cost = c("", round(as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1])), 0)),
+                   ICER = c("", round((as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1]))) / (as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1]))), 0))
+  )
+  res_tbl
+  })
 ```
 
 7. Run the bootstrap analysis by pushing the "Run bootstrap analysis" in the Shiny app, after having uploaded the file you just created (if this doesn't work, you can use the `df_trial_cea.csv` file that is provided in the map of this assignment. To do so, choose a number of bootstrap samples (at least 1,000 and up to 20,000) and a random seed number (between 1 and infinity). Wait a couple of seconds that the analysis runs. The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided.    
