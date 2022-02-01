@@ -89,7 +89,7 @@ bootstrap_effects_costs <- function(df, num_it = 5000) {
 }
 ```
 
-## Trial-based CEA
+## Instructions
 
 ### Before starting
 1. Watch the video explaining the difference between trial-based and m0del-based economic cost-effectiveness analyses (CEA) (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
@@ -140,7 +140,7 @@ Other objects, which represent the costs of the surgeries, hospital days, advers
 - `c_Minor_compl` = costs of a minor complication  
 - `c_OK_hour` = costs of operating in the OK, per hour
 
-### Assignment 1
+## Assignment 1
 Calculate the mean operating time, risk of complications, length of stay at ICU and MCU, risk of death, and quality of life after procedure, for both trial arms.    
 
 ```{r mean_eff, exercise = TRUE}
@@ -200,7 +200,7 @@ quiz(
 )
 ```
 
-### Assignment 2
+## Assignment 2
 Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group.  
 
 ```{r calc_t_costs, exercise = TRUE}
@@ -317,7 +317,7 @@ What do you think is the probability that the new intervention is cheaper?
 What do you think is the probability that the new intervention leads to health gain?  
 **Discussion:** This question is also hard to answer. On average the intervention leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
 
-### Assignment 3  
+## Assignment 3  
 Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
 
 ```{r setup_calc_icer}
@@ -391,7 +391,7 @@ quiz(
 )
 ```
 
-### Assignment 4
+## Assignment 4
 The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments. For an explanation of bootstrapping, have a look at [this video](https://www.youtube.com/watch?v=Xz0x-8-cgaQ). In this case, we bootstrap to calculate the mean effects and costs of each strategy.    
 To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several seconds to minutes). The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided. Answer the questions below based on your observations.  
 
@@ -527,7 +527,7 @@ output$det_tbl<- renderTable({
   })
 ```
 
-#### Questions
+#### Assignment 4 - Questions
 Answer the following questions using the results displayed above. The discussion of these answers are provided below.  
 
 a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data? Why (not)?  
