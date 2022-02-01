@@ -92,7 +92,7 @@ bootstrap_effects_costs <- function(df, num_it = 5000) {
 ## Instructions
 
 ### Before starting
-1. Watch the video explaining the difference between trial-based and m0del-based economic cost-effectiveness analyses (CEA) (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+1. Watch the video explaining the difference between trial-based and model-based economic cost-effectiveness analyses (CEA) (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
 ![](https://vimeo.com/453418735/b3dfb1f3e4){width="70%"}
 Link to the video: https://vimeo.com/453418735/b3dfb1f3e4.  
 
