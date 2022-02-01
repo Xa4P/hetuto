@@ -67,8 +67,8 @@ bootstrap_effects_costs <- function(df, num_it = 5000) {
     df_boot <- rbind(df_open, df_robot)
     
     df_res <- df_boot %>%
-      group_by(Procedure) %>%
-      summarise(Effect = mean(Qol),
+      dplyr::group_by(Procedure) %>%
+      dplyr::summarise(Effect = mean(Qol),
                 Cost = mean(Total_costs)
       )
     inc_effect <- df_res$Effect[2] - df_res$Effect[1]
@@ -265,16 +265,49 @@ quiz(
 )
 ```
 
-What do you think is the probability that the new intervention is cheaper?  
-
-```{r open_q_1}
-textInput("Answer_1", "Enter your answer")
+ 
+```{r quiz_probs}
+quiz(
+  question("To your opinion, what is the probability that the new intervention is cheaper than usual care?", 
+           answer("0%", correct = TRUE),
+           answer("Lower than 25%", correct = TRUE),
+           answer("25%", correct = TRUE),
+           answer("Lower than 50%", correct = TRUE),
+           answer("50%", correct = TRUE),
+           answer("Higher than 50%", correct = TRUE),
+           answer("Lower than 75%", correct = TRUE),
+           answer("75%", correct = TRUE),
+           answer("Higher than 75%", correct = TRUE),
+           answer("100%", correct = TRUE),
+           correct = "We'll come back to this at the end!"
+           )
+)
 ```
 
-What do you think is the probability that the new intervention leads to health gain?  
+```{r open_q_1}
+textInput("Answer_1", "Explain your answer")
+```
+ 
+```{r quiz_probs2}
+quiz(
+  question("To your opinion, what is the probability that the new intervention leads to health gain compared with usual care?", 
+           answer("0%", correct = TRUE),
+           answer("Lower than 25%", correct = TRUE),
+           answer("25%", correct = TRUE),
+           answer("Lower than 50%", correct = TRUE),
+           answer("50%", correct = TRUE),
+           answer("Higher than 50%", correct = TRUE),
+           answer("Lower than 75%", correct = TRUE),
+           answer("75%", correct = TRUE),
+           answer("Higher than 75%", correct = TRUE),
+           answer("100%", correct = TRUE),
+           correct = "We'll come back to this at the end!"
+           )
+)
+```
 
 ```{r open_q_2}
-textInput("Answer_2", "Enter your answer")
+textInput("Answer_2", "Explain your answer")
 ```
 
 ### Assignment 2 - discussion questions
@@ -282,7 +315,7 @@ What do you think is the probability that the new intervention is cheaper?
 **Discussion:** This question is hard to answer, all we know is that some patients in the intervention strategy (robot-assisted) have lower cost than some patients in the usual care arm. On average the intervention is more expensive so we would guess that this probability is less than 50% but we don’t know yet.  
 
 What do you think is the probability that the new intervention leads to health gain?  
-**Discussion:** This question is also hard to answer. On average the intervention is leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
+**Discussion:** This question is also hard to answer. On average the intervention leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
 
 ### Assignment 3  
 Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
@@ -359,14 +392,14 @@ quiz(
 ```
 
 ### Assignment 4
-The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments.  
-To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several minutes). Answer the questions below.  
+The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments. For an explanation of bootstrapping, have a look at [this video](https://www.youtube.com/watch?v=Xz0x-8-cgaQ). In this case, we bootstrap to calculate the mean effects and costs of each strategy.    
+To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several seconds to minutes). The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided. Answer the questions below based on your observations.  
 
 ```{r bootstrap}
 numericInput(inputId = "num_it",
              label = "Number of bootstrap samples",
-             value = 0,
-             min = 0,
+             value = 1000,
+             min = 1000,
              max = 20000)
 numericInput(inputId = "seed_num",
              label = "Seed number to use",
@@ -376,6 +409,9 @@ numericInput(inputId = "seed_num",
 actionButton(inputId = "run_boot",
              label = "Run bootstrap analysis")
 
+h3("Mean outcomes of the sample")
+tableOutput("det_tbl")
+tags$hr()
 h3("Incremental cost-effectiveness plane")
 plotOutput("boot_ice")
 tags$hr()
@@ -384,9 +420,6 @@ tableOutput("boot_tbl")
 tags$hr()
 h3("Percentage iterations in each quadrant")
 tableOutput("perc_tbl")
-tags$hr()
-h3("Mean outcomes of the sample")
-tableOutput("det_tbl")
 ```
 
 ```{r bootstrap_serv, context = "server"}
@@ -494,9 +527,48 @@ output$det_tbl<- renderTable({
   })
 ```
 
-7. Run the bootstrap analysis by pushing the "Run bootstrap analysis" in the Shiny app, after having uploaded the file you just created (if this doesn't work, you can use the `df_trial_cea.csv` file that is provided in the map of this assignment. To do so, choose a number of bootstrap samples (at least 1,000 and up to 20,000) and a random seed number (between 1 and infinity). Wait a couple of seconds that the analysis runs. The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided.    
-7.a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data?  
-7.b. Check the confidence intervals for the additional health effects and for the additional costs of the intervention. Can you explain why they are so wide?  
-7.c. Check the probabilities of a cost-effectiveness outcome in each one of the four quadrants. How well did you guess the probability that the new intervention is cheaper, or improves health (questions 3b and c)?  
-7.d. No confidence interval is given for the ICER, can you explain why such a confidence interval is not informative by looking at the incremental cost-effectiveness plane ?  
-7.e. Rerun the bootstrap procedure 3 times using different seed numbers. Do the results of the bootstrap analysis change substantially? What would we need to do to reduce this variation in outcomes?  
+#### Questions
+Answer the following questions using the results displayed above. The discussion of these answers are provided below.  
+
+a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data? Why (not)?  
+```{r open_q4a}
+textInput("Answer_4a", "Type your answer")
+```  
+
+b. Check the confidence intervals for the additional health effects and for the additional costs of the intervention. Can you explain why they are so wide?  
+```{r open_q4b}
+textInput("Answer_4b", "Type your answer")
+```  
+
+c. Check the probabilities of a cost-effectiveness outcome in each one of the four quadrants. How well did you guess the probability that the new intervention is cheaper, or improves health (compare with your answers to the questions in Assignment 2)?  
+```{r open_q4c}
+textInput("Answer_4c", "Type your answer")
+```  
+
+d. No confidence interval is given for the ICER, can you explain why such a confidence interval is not informative by looking at the incremental cost-effectiveness plane ?  
+```{r open_q4d}
+textInput("Answer_4d", "Type your answer")
+```  
+
+e. Rerun the bootstrap procedure 3 times using different seed numbers. Do the results of the bootstrap analysis change substantially? What would we need to do to reduce this variation in outcomes?  
+```{r open_q4e}
+textInput("Answer_4e", "Type your answer")
+```  
+
+### Assignment 4 - Discussion questions
+```{r prep_answers, eval = TRUE}
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+```
+
+**Discussion 4.a.**: The results of the bootstrapping match the original point estimates rather well. However, the additional cost may deviate a bit and therefore the ICER from bootstrapping can be a few (hundred) euros/QALY more or less than the ICER from the original data. Differences may arise because the costs and effects are calculated based on bootstrapped samples, which are obtained by re-sampling the original data with replacement. This means that the composition of each bootstrap sample is different than the original data, and therefore leads to different results.  
+
+**Discussion 4.b.**: The CIs are very wide because the utility and total cost vary substantially between patients: utilities range from 0 to `r round(max(df$Qol), 2)` and costs range from `r format(round(min(df$Total_costs), 0), big.mark = ",", scientific = FALSE)` euros to `r format(round(max(df$Total_costs), 0), big.mark = ",", scientific = FALSE)` euros.  
+
+**Discussion 4.c.**: Own reflection.  
+
+**Discussion 4.d.**: The incremental CE plane contains points (results) in all four quadrants of the plane. This means that the ICER can be both positive (in which case we are not sure if the intervention is better and more expensive or worse and cheaper) and negative (in which case we are not sure if the intervention is better and cheaper or worse and more expensive). In this situation, any confidence interval for the ICER would be ambiguous and the incremental CE plane itself is more informative, along with the probabilities of results falling into each of the four quadrants.  
+
+**Discussion 4.e.**: The ICER, and the 95%CI for the cost difference may change more than we would like to see. This variation could be reduced by increasing the number of bootstrap samples, for example, from 5,000 to 20,000.
