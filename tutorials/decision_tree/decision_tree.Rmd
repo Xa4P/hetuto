@@ -1,0 +1,33 @@
+---
+title: "Tutorial Decision tree"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+```{r setup, include = FALSE}
+require(learnr, quietly = TRUE)
+require(knitr, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(shiny, quietly = TRUE)
+require(dplyr, quietly = TRUE)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Instruction
+
+### Before starting
+1. Watch the video explaining how a decision tree works and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+![](https://vimeo.com/453418819/6c13bffaf4){width="70%"}
+Link to the video: https://vimeo.com/453418819/6c13bffaf4. 
+
+### Aim
+The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a management strategy for patients with unruptured intracranial aneurysms versus watchful waiting.  
+
+### The decision tree
+# Decision tree
+This section provides an explanation of the decision tree used in this practical assignment. The decision tree compares two strategies: "Aneurysm treatment" and "Watchful waiting". The "Detection" rectangle represents the decision node (i.e. the point where the different strategies are defined). Both main branches of the decision tree describe the possible trajectories for each of these strategies. The circles are the chance nodes. Figure 1 provides a textual description of the trajectories, and Figure 2 provides a description of which probabilities belongs to each branch of the decision tree.  
+NOTE: the sum of the probabilities following a chance node must sum up to 1.  
