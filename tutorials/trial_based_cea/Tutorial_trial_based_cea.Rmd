@@ -102,11 +102,11 @@ The aim of this practical assignment is to perform a health economic analysis us
 
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
-knitr::include_graphics("tutorial_trial_based_files/images/Image_hint.png")
+knitr::include_graphics("Tutorial_trial_based_cea_files/images/Image_hint.png")
 ```
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
-knitr::include_graphics("tutorial_trial_based_files/images/Image_solution.png")
+knitr::include_graphics("Tutorial_trial_based_cea_files/images/Image_solution.png")
 ```
 
 [Link to figures](https://education.rstudio.com/blog/2020/05/learnr-for-remote/)
