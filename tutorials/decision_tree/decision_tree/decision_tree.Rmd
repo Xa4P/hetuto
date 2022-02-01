@@ -1,0 +1,25 @@
+---
+title: "Tutorial Decision tree"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+```{r setup, include = FALSE}
+require(learnr, quietly = TRUE)
+require(knitr, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(shiny, quietly = TRUE)
+require(dplyr, quietly = TRUE)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Instruction
+
+### Before starting
+1. Watch the video explaining how a decision tree works and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+![](https://vimeo.com/453418819/6c13bffaf4){width="70%"}
+Link to the video: https://vimeo.com/453418819/6c13bffaf4. 
