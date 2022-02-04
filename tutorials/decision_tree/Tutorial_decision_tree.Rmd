@@ -334,7 +334,7 @@ p_DisabledCoiling
 ```
 
 ```{r calc_probs-hint}
-"Use the <- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1."
+"Use <- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1."
 ```
 
 ```{r calc_probs-solution}
