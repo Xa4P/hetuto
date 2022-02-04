@@ -12,7 +12,232 @@ require(knitr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(shiny, quietly = TRUE)
 require(dplyr, quietly = TRUE)
+require(DiagrammeR, quietly = TRUE)
+require(magrittr, quietly = TRUE)
 
+string_graph_text <- paste0(as.character("graph LR; A[Detection] --> |Watchful waiting| B(( ));
+                                    A --> |Aneurysm treatment| C(( )); B --> |"), 
+                            "Aneurysm rupture",
+                       as.character("| D(( ));"),
+                       as.character("B --> |"), "Aneurysm remains stable",
+                       as.character("| E(( ));"),
+                       as.character("D --> |"), "Patient dies",
+                       as.character("| F[A];"),
+                       as.character("D --> |"), "Patient becomes disabled",
+                       as.character("| G[B];"),
+                       as.character("D --> |"), "Patient survives in good health",
+                       as.character("| H[C];"),
+                       as.character("E --> |"), "Patient anxious from aneurysm",
+                       as.character("| I[D];"),
+                       as.character("E --> |"), "Patient not anxious and in good health",
+                       as.character("| J[E];"),
+                       as.character("C --> |"), "Aneurysm is clipped",
+                       as.character("| K(( ));"),
+                       as.character("C --> |"), "Aneurysm is coiled",
+                       as.character("| L(( ));"),
+                       as.character("K --> |"), "Patient dies",
+                       as.character("| M[F];"),
+                       as.character("K --> |"), "Patient becomes disabled",
+                       as.character("| N[G];"),
+                       as.character("K --> |"), "Patient survives in good health",
+                       as.character("| O[H];"),
+                       as.character("L --> |"), "Patient dies",
+                       as.character("| P[I];"),
+                       as.character("L --> |"), "Patient becomes disabled",
+                       as.character("| Q[J];"),
+                       as.character("L --> |"), "Patient survives in good health",
+                       as.character("| R[K]")
+)
+
+string_graph_probs_txt <- paste0(as.character("graph LR; A[Detection] --> |Watchful waiting| B(( ));
+                                    A --> |Aneurysm treatment| C(( )); B --> |"), 
+                                 "p_Rupture",
+                             as.character("| D(( ));"),
+                             as.character("B --> |"), "p_Stable",
+                             as.character("| E(( ));"),
+                             as.character("D --> |"), "p_DeathRupture",
+                             as.character("| F[A];"),
+                             as.character("D --> |"), "p_DisabledRupture",
+                             as.character("| G[B];"),
+                             as.character("D --> |"), "p_SurvivalRupture",
+                             as.character("| H[C];"),
+                             as.character("E --> |"), "p_Anxious",
+                             as.character("| I[D];"),
+                             as.character("E --> |"), "p_NotAnxious" ,
+                             as.character("| J[E];"),
+                             as.character("C --> |"), "p_Clipping",
+                             as.character("| K(( ));"),
+                             as.character("C --> |"), "p_Coiling",
+                             as.character("| L(( ));"),
+                             as.character("K --> |"), "p_DeathClipping",
+                             as.character("| M[F];"),
+                             as.character("K --> |"), "p_DisabledClipping",
+                             as.character("| N[G];"),
+                             as.character("K --> |"), "p_SurvivalClipping",
+                             as.character("| O[H];"),
+                             as.character("L --> |"), "p_DeathCoiling",
+                             as.character("| P[I];"),
+                             as.character("L --> |"), "p_DisabledCoiling",
+                             as.character("| Q[J];"),
+                             as.character("L --> |"), "p_SurvivalCoiling",
+                             as.character("| R[K];")
+                             
+)
+
+diagram_1 <- "
+digraph {
+
+      # graph attributes
+      graph [overlap = true, 
+             rankdir = LR]
+
+      # edge attributes
+      edge [color = gray]
+
+      # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray,
+      label = '']
+      A [label = Detection] 
+      
+      # node statements
+      node [shape = oval,
+      fontname = Helvetica,
+      color = gray]
+      B [label = 'Watchful waiting'] 
+      C [label = 'Aneurysm treatment'] 
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      D; E
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      F; G; H; I 
+      
+       # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray]
+      
+      J [label = A]
+      K [label = B]
+      L [label = C]
+      M [label = D]
+      N [label = E]
+      O [label = F]
+      P [label = G]
+      Q [label = H]
+      R [label = I]
+      S [label = J]
+      T [label = K]
+
+      # edge statements
+      A -> B [arrowhead = none]
+      A -> C [arrowhead = none]
+      B -> D 
+      C -> E
+      D -> F [label = 'Aneurysm rupture'] 
+      D -> G [label = 'Aneurysm remains stable']
+      E -> H [label = 'Aneurysm is clipped']
+      E -> I [label = 'Aneurysm is coiled']
+      F -> J [label = 'Patient dies']
+      F -> K [label = 'Patient becomes disabled']
+      F -> L [label = 'Patient survives in good health']
+      G -> M [label = 'Patient anxious from aneurysm']
+      G -> N [label = 'Patient not anxious and in good health']
+      H -> O [label = 'Patient dies']
+      H -> P [label = 'Patient becomes disabled']
+      H -> Q [label = 'Patient survives in good health']
+      I -> R [label = 'Patient dies']
+      I -> S [label = 'Patient becomes disabled']
+      I -> T [label = 'Patient survives in good health']
+      }
+"
+diagram_2 <- "
+digraph {
+
+      # graph attributes
+      graph [overlap = true, 
+             rankdir = LR]
+
+      # edge attributes
+      edge [color = gray]
+
+      # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray,
+      label = '']
+      A [label = Detection] 
+      
+      # node statements
+      node [shape = oval,
+      fontname = Helvetica,
+      color = gray]
+      B [label = 'Watchful waiting'] 
+      C [label = 'Aneurysm treatment'] 
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      D; E
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      F; G; H; I 
+      
+       # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray]
+      
+      J [label = A]
+      K [label = B]
+      L [label = C]
+      M [label = D]
+      N [label = E]
+      O [label = F]
+      P [label = G]
+      Q [label = H]
+      R [label = I]
+      S [label = J]
+      T [label = K]
+
+      # edge statements
+      A -> B [arrowhead = none]
+      A -> C [arrowhead = none]
+      B -> D 
+      C -> E
+      D -> F [label = 'p_Rupture'] 
+      D -> G [label = 'p_Stable']
+      E -> H [label = 'p_Clipping']
+      E -> I [label = 'p_Coiling']
+      F -> J [label = 'p_DeathRupture']
+      F -> K [label = 'p_DisabledRupture']
+      F -> L [label = 'p_SurvivalRupture']
+      G -> M [label = 'p_Anxious']
+      G -> N [label = 'p_NotAnxious ']
+      H -> O [label = 'p_DeathClipping']
+      H -> P [label = 'p_DisabledClipping']
+      H -> Q [label = 'p_SurvivalClipping']
+      I -> R [label = 'p_DeathCoiling']
+      I -> S [label = 'p_DisabledCoiling']
+      I -> T [label = 'p_SurvivalCoiling']
+      }
+"
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -40,12 +265,121 @@ knitr::include_graphics("Tutorial_decision_tree_files/images/Image_solution.png"
 
 ### The decision tree
 This section provides an explanation of the decision tree used in this practical assignment. The decision tree compares two strategies: "Aneurysm treatment" and "Watchful waiting". The "Detection" rectangle represents the decision node (i.e. the point where the different strategies are defined). Both main branches of the decision tree describe the possible trajectories for each of these strategies. The circles are the chance nodes. Figure 1 provides a textual description of the trajectories, and Figure 2 provides a description of which probabilities belongs to each branch of the decision tree.  
-**NOTE**: the sum of the probabilities following a chance node must sum up to 1.  
+**NOTE**: 
+ - the label of each arrow is on top of each arrow  
+ - the sum of the probabilities following a chance node must sum up to 1  
 
-```{r, fig.align = 'center', fig.cap = "Description decision tree", echo = F}
-knitr::include_graphics("tutorial_decision_tree_files/images/DT_graph.png")
+```{r diags_1}
+grVizOutput("graph_text")
+grVizOutput("graph_text_probs")
+
 ```
 
-```{r, fig.align = 'center', fig.cap = "Probabilities decision tree", echo = F}
-knitr::include_graphics("tutorial_decision_tree_files/images/DT_graph_probs.png")
+```{r diags_1_serv, context = "server"}
+output$graph_text <- renderGrViz({
+  grViz({
+    diagram_1
+    })
+  })
+
+output$graph_text_probs <- renderGrViz({
+ grViz({
+   diagram_2
+     })
+   })
+```
+
+
+## Step 1: Define parameters 
+This part of the assignment aims at defining the different parameters of the model. In the following R code chunk, you can see the different parameters of the decision tree.    
+
+```{r params, echo = TRUE}
+# Probabilities
+p_Rupture <- 0.3
+p_Stable <- 0
+p_DeathRupture <- 0.4
+p_DisabledRupture <- 0.35
+p_SurvivalRupture <- 0.25
+p_Anxious <- 0.6
+p_NotAnxious <- 0.4
+p_Clipping <- 0.3
+p_Coiling <- 0.7
+p_DeathClipping <- 0
+p_DisabledClipping <- 0.25
+p_SurvivalClipping <- 0.65
+p_DeathCoiling <- 0.05
+p_DisabledCoiling <- 0
+p_SurvivalCoiling <- 0.8
+
+# Utility values
+u_Healthy  <- 0.80 # Utility of patient in good health
+u_Disabled <- 0.40 # Utility of disabled patient
+u_Anxious  <- 0.70 # Utility of anxious patient
+u_Death    <- 0    # Utility of dying
+
+# Costs
+c_Rupture   <- 50000 # Cost of aneurysm rupture
+c_Clipping	<- 20000 # Cost of aneurysm clipping
+c_Coiling   <- 13000 # Cost of aneurysm coiling
+c_Disabled  <- 5000  # Cost of disabled patient
+```
+
+Calculate `p_Stable`, `p_DeathClipping` and `p_DisabledCoiling`, since these are set to 0 for now...  
+Use the decision tree diagram displayed on the previous tab and the above-defined probabilities
+
+```{r calc_probs, exercise = TRUE}
+p_Stable  
+p_DeathClipping 
+p_DisabledCoiling
+```
+
+```{r calc_probs-hint}
+"Use the <- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1."
+```
+
+```{r calc_probs-solution}
+p_Stable <- 1 - p_Rupture 
+p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
+``` 
+
+## Step 2: Calculate probabilities of pathways
+Calculate the probabilities of each pathway using the above probabilities defined in the previous step.  
+
+```{r setup_p_path}
+p_Stable <- 1 - p_Rupture 
+p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
+```
+
+```{r calc_p_pathways, exercise = TRUE, exercise.setup = "setup_p_path"}
+p_path_A
+p_path_B
+p_path_C
+p_path_D
+p_path_E
+p_path_F
+p_path_G
+p_path_H
+p_path_I
+p_path_J
+p_path_K
+```
+
+```{r calc_p_pathways-hint}
+"The probability of a pathway is obtained by multiplying the probabilities leading to a final node of the graph."
+```
+
+```{r calc_p_pathways-solution}
+p_path_A <- p_Rupture * p_DeathRupture
+p_path_B <- p_Rupture * p_DisabledRupture
+p_path_C <- p_Rupture * p_SurvivalRupture
+p_path_D <- p_Stable * p_Anxious
+p_path_E <- p_Stable * p_NotAnxious
+p_path_F <- p_Clipping * p_DeathClipping
+p_path_G <- p_Clipping * p_DisabledClipping
+p_path_H <- p_Clipping * p_SurvivalClipping
+p_path_I <- p_Coiling * p_DeathCoiling
+p_path_J <- p_Coiling * p_DisabledCoiling
+p_path_K <- p_Coiling * p_SurvivalCoiling
 ```
