@@ -215,7 +215,19 @@ digraph {
       R [label = I]
       S [label = J]
       T [label = K]
-
+      
+      
+      1
+      2
+      3
+      4
+      5
+      6
+      7
+      8
+      9
+      10
+      11
       # edge statements
       A -> B [arrowhead = none]
       A -> C [arrowhead = none]
@@ -236,6 +248,17 @@ digraph {
       I -> R [label = 'p_DeathCoiling']
       I -> S [label = 'p_DisabledCoiling']
       I -> T [label = 'p_SurvivalCoiling']
+      J -> 1
+      K -> 2
+      L -> 3
+      M -> 4
+      N -> 5
+      O -> 6
+      P -> 7
+      Q -> 8
+      R -> 9
+      S -> 10
+      T -> 11
       }
 "
 knitr::opts_chunk$set(echo = FALSE)
@@ -250,7 +273,7 @@ knitr::opts_chunk$set(echo = FALSE)
 Link to the video: https://vimeo.com/453418819/6c13bffaf4. 
 
 ### Aim and instructions
-The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a management strategy for patients with unruptured intracranial aneurysms versus watchful waiting.  
+The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a treatment strategy for patients with unruptured intracranial aneurysms versus watchful waiting.  
 
 **NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
 
@@ -264,8 +287,10 @@ knitr::include_graphics("Tutorial_decision_tree_files/images/Image_solution.png"
 ```
 
 ### The decision tree
-This section provides an explanation of the decision tree used in this practical assignment. The decision tree compares two strategies: "Aneurysm treatment" and "Watchful waiting". The "Detection" rectangle represents the decision node (i.e. the point where the different strategies are defined). Both main branches of the decision tree describe the possible trajectories for each of these strategies. The circles are the chance nodes. Figure 1 provides a textual description of the trajectories, and Figure 2 provides a description of which probabilities belongs to each branch of the decision tree.  
+This section provides an explanation of the decision tree used in this practical assignment. The decision tree compares two strategies: "Aneurysm treatment" and "Watchful waiting". The "Detection" rectangle represents the **decision node** (i.e. the point where the different strategies are defined). Both main branches of the decision tree describe the possible trajectories for each of the strategies: the treatment strategy and "watchful waiting". The circles are the **chance nodes**. The different trajectories that individuals can follow are called **pathways**. Each pathway is associated with **rewards** or outcomes. In this case, the outcomes are utility values (health effects) and costs.  
+Figure 1 provides a textual description of the trajectories, and Figure 2 provides a description of which probabilities belongs to each branch of the decision tree.  
 **NOTE**: 
+
  - the label of each arrow is on top of each arrow  
  - the sum of the probabilities following a chance node must sum up to 1  
 
@@ -301,7 +326,7 @@ p_DeathRupture <- 0.4 # Probability of death when Aneurysm is ruptured
 p_DisabledRupture <- 0.35 # Probability of disability when Aneurysm is ruptured
 p_SurvivalRupture <- 0.25 # Probability of surviving and being in good health when Aneurysm is ruptured
 p_Anxious <- 0.6 # Probability of being anxious when Aneurysm remains stable
-p_NotAnxious <- 0.4 # Probability of not being anxious when Aneurysm remains stable
+p_NotAnxious <- 0.4 # Probability of not being anxious (and being in good health) when Aneurysm remains stable
 p_Clipping <- 0.3 # Probability of clipping the Aneurysm
 p_Coiling <- 0.7 # Probability of coiling the Aneurysm
 p_DeathClipping <- " " # Probability of death when Aneurysm is clipped
@@ -447,4 +472,48 @@ data.frame(
 ```
 
 ## Step 3: Assign outcomes to pathways
+This steps consists of calculating the costs and effects attributed to each pathway.  
 
+### Utility value of each pathway
+Assign the utility values to each pathway. The pathways at the beginning of the tutorial to each pathway. For your convenience, the utility values are displayed here once again.
+
+```{r utils_show, eval = FALSE, echo = TRUE}
+# Utility values
+u_Healthy  <- 0.80 # Utility of patient in good health
+u_Disabled <- 0.40 # Utility of disabled patient
+u_Anxious  <- 0.70 # Utility of anxious patient
+u_Death    <- 0    # Utility of dying
+```
+
+In the code chunk below `e_path_A` means "effects associated with pathway A".
+```{r assign_utils, exercise = TRUE}
+e_path_A 
+e_path_B  
+e_path_C 
+e_path_D 
+e_path_E 
+e_path_F 
+e_path_G 
+e_path_H 
+e_path_I 
+e_path_J 
+e_path_K 
+```
+
+```{r calc_probs-hint}
+"Use <- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1."
+```
+
+```{r assign_utils-solution}
+e_path_A <- u_Death
+e_path_B <- u_Disabled 
+e_path_C <- u_Healthy
+e_path_D <- u_Anxious
+e_path_E <- u_Healthy
+e_path_F <- u_Death
+e_path_G <- u_Disabled
+e_path_H <- u_Healthy
+e_path_I <- u_Death
+e_path_J <- u_Disabled
+e_path_K <- u_Healthy
+```
