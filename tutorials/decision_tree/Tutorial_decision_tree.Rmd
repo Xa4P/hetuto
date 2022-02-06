@@ -615,15 +615,6 @@ c_path_J <- c_Coiling + c_Disabled
 c_path_K <- c_Coiling
 ```
 
-```{r calc_outcomes-hint1}
-"Multiply the probability of each pathway by their utility value (effects) and costs"
-```
-
-```{r calc_outcomes-hint2}
-t_e_path_A <- p_path_A * e_path_A # Example for expected utility values of pathway A
-t_c_path_A <- p_path_A * c_path_A # Example for expected costs of pathway A
-```
-
 ```{r calc_outcomes, exercise = TRUE, exercise.setup = "setup_calc_out"}
 # Expected effects
 t_e_path_A
@@ -650,6 +641,15 @@ t_c_path_H
 t_c_path_I
 t_c_path_J
 t_c_path_K
+```
+
+```{r calc_outcomes-hint1}
+"Multiply the probability of each pathway by their utility value (effects) and costs"
+```
+
+```{r calc_outcomes-hint2}
+t_e_path_A <- p_path_A * e_path_A # Example for expected utility values of pathway A
+t_c_path_A <- p_path_A * c_path_A # Example for expected costs of pathway A
 ```
 
 ```{r calc_outcomes-solution}
