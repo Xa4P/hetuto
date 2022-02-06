@@ -505,7 +505,7 @@ e_path_K
 ```
 
 ```{r assign_utils-hint2}
-e_path_A <- u_Death # Example for pathway 1
+e_path_A <- u_Death # Example for pathway A
 ```
 
 ```{r assign_utils-solution}
@@ -553,7 +553,7 @@ c_path_K
 ```
 
 ```{r assign_costs-hint2}
-c_path_A <- c_Rupture # Example for pathway 1
+c_path_A <- c_Rupture # Example for pathway A
 ```
 
 ```{r assign_costs-solution}
@@ -568,4 +568,112 @@ c_path_H <- c_Clipping
 c_path_I <- c_Coiling
 c_path_J <- c_Coiling + c_Disabled
 c_path_K <- c_Coiling
+```
+
+## Step 4: Calculate expected effects and costs of pathways
+We have just calculated the utility values and costs of each pathway. These utility values and costs are the outcomes that an individual would obtain if he/she would follow a specific pathway. However, only a proportion of individuals will follow a specific pathway, based on the probabilities of each of these pathways. Therefore, to calculate the total expected outcomes of each strategy, we first have to calculate the **expected** utility values and costs of each pathway. These are obtained by multiplying the probabilities of each pathway by their outcomes: their utility value and costs.  
+Calculate the expected utility values and costs of each pathway in the following chunk. To do so, use the probabilities, utility values, and costs of each pathway that we have defined in Steps 2 and 3. In the following code chunk, `t_e_path_A` means "total expected utility values (effects) of pathway A" and `t_c_path_A` means "total expected costs of pathway A" and so on for the other pathways. For your convenience, the probabilities (`p_path_` objects), utility values (`e_path_` objects), and costs (`c_path_` objects) of each pathway have been loaded to perform these calculations.  
+
+```{r setup_calc_out}
+# Probabilities
+p_path_A <- p_Rupture * p_DeathRupture
+p_path_B <- p_Rupture * p_DisabledRupture
+p_path_C <- p_Rupture * p_SurvivalRupture
+p_path_D <- p_Stable * p_Anxious
+p_path_E <- p_Stable * p_NotAnxious
+p_path_F <- p_Clipping * p_DeathClipping
+p_path_G <- p_Clipping * p_DisabledClipping
+p_path_H <- p_Clipping * p_SurvivalClipping
+p_path_I <- p_Coiling * p_DeathCoiling
+p_path_J <- p_Coiling * p_DisabledCoiling
+p_path_K <- p_Coiling * p_SurvivalCoiling
+
+# Effects
+e_path_A <- u_Death
+e_path_B <- u_Disabled 
+e_path_C <- u_Healthy
+e_path_D <- u_Anxious
+e_path_E <- u_Healthy
+e_path_F <- u_Death
+e_path_G <- u_Disabled
+e_path_H <- u_Healthy
+e_path_I <- u_Death
+e_path_J <- u_Disabled
+e_path_K <- u_Healthy
+
+# Costs
+c_path_A <- c_Rupture
+c_path_B <- c_Rupture + c_Disabled
+c_path_C <- c_Rupture
+c_path_D <- 0
+c_path_E <- 0
+c_path_F <- c_Clipping
+c_path_G <- c_Clipping + c_Disabled
+c_path_H <- c_Clipping
+c_path_I <- c_Coiling
+c_path_J <- c_Coiling + c_Disabled
+c_path_K <- c_Coiling
+```
+
+```{r calc_outcomes-hint1}
+"Multiply the probability of each pathway by their utility value (effects) and costs"
+```
+
+```{r calc_outcomes-hint2}
+t_e_path_A <- p_path_A * e_path_A # Example for expected utility values of pathway A
+t_c_path_A <- p_path_A * c_path_A # Example for expected costs of pathway A
+```
+
+```{r calc_outcomes, exercise = TRUE, exercise.setup = "setup_calc_out"}
+# Expected effects
+t_e_path_A
+t_e_path_B
+t_e_path_C
+t_e_path_D
+t_e_path_E
+t_e_path_F
+t_e_path_G
+t_e_path_H
+t_e_path_I
+t_e_path_J
+t_e_path_K
+
+# Expected costs
+t_c_path_A
+t_c_path_B
+t_c_path_C
+t_c_path_D
+t_c_path_E
+t_c_path_F
+t_c_path_G
+t_c_path_H
+t_c_path_I
+t_c_path_J
+t_c_path_K
+```
+
+```{r calc_outcomes-solution}
+t_e_path_A <- p_path_A * e_path_A
+t_e_path_B <- p_path_B * e_path_B
+t_e_path_C <- p_path_C * e_path_C
+t_e_path_D <- p_path_D * e_path_D
+t_e_path_E <- p_path_E * e_path_E
+t_e_path_F <- p_path_F * e_path_F
+t_e_path_G <- p_path_G * e_path_G
+t_e_path_H <- p_path_H * e_path_H
+t_e_path_I <- p_path_I * e_path_I
+t_e_path_J <- p_path_J * e_path_J
+t_e_path_K <- p_path_K * e_path_K
+
+t_c_path_A <- p_path_A * c_path_A
+t_c_path_B <- p_path_B * c_path_B
+t_c_path_C <- p_path_C * c_path_C
+t_c_path_D <- p_path_D * c_path_D
+t_c_path_E <- p_path_E * c_path_E
+t_c_path_F <- p_path_F * c_path_F
+t_c_path_G <- p_path_G * c_path_G
+t_c_path_H <- p_path_H * c_path_H
+t_c_path_I <- p_path_I * c_path_I
+t_c_path_J <- p_path_J * c_path_J
+t_c_path_K <- p_path_K * c_path_K
 ```
