@@ -475,7 +475,7 @@ data.frame(
 This steps consists of calculating the costs and effects attributed to each pathway.  
 
 ### Utility value of each pathway
-Assign the utility values to each pathway. The pathways at the beginning of the tutorial to each pathway. For your convenience, the utility values are displayed here once again.
+Assign the utility values to each pathway. The pathways are described at the beginning of the tutorial. For your convenience, the utility values are displayed here once again.
 
 ```{r utils_show, eval = FALSE, echo = TRUE}
 # Utility values
@@ -500,8 +500,12 @@ e_path_J
 e_path_K 
 ```
 
-```{r calc_probs-hint}
-"Use <- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1."
+```{r assign_utils-hint1}
+"Use <- to assign the utility values to the effectiveness outcome of the pathways"
+```
+
+```{r assign_utils-hint2}
+e_path_A <- u_Death # Example for pathway 1
 ```
 
 ```{r assign_utils-solution}
@@ -516,4 +520,52 @@ e_path_H <- u_Healthy
 e_path_I <- u_Death
 e_path_J <- u_Disabled
 e_path_K <- u_Healthy
+```
+
+### Costs of each pathway
+Assign the costs to each pathway. The pathways are described at the beginning of the tutorial. For your convenience, the costs are displayed here once again.
+
+```{r costs_show, eval = FALSE, echo = TRUE}
+# Costs
+c_Rupture   <- 50000 # Cost of Aneurysm rupture
+c_Clipping	<- 20000 # Cost of Aneurysm clipping
+c_Coiling   <- 13000 # Cost of Aneurysm coiling
+c_Disabled  <- 5000  # Cost of disabled patient
+```
+
+In the code chunk below `c_path_A` means "costs associated with pathway A".
+```{r assign_costs, exercise = TRUE}
+c_path_A 
+c_path_B  
+c_path_C 
+c_path_D 
+c_path_E 
+c_path_F 
+c_path_G 
+c_path_H 
+c_path_I 
+c_path_J 
+c_path_K 
+```
+
+```{r assign_costs-hint1}
+"Use <- to assign the costs outcome to the pathways"
+```
+
+```{r assign_costs-hint2}
+c_path_A <- c_Rupture # Example for pathway 1
+```
+
+```{r assign_costs-solution}
+c_path_A <- c_Rupture
+c_path_B <- c_Rupture + c_Disabled
+c_path_C <- c_Rupture
+c_path_D <- 0
+c_path_E <- 0
+c_path_F <- c_Clipping
+c_path_G <- c_Clipping + c_Disabled
+c_path_H <- c_Clipping
+c_path_I <- c_Coiling
+c_path_J <- c_Coiling + c_Disabled
+c_path_K <- c_Coiling
 ```
