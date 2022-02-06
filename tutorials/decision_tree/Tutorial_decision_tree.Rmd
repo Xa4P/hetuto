@@ -667,7 +667,7 @@ data.frame(
             "H",
             "I",
             "J",
-            "K",
+            "K"
             ),
   Effects = c(e_path_A,
               e_path_B,
@@ -809,7 +809,7 @@ t_c_path_K <- p_path_K * c_path_K
 ```
 
 ### Overview expected effects and costs
-```{r overview_t_e_c}
+```{r overview_t_e_c_show}
 p_Stable <- 1 - p_Rupture 
 p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
 p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
@@ -885,19 +885,19 @@ data.frame(
             "H",
             "I",
             "J",
-            "K",
+            "K"
             ),
-  Probabilities = c(t_p_path_A,
-                    t_p_path_B,
-                    t_p_path_C,
-                    t_p_path_D,
-                    t_p_path_E,
-                    t_p_path_F,
-                    t_p_path_G,
-                    t_p_path_H,
-                    t_p_path_I,
-                    t_p_path_J,
-                    t_p_path_K),
+  Probabilities = c(p_path_A,
+                    p_path_B,
+                    p_path_C,
+                    p_path_D,
+                    p_path_E,
+                    p_path_F,
+                    p_path_G,
+                    p_path_H,
+                    p_path_I,
+                    p_path_J,
+                    p_path_K),
   Effects = c(t_e_path_A,
               t_e_path_B,
               t_e_path_C,
@@ -1294,5 +1294,207 @@ data.frame(
 )
 ```
 
-## Questions
+## Decision tree complete
+In this tab, the decision tree has been filled with the input values of the previous steps. You can change the input values and evaluate what the impact of changing these inputs is on the results. This completed decision tree can be used to answer the questions in the following tab.  
 
+```{r interact_dt}
+# Probabilities
+p_Rupture <- 0.3 # Probability of Aneurysm rupture
+p_Stable <- 0 # Probability of Aneurysm remaining stable
+p_DeathRupture <- 0.4 # Probability of death when Aneurysm is ruptured
+p_DisabledRupture <- 0.35 # Probability of disability when Aneurysm is ruptured
+p_SurvivalRupture <- 0.25 # Probability of surviving and being in good health when Aneurysm is ruptured
+p_Anxious <- 0.6 # Probability of being anxious when Aneurysm remains stable
+p_NotAnxious <- 0.4 # Probability of not being anxious (and being in good health) when Aneurysm remains stable
+p_Clipping <- 0.3 # Probability of clipping the Aneurysm
+p_Coiling <- 0.7 # Probability of coiling the Aneurysm
+p_DeathClipping <- 0 # Probability of death when Aneurysm is clipped
+p_DisabledClipping <- 0.25 # Probability of disability when Aneurysm is clipped
+p_SurvivalClipping <- 0.65 # Probability of surviving and being in good health when Aneurysm is clipped
+p_DeathCoiling <- 0.05 # Probability of death when Aneurysm is coiled
+p_DisabledCoiling <- 0 # Probability of disability when Aneurysm is coiled
+p_SurvivalCoiling <- 0.8 # Probability of surviving and being in good health when Aneurysm is coiled
+
+# Utility values
+u_Healthy  <- 0.80 # Utility of patient in good health
+u_Disabled <- 0.40 # Utility of disabled patient
+u_Anxious  <- 0.70 # Utility of anxious patient
+u_Death    <- 0    # Utility of dying
+
+# Costs
+c_Rupture   <- 50000 # Cost of Aneurysm rupture
+c_Clipping	<- 20000 # Cost of Aneurysm clipping
+c_Coiling   <- 13000 # Cost of Aneurysm coiling
+c_Disabled  <- 5000  # Cost of disabled patient
+
+diagram_3 <- "
+digraph {
+
+      # graph attributes
+      graph [overlap = true, 
+             rankdir = LR]
+
+      # edge attributes
+      edge [color = gray]
+
+      # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray,
+      label = '']
+      A [label = Detection] 
+      
+      # node statements
+      node [shape = oval,
+      fontname = Helvetica,
+      color = gray]
+      B [label = 'Watchful waiting'] 
+      C [label = 'Aneurysm treatment'] 
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      D; E
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      F; G; H; I 
+      
+       # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray]
+      
+      J [label = A]
+      K [label = B]
+      L [label = C]
+      M [label = D]
+      N [label = E]
+      O [label = F]
+      P [label = G]
+      Q [label = H]
+      R [label = I]
+      S [label = J]
+      T [label = K]
+      
+      
+      1 [label = 'e_path_A, c_path_A']
+      2 [label = 'e_path_B, c_path_B']
+      3 [label = 'e_path_C, c_path_C']
+      4 [label = 'e_path_D, c_path_D']
+      5 [label = 'e_path_E, c_path_E']
+      6 [label = 'e_path_F, c_path_F']
+      7 [label = 'e_path_G, c_path_G']
+      8 [label = 'e_path_H, c_path_H']
+      9 [label = 'e_path_I, c_path_I']
+      10 [label = 'e_path_J, c_path_J']
+      11 [label = 'e_path_K, c_path_K']
+      
+      # edge statements
+      A -> B [arrowhead = none]
+      A -> C [arrowhead = none]
+      B -> D 
+      C -> E
+      D -> F [label = {p_Rupture}] 
+      D -> G [label = 'p_Stable']
+      E -> H [label = 'p_Clipping']
+      E -> I [label = 'p_Coiling']
+      F -> J [label = 'p_DeathRupture']
+      F -> K [label = 'p_DisabledRupture']
+      F -> L [label = 'p_SurvivalRupture']
+      G -> M [label = 'p_Anxious']
+      G -> N [label = 'p_NotAnxious ']
+      H -> O [label = 'p_DeathClipping']
+      H -> P [label = 'p_DisabledClipping']
+      H -> Q [label = 'p_SurvivalClipping']
+      I -> R [label = 'p_DeathCoiling']
+      I -> S [label = 'p_DisabledCoiling']
+      I -> T [label = 'p_SurvivalCoiling']
+      J -> 1
+      K -> 2
+      L -> 3
+      M -> 4
+      N -> 5
+      O -> 6
+      P -> 7
+      Q -> 8
+      R -> 9
+      S -> 10
+      T -> 11
+      }
+"
+# Shiny component
+grVizOutput("graph_interact")
+
+```
+
+```{r interact_dt_server, context = "server"}
+output$graph_interact <- renderGrViz({
+  grViz({
+    diagram_3
+    })
+  })
+```
+
+## Questions concerning the results
+
+### Questions
+1. Look at your final results:  
+
+1.a. What is your conclusion?  
+```{r open_q_1}
+textInput("Answer_1", "Explain your answer")
+```
+
+1.b. Which strategy has the most favorable cost-effectiveness if we are willing to pay €20,000 for a gain in utility of 1 (or 1 additional QALY if we assume a one-year time horizon for this decision tree)?  
+```{r open_q_2}
+textInput("Answer_2", "Explain your answer")
+```
+
+1.c. How does the utility of patients with an untreated aneurysm (u_Anxious) affect the cost-effectiveness results? What happens if you disregard any potential anxiety and set u_Anxious equal to u_Healthy?  
+```{r open_q_3}
+textInput("Answer_3", "Explain your answer")
+```
+
+1.d. In the past, aneurysm coiling, which is an endovascular procedure was not yet available in all hospitals. What would you advise to a hospital which only offers aneurysm clipping, should they go with the Watchfull Waiting strategy or with the Aneurysm Treatment (100% clipping) strategy?  
+```{r open_q_4}
+textInput("Answer_4", "Explain your answer")
+```
+
+1.e. And what would you advise to new patients with a detected unruptured aneurysm?  
+```{r open_q_5}
+textInput("Answer_5", "Explain your answer")
+```
+
+2. If you consider extending this decision tree model  
+2.a. How would you include evidence suggesting that intracranial aneurysms may remain stable for several years but then start to increase in size and rupture?  
+```{r open_q_6}
+textInput("Answer_6", "Explain your answer")
+```
+
+2.b. It is known that individuals with an unruptured intracranial aneurysm are at increased risk of developing new intracranial aneurysms, regardless of whether the first aneurysm ruptures or remains stable. How would you include the aspect of new aneurysm development in the model?  
+```{r open_q_7}
+textInput("Answer_7", "Explain your answer")
+```
+
+### Discussion answers  
+1.a. What is your conclusion?  
+**Answer:** From the results we can conclude that the Aneurysm Treatment strategy results in additional health gain at additional costs compared to the Watchful waiting strategy.  
+1.b. Which strategy has the most favorable cost-effectiveness if we are willing to pay €20,000 for a gain in utility of 1 (or 1 additional QALY if we assume a one-year time horizon for this decision tree)?  
+**Answer:** The Aneurysm Treatment strategy has the most favorable cost-effectiveness if we apply a willingness-to-pay threshold of €20,000/QALY.  
+1.c. How does the utility of patients with an untreated aneurysm (`u_Anxious`) affect the cost-effectiveness results? What happens if you disregard any potential anxiety and set uAnxious equal to u_Healthy?  
+**Answer:** When `u_Anxious` is set to values much lower then uHealthy than the Watchful waiting strategy results in less and less QALYs. Therefore, the cost-effectiveness of the Aneurysm Treatment strategy compared to the Watchful waiting strategy becomes more and more favorable. If, on the other hand, we set `u_Anxious` equal to `u_Healthy` then NOT treating a patient with a stable aneurysm is a good strategy, as apparently these patient do not suffer from their untreated stable aneurysm in any way. Consequently, the cost-effectiveness of the Aneurysm Treatment strategy compared to the Watchful waiting strategy deteriorates, and we find: incremental costs = €475, incremental effects = 0.014 utility, and incremental cost-effectiveness ratio = €33,928.57 per QALY. This indicates that the cost-effectiveness of the Aneurysm Treatment strategy compared to the Watchful waiting strategy is no longer acceptable if we apply a willingness-to-pay threshold of €20,000/QALY.    
+1.d. In the past, aneurysm coiling, which is an endovascular procedure was not yet available in all hospitals. What would you advise to a hospital which only offers aneurysm clipping, should they go with the Watchfull Waiting strategy or with the Aneurysm Treatment (100% clipping) strategy?  
+**Answer:** To answer this question, set `p_Clipping` to 1 and `p_Coiling` to 0 (= all aneurysm treated with clipping). This results in the following outcomes: incremental costs = 5,725 eurors, incremental effects = 0.0 utility, and incremental cost-effectiveness ratio = `Inf` euros per QALY (cannot be calculated because difference in effect is 0). Thus, there is no difference in health outcomes between AneurysmTreatment-ClippingOnly and Watchful Waiting, but the former strategy is much more expensive than the latter! We would therefore advise hospitals which do not perform coiling to follow the Watchful Waiting strategy.  
+1.e. And what would you advise to new patients with a detected unruptured aneurysm?  
+**Answer:** Find a hospital in which your aneurysm can be coiled. Coiling provides better health outcomes (and is cheaper) than Watchful Waiting or Clipping.  
+2. If you consider extending this decision tree model  
+2.a. How would you include evidence suggesting that intracranial aneurysms may remain stable for several years but then start to increase in size and rupture?  
+**Answer:** Incorporating time explicitly in a decision tree model is hard and will make your model very complex. To allow aneurysms to remain stable and to increase in size and rupture later on chance nodes would need to be added for each separate year in the time horizon. This means the entire model (now defined for 1 year) would needs to be extended to 10 times its current size to allow a time horizon of 10 years.  
+2.b. It is known that individuals with an unruptured intracranial aneurysm are at increased risk of developing new intracranial aneurysms, regardless of whether the first aneurysm ruptures or remains stable. How would you include the aspect of new aneurysm development in the model?  
+**Answer:** Development of new aneurysm would require additional branches to be added to the tree. A new branch would need to be added for patients with 2 aneurysm, another for patients with 3 aneurysms etc. This extension would therefore only be feasible for patients with 1, 2, or 3+ aneurysms and even then the resulting decision tree would be huge.  
