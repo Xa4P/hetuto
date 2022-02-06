@@ -1282,7 +1282,7 @@ data.frame(
                     t_c_trt
                        )),
   `Incremental effects` = c("-", 
-                            inc_e_trt 
+                            round(inc_e_trt, 2) 
                             ),
   `Incremental costs` = c("-",
                           round(inc_c_trt)
@@ -1290,7 +1290,6 @@ data.frame(
   ICER = c("-",
            round(icer)
            )
-  
 )
 ```
 
@@ -1298,147 +1297,146 @@ data.frame(
 In this tab, the decision tree has been filled with the input values of the previous steps. You can change the input values and evaluate what the impact of changing these inputs is on the results. This completed decision tree can be used to answer the questions in the following tab.  
 
 ```{r interact_dt}
-# Probabilities
-p_Rupture <- 0.3 # Probability of Aneurysm rupture
-p_Stable <- 0 # Probability of Aneurysm remaining stable
-p_DeathRupture <- 0.4 # Probability of death when Aneurysm is ruptured
-p_DisabledRupture <- 0.35 # Probability of disability when Aneurysm is ruptured
-p_SurvivalRupture <- 0.25 # Probability of surviving and being in good health when Aneurysm is ruptured
-p_Anxious <- 0.6 # Probability of being anxious when Aneurysm remains stable
-p_NotAnxious <- 0.4 # Probability of not being anxious (and being in good health) when Aneurysm remains stable
-p_Clipping <- 0.3 # Probability of clipping the Aneurysm
-p_Coiling <- 0.7 # Probability of coiling the Aneurysm
-p_DeathClipping <- 0 # Probability of death when Aneurysm is clipped
-p_DisabledClipping <- 0.25 # Probability of disability when Aneurysm is clipped
-p_SurvivalClipping <- 0.65 # Probability of surviving and being in good health when Aneurysm is clipped
-p_DeathCoiling <- 0.05 # Probability of death when Aneurysm is coiled
-p_DisabledCoiling <- 0 # Probability of disability when Aneurysm is coiled
-p_SurvivalCoiling <- 0.8 # Probability of surviving and being in good health when Aneurysm is coiled
-
-# Utility values
-u_Healthy  <- 0.80 # Utility of patient in good health
-u_Disabled <- 0.40 # Utility of disabled patient
-u_Anxious  <- 0.70 # Utility of anxious patient
-u_Death    <- 0    # Utility of dying
-
-# Costs
-c_Rupture   <- 50000 # Cost of Aneurysm rupture
-c_Clipping	<- 20000 # Cost of Aneurysm clipping
-c_Coiling   <- 13000 # Cost of Aneurysm coiling
-c_Disabled  <- 5000  # Cost of disabled patient
-
-diagram_3 <- "
-digraph {
-
-      # graph attributes
-      graph [overlap = true, 
-             rankdir = LR]
-
-      # edge attributes
-      edge [color = gray]
-
-      # node statements
-      node [shape = box,
-      fontname = Helvetica,
-      color = gray,
-      label = '']
-      A [label = Detection] 
-      
-      # node statements
-      node [shape = oval,
-      fontname = Helvetica,
-      color = gray]
-      B [label = 'Watchful waiting'] 
-      C [label = 'Aneurysm treatment'] 
-      
-      # node attributes
-      node [shape = circle, 
-      width = 0.5,
-      color = black,
-      label = ' ']
-      D; E
-      
-      # node attributes
-      node [shape = circle, 
-      width = 0.5,
-      color = black,
-      label = ' ']
-      F; G; H; I 
-      
-       # node statements
-      node [shape = box,
-      fontname = Helvetica,
-      color = gray]
-      
-      J [label = A]
-      K [label = B]
-      L [label = C]
-      M [label = D]
-      N [label = E]
-      O [label = F]
-      P [label = G]
-      Q [label = H]
-      R [label = I]
-      S [label = J]
-      T [label = K]
-      
-      
-      1 [label = 'e_path_A, c_path_A']
-      2 [label = 'e_path_B, c_path_B']
-      3 [label = 'e_path_C, c_path_C']
-      4 [label = 'e_path_D, c_path_D']
-      5 [label = 'e_path_E, c_path_E']
-      6 [label = 'e_path_F, c_path_F']
-      7 [label = 'e_path_G, c_path_G']
-      8 [label = 'e_path_H, c_path_H']
-      9 [label = 'e_path_I, c_path_I']
-      10 [label = 'e_path_J, c_path_J']
-      11 [label = 'e_path_K, c_path_K']
-      
-      # edge statements
-      A -> B [arrowhead = none]
-      A -> C [arrowhead = none]
-      B -> D 
-      C -> E
-      D -> F [label = {p_Rupture}] 
-      D -> G [label = 'p_Stable']
-      E -> H [label = 'p_Clipping']
-      E -> I [label = 'p_Coiling']
-      F -> J [label = 'p_DeathRupture']
-      F -> K [label = 'p_DisabledRupture']
-      F -> L [label = 'p_SurvivalRupture']
-      G -> M [label = 'p_Anxious']
-      G -> N [label = 'p_NotAnxious ']
-      H -> O [label = 'p_DeathClipping']
-      H -> P [label = 'p_DisabledClipping']
-      H -> Q [label = 'p_SurvivalClipping']
-      I -> R [label = 'p_DeathCoiling']
-      I -> S [label = 'p_DisabledCoiling']
-      I -> T [label = 'p_SurvivalCoiling']
-      J -> 1
-      K -> 2
-      L -> 3
-      M -> 4
-      N -> 5
-      O -> 6
-      P -> 7
-      Q -> 8
-      R -> 9
-      S -> 10
-      T -> 11
-      }
-"
 # Shiny component
-grVizOutput("graph_interact")
+numericInput(inputId = "p_Rupture",
+             label = "Probability of a rupture in watchful witing strategy",
+             value = 0.3,
+             min = 0,
+             max = 1)
+numericInput(inputId = "u_Anxious",
+             label = "Utility value of being anxious",
+             value = 0.7,
+             min = 0,
+             max = 1)
+numericInput(inputId = "u_Healthy",
+             label = "Utility value of being healthy",
+             value = 0.8,
+             min = 0,
+             max = 1)
+numericInput(inputId = "p_Clipping",
+             label = "Probability of Clipping",
+             value = 0.3,
+             min = 0,
+             max = 1)
+numericInput(inputId = "p_Coiling",
+             label = "Probability of Coiling",
+             value = 0.7,
+             min = 0,
+             max = 1)
+tags$hr()
+tableOutput("results")
 
 ```
 
 ```{r interact_dt_server, context = "server"}
-output$graph_interact <- renderGrViz({
-  grViz({
-    diagram_3
-    })
+output$results <- renderTable({
+  
+  p_Rupture <- input$p_Rupture 
+  u_Anxious <- input$u_Anxious
+  u_Healthy <- input$u_Healthy
+  p_Clipping <- input$p_Clipping
+  p_Coiling <- input$p_Coiling
+  
+  p_Stable <- 1 - p_Rupture 
+  p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
+  p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
+  
+  p_path_A <- p_Rupture * p_DeathRupture
+  p_path_B <- p_Rupture * p_DisabledRupture
+  p_path_C <- p_Rupture * p_SurvivalRupture
+  p_path_D <- p_Stable * p_Anxious
+  p_path_E <- p_Stable * p_NotAnxious
+  p_path_F <- p_Clipping * p_DeathClipping
+  p_path_G <- p_Clipping * p_DisabledClipping
+  p_path_H <- p_Clipping * p_SurvivalClipping
+  p_path_I <- p_Coiling * p_DeathCoiling
+  p_path_J <- p_Coiling * p_DisabledCoiling
+  p_path_K <- p_Coiling * p_SurvivalCoiling
+  
+  e_path_A <- u_Death
+  e_path_B <- u_Disabled 
+  e_path_C <- u_Healthy
+  e_path_D <- u_Anxious
+  e_path_E <- u_Healthy
+  e_path_F <- u_Death
+  e_path_G <- u_Disabled
+  e_path_H <- u_Healthy
+  e_path_I <- u_Death
+  e_path_J <- u_Disabled
+  e_path_K <- u_Healthy
+  
+  c_path_A <- c_Rupture
+  c_path_B <- c_Rupture + c_Disabled
+  c_path_C <- c_Rupture
+  c_path_D <- 0
+  c_path_E <- 0
+  c_path_F <- c_Clipping
+  c_path_G <- c_Clipping + c_Disabled
+  c_path_H <- c_Clipping
+  c_path_I <- c_Coiling
+  c_path_J <- c_Coiling + c_Disabled
+  c_path_K <- c_Coiling
+  
+  t_e_path_A <- p_path_A * e_path_A
+  t_e_path_B <- p_path_B * e_path_B
+  t_e_path_C <- p_path_C * e_path_C
+  t_e_path_D <- p_path_D * e_path_D
+  t_e_path_E <- p_path_E * e_path_E
+  t_e_path_F <- p_path_F * e_path_F
+  t_e_path_G <- p_path_G * e_path_G
+  t_e_path_H <- p_path_H * e_path_H
+  t_e_path_I <- p_path_I * e_path_I
+  t_e_path_J <- p_path_J * e_path_J
+  t_e_path_K <- p_path_K * e_path_K
+  
+  t_c_path_A <- p_path_A * c_path_A
+  t_c_path_B <- p_path_B * c_path_B
+  t_c_path_C <- p_path_C * c_path_C
+  t_c_path_D <- p_path_D * c_path_D
+  t_c_path_E <- p_path_E * c_path_E
+  t_c_path_F <- p_path_F * c_path_F
+  t_c_path_G <- p_path_G * c_path_G
+  t_c_path_H <- p_path_H * c_path_H
+  t_c_path_I <- p_path_I * c_path_I
+  t_c_path_J <- p_path_J * c_path_J
+  t_c_path_K <- p_path_K * c_path_K
+  
+  t_e_ww  <- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+  t_c_ww  <- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+  t_e_trt <- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+  t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)
+
+  t_e_ww  <- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+  t_c_ww  <- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+  t_e_trt <- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+  t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)
+
+inc_e_trt <- t_e_trt - t_e_ww
+inc_c_trt <- t_c_trt - t_c_ww
+icer <- inc_c_trt / inc_e_trt
+
+data.frame(
+  Strategy = c("Watchful waiting",
+               "Treatment"
+               ),
+  `Total effects` = c(t_e_ww,
+                      t_e_trt
+                         ),
+  `Total costs` = round(c(t_c_ww,
+                    t_c_trt
+                       )),
+  `Incremental effects` = c("-", 
+                            round(inc_e_trt, 2) 
+                            ),
+  `Incremental costs` = c("-",
+                          round(inc_c_trt)
+                          ),
+  ICER = c("-",
+           round(icer)
+           )
+)
   })
+
 ```
 
 ## Questions concerning the results
