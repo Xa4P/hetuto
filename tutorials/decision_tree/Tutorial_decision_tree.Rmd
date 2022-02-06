@@ -925,6 +925,8 @@ data.frame(
 
 ## Step 5: Calculate expected effects and costs of each strategy
 Now that we have calculated the expected outcomes of each pathway, we can finally calculate the expected outcomes of each strategy! This can be done by summing up all expected outcomes per strategy 
+
+### Calculations
 Calculate these expected outcomes in the following chunk. for your convenience, the `t_e_path_` and `t_c_path_` have been loaded and can be used to perform these calculations.  
 
 ```{r setup_calc_strat_out}
@@ -1019,6 +1021,91 @@ t_e_trt <- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_p
 t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)
 ```
 
+### Overview totals per strategy
+```{r overview_t_e_c}
+p_Stable <- 1 - p_Rupture 
+p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
+
+p_path_A <- p_Rupture * p_DeathRupture
+p_path_B <- p_Rupture * p_DisabledRupture
+p_path_C <- p_Rupture * p_SurvivalRupture
+p_path_D <- p_Stable * p_Anxious
+p_path_E <- p_Stable * p_NotAnxious
+p_path_F <- p_Clipping * p_DeathClipping
+p_path_G <- p_Clipping * p_DisabledClipping
+p_path_H <- p_Clipping * p_SurvivalClipping
+p_path_I <- p_Coiling * p_DeathCoiling
+p_path_J <- p_Coiling * p_DisabledCoiling
+p_path_K <- p_Coiling * p_SurvivalCoiling
+
+e_path_A <- u_Death
+e_path_B <- u_Disabled 
+e_path_C <- u_Healthy
+e_path_D <- u_Anxious
+e_path_E <- u_Healthy
+e_path_F <- u_Death
+e_path_G <- u_Disabled
+e_path_H <- u_Healthy
+e_path_I <- u_Death
+e_path_J <- u_Disabled
+e_path_K <- u_Healthy
+
+c_path_A <- c_Rupture
+c_path_B <- c_Rupture + c_Disabled
+c_path_C <- c_Rupture
+c_path_D <- 0
+c_path_E <- 0
+c_path_F <- c_Clipping
+c_path_G <- c_Clipping + c_Disabled
+c_path_H <- c_Clipping
+c_path_I <- c_Coiling
+c_path_J <- c_Coiling + c_Disabled
+c_path_K <- c_Coiling
+
+t_e_path_A <- p_path_A * e_path_A
+t_e_path_B <- p_path_B * e_path_B
+t_e_path_C <- p_path_C * e_path_C
+t_e_path_D <- p_path_D * e_path_D
+t_e_path_E <- p_path_E * e_path_E
+t_e_path_F <- p_path_F * e_path_F
+t_e_path_G <- p_path_G * e_path_G
+t_e_path_H <- p_path_H * e_path_H
+t_e_path_I <- p_path_I * e_path_I
+t_e_path_J <- p_path_J * e_path_J
+t_e_path_K <- p_path_K * e_path_K
+
+t_c_path_A <- p_path_A * c_path_A
+t_c_path_B <- p_path_B * c_path_B
+t_c_path_C <- p_path_C * c_path_C
+t_c_path_D <- p_path_D * c_path_D
+t_c_path_E <- p_path_E * c_path_E
+t_c_path_F <- p_path_F * c_path_F
+t_c_path_G <- p_path_G * c_path_G
+t_c_path_H <- p_path_H * c_path_H
+t_c_path_I <- p_path_I * c_path_I
+t_c_path_J <- p_path_J * c_path_J
+t_c_path_K <- p_path_K * c_path_K
+
+t_e_ww  <- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+t_c_ww  <- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+t_e_trt <- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)
+
+data.frame(
+  Strategy = c("Watchful waiting",
+               "Treatment"
+               ),
+  `Expected effects` = c(t_e_ww,
+                         t_e_trt
+                         ),
+  `Expected costs` = c(t_c_ww,
+                       t_c_trt
+                       )
+  )
+```
+
 ## Step 6: Calculate incremental effects, costs, and incremental cost-effectiveness ratio
 Based on the total expected utility value (effects) and costs of both strategies, we can now calculate the incremental effects and costs of the treatment strategy versus "watchful waiting". We can also calculate the incremental cost-effectiveness ratio of the treatment strategy versus "watchful waiting".  
 The total effects and costs defined in previous step have been loaded and can be used to perform these calculations.  
+
