@@ -122,7 +122,7 @@ To perform this assignment, you should be able to:
 - use functions: `mean()`, `sum()`, `ifelse()`, `which()` (base R)  
 
 
-### Objects of this practical
+## Objects of this practical
 Different objects have already been loaded in R's memory to perform this practical assignment.  
 
 A dataframe `df`. This dataframe contains 9 variables, each row of the dataframe contains the outcomes from one participant:  
@@ -155,7 +155,9 @@ Other objects, which represent the costs of the surgeries, hospital days, advers
 - `c_OK_hour` = costs of operating in the OK, per hour
 
 ## Assignment 1
-Calculate the mean operating time, risk of complications, length of stay at ICU and MCU, risk of death, and quality of life after procedure, for both trial arms.    
+
+### Effects calculations
+Calculate the mean operating time, risk of complications, length of stay at ICU and MCU, risk of death, and quality of life after procedure, for both trial arms using the `df` dataframe described in the previous tab.  
 
 ```{r mean_eff, exercise = TRUE}
 
@@ -177,7 +179,7 @@ df %>%
             mean_Qol = mean(Qol)) # Mean calculations
 ```
 
-### Assignment 1 - questions
+### Questions
 The correct answer are provided below. Use these results to check your answers and answer the questions below.  
 
 ```{r}
@@ -215,6 +217,8 @@ quiz(
 ```
 
 ## Assignment 2
+
+### Costs calculations
 Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group.  
 
 ```{r calc_t_costs, exercise = TRUE}
@@ -253,7 +257,7 @@ df %>%
   summarise(Mean_total_costs = mean(Total_costs))
 ```
 
-### Assignment 2 - questions
+### Questions
 The correct results are displayed here below. You can check your answer based in these results and answer the questions of the quizz.
 
 ```{r calc_to_c_good}
@@ -324,7 +328,7 @@ quiz(
 textInput("Answer_2", "Explain your answer")
 ```
 
-### Assignment 2 - discussion questions
+### Discussion questions
 What do you think is the probability that the new intervention is cheaper?  
 **Discussion:** This question is hard to answer, all we know is that some patients in the intervention strategy (robot-assisted) have lower cost than some patients in the usual care arm. On average the intervention is more expensive so we would guess that this probability is less than 50% but we don’t know yet.  
 
@@ -332,6 +336,8 @@ What do you think is the probability that the new intervention leads to health g
 **Discussion:** This question is also hard to answer. On average the intervention leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
 
 ## Assignment 3  
+
+### Calculation of incremental results  
 Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
 
 ```{r setup_calc_icer}
@@ -373,7 +379,7 @@ diff_costs <- t_costs_robot - t_costs_open
 ICER <- diff_costs / diff_qol
 ```
 
-### Assignment 3 - question
+### Question
 The correct results are provided here below.
 
 ```{r}
@@ -406,6 +412,8 @@ quiz(
 ```
 
 ## Assignment 4
+
+### Bootstrapping
 The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments. For an explanation of bootstrapping, have a look at [this video](https://www.youtube.com/watch?v=Xz0x-8-cgaQ). In this case, we bootstrap to calculate the mean effects and costs of each strategy.    
 To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several seconds to minutes). The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided. Answer the questions below based on your observations.  
 
@@ -541,7 +549,7 @@ output$det_tbl<- renderTable({
   })
 ```
 
-#### Assignment 4 - Questions
+### Questions
 Answer the following questions using the results displayed above. The discussion of these answers are provided below.  
 
 a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data? Why (not)?  
@@ -569,7 +577,7 @@ e. Rerun the bootstrap procedure 3 times using different seed numbers. Do the re
 textInput("Answer_4e", "Type your answer")
 ```  
 
-### Assignment 4 - Discussion questions
+### Discussion questions
 ```{r prep_answers, eval = TRUE}
 df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
 df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
