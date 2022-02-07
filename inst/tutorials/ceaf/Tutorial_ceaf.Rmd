@@ -67,10 +67,10 @@ The assignment uses the `df_thx` object, which is already loaded in this tutoria
 
 The `df_thx` object contains 4 variables and 9 observations (the outcomes of the strategies to compare):  
 
-- Strategy = the number identifying the screening strategy  
-- Name = the name of the screening strategy  
-- Costs = the total costs of the screening strategy    
-- QALYs = the total QALYs gained through the screening strategy 
+- `Strategy` = the number identifying the screening strategy  
+- `Name` = the name of the screening strategy  
+- `Costs` = the total costs of the screening strategy    
+- `QALYs` = the total QALYs gained through the screening strategy 
 
 The `df_thx` object is displayed herebelow. Have a look at this data.frame and before starting the assignment.
 
