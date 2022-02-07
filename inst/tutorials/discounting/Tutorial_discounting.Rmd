@@ -303,7 +303,17 @@ icer_d_C <- t_inc_c_d_C / t_inc_qaly_d_C
 
 ### Questions
 The **discounted** results should be the following.
-```{r show_res_disc, include = TRUE}
+```{r show_res_disc}
+r_disc <- 0.05
+v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
+
+df_thx$Inc_cost_A_d <- df_thx$Inc_cost_A * v_disc
+df_thx$Inc_QALY_A_d <- df_thx$Inc_QALY_A * v_disc
+df_thx$Inc_cost_B_d <- df_thx$Inc_cost_B * v_disc
+df_thx$Inc_QALY_B_d <- df_thx$Inc_QALY_B * v_disc
+df_thx$Inc_cost_C_d <- df_thx$Inc_cost_C * v_disc
+df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
+
 v_res_disc <- colSums(df_thx[, c("Inc_cost_A_d", "Inc_QALY_A_d",
                                  "Inc_cost_B_d", "Inc_QALY_B_d",
                                  "Inc_cost_C_d", "Inc_QALY_C_d")]) # calculate totals - discounted
