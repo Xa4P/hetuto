@@ -230,7 +230,18 @@ quiz(
 ## Assignment 2
 
 ### Costs calculations
-Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group.  
+Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group. As a reminder, these are the costs.  
+
+```{r show_c_inputs2, echo = TRUE}
+# Declare costs inputs for the analysis
+c_Robot <- 3000 
+c_Open <- 2000 
+c_OK_hour <- 500 
+c_Major_compl <- 10000 
+c_Minor_compl <- 1500 
+c_ICU_day <- 1250 
+c_MCU_day <- 550 
+```
 
 ```{r calc_t_costs, exercise = TRUE}
 
