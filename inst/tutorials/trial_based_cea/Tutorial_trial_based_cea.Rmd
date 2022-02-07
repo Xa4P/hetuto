@@ -269,14 +269,14 @@ df %>%
 
 
 # Alternative tidyverse-style
-df %>%
-  summarise(Procedure = Procedure,
-            Cost_procedure = ifelse(Procedure == 1, c_Open + OR_time / 60 * c_OK_hour, c_Robot + OR_time / 60 * c_OK_hour),
-            Cost_compl = Major_compl * c_Major_compl + Minor_compl * c_Minor_compl,
-            Cost_hosp = Length_icu * c_ICU_day + Length_mcu * c_MCU_day,
-            Total_costs = Cost_procedure + Cost_compl + Cost_hosp) %>%
-  group_by(Procedure) %>%
-  summarise(Mean_total_costs = mean(Total_costs))
+# df %>%
+#   summarise(Procedure = Procedure,
+#             Cost_procedure = ifelse(Procedure == 1, c_Open + OR_time / 60 * c_OK_hour, c_Robot + OR_time / 60 * c_OK_hour),
+#             Cost_compl = Major_compl * c_Major_compl + Minor_compl * c_Minor_compl,
+#             Cost_hosp = Length_icu * c_ICU_day + Length_mcu * c_MCU_day,
+#             Total_costs = Cost_procedure + Cost_compl + Cost_hosp) %>%
+#   group_by(Procedure) %>%
+#   summarise(Mean_total_costs = mean(Total_costs))
 ```
 
 ### Questions
@@ -399,6 +399,9 @@ diff_qol   <- t_qol_robot - t_qol_open
 diff_costs <- t_costs_robot - t_costs_open
 
 ICER <- diff_costs / diff_qol
+diff_qol
+diff_costs
+ICER
 ```
 
 ### Question
@@ -419,7 +422,11 @@ diff_qol   <- t_qol_robot - t_qol_open
 diff_costs <- t_costs_robot - t_costs_open
 
 ICER <- diff_costs / diff_qol
-ICER
+data.frame(
+  Difference_qol = diff_qol,
+  Difference_costs = diff_costs,
+  ICER = ICER
+)
 ```
 
 ```{r icer_question}
@@ -560,12 +567,13 @@ output$det_tbl<- renderTable({
   res_tbl <- df %>%
     group_by(Procedure) %>%
     summarise(Mean_Qol = round(mean(Qol), 2),
-              Mean_Total_Cost = round(mean(Total_costs), 2),
+              Mean_Total_Cost = format(round(mean(Total_costs), 0), big.mark = ",", scientific = FALSE),
     )
   res_tbl <- cbind(res_tbl,
                    Inc_Qol = c("", round(as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1])), 2)),
                    Inc_Cost = c("", round(as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1])), 0)),
-                   ICER = c("", round((as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1]))) / (as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1]))), 0))
+                   ICER = c("", format(round((as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1]))) / (as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1]))), 0), big.mark = ",", scientific = FALSE)
+  )
   )
   res_tbl
   })
