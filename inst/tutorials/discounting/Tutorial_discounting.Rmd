@@ -273,7 +273,7 @@ df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
 ```
 
 ### Calculate total discounted costs, effects, and ICERs
-Calculate the total **discounted** incremental costs and effects, and ICERs for each intervention. Store the results in the below-described objects.
+Calculate the total **discounted** incremental costs and effects, and ICERs for each intervention. Store the results in the below-described objects. For your convenience, the columns `Inc_cost_A_d`, `Inc_QALY_A_d`, `Inc_cost_B_d`, `Inc_QALY_B_d`, `Inc_cost_C_d`, `Inc_QALY_C_d` have been added to `df_thx`.
 
 ```{r calc_res_disc, exercise = TRUE, exercise.setup = "setup_t_disc_calc"}
 t_inc_c_d_A # total incremental discounted costs of strategy A
