@@ -15,8 +15,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     boot,
+    DiagrammeR,
     dplyr,
     ggplot2,
     knitr,
     learnr,
+    magrittr,
     shiny
