@@ -17,6 +17,7 @@ Imports:
     DiagrammeR,
     dplyr,
     ggplot2,
+    knitr,
     learnr,
-    margrittr,
+    magrittr,
     shiny
