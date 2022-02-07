@@ -375,8 +375,8 @@ ICER <- format(round(c(0, diff(df_thx$Costs)) / c(0, diff(df_thx$QALYs))), big.m
 ICER[1] <- "-"
 df_thx <- cbind(df_thx, ICER)
 
-df_thx[which(df_thx$Strategy == 5 &
-               df_thx$Strategy == 2 &
+df_thx[which(df_thx$Strategy == 5 |
+               df_thx$Strategy == 2 |
                df_thx$Strategy == 6), "ICER"] <- "Ext. dominated"
 df_thx[which(df_thx$Strategy == 4), "ICER"] <- "Dominated"
 df_thx
@@ -476,6 +476,7 @@ The table below shows the correct results. You can use it to check your answer.
 
 ```{r nmb}
 df_thx$NMB <- df_thx$QALYs * 20000 - df_thx$Costs
+df_thx <- df_thx[order(df_thx$Strategy),]
 df_thx # shows results
 ```
 
