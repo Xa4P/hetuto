@@ -5,6 +5,9 @@ output:
     progressive: true
     allow_skip: true
 runtime: shiny_prerendered
+description: >
+  Use individual data to perform a trial-based
+  health economic evaluation.
 ---
 
 ```{r setup, include = FALSE}

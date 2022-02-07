@@ -5,6 +5,10 @@ output:
     progressive: true
     allow_skip: true
 runtime: shiny_prerendered
+description: >
+  Learn how to compare more than two strategies using
+  ICERs and Net Benefits, and to identify strategies which
+  are on the cost-effectiveness acceptability frontier (CEAF).
 ---
 
 ```{r setup, include = FALSE}

@@ -5,6 +5,9 @@ output:
     progressive: true
     allow_skip: true
 runtime: shiny_prerendered
+description: >
+  Learn how to use a decision tree to estimate the cost effectiveness 
+  of a new treatment strategy for aneurysm versus usual care.
 ---
 ```{r setup, include = FALSE}
 require(learnr, quietly = TRUE)
