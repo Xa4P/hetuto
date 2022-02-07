@@ -118,7 +118,7 @@ knitr::include_graphics("Tutorial_trial_based_cea_files/images/Image_solution.pn
 To perform this assignment, you should be able to:  
 
 - create new variables in a dataframe  
-- use the functions `group_by` and `summarise` (`dyplr` package)   
+- use piping (`%>%`) and the functions `group_by` and `summarise` (`dyplr` package)   
 - use functions: `mean()`, `sum()`, `ifelse()`, `which()` (base R)  
 
 
@@ -157,7 +157,7 @@ Other objects, which represent the costs of the surgeries, hospital days, advers
 ## Assignment 1
 
 ### Effects calculations
-Calculate the mean operating time, risk of complications, length of stay at ICU and MCU, risk of death, and quality of life after procedure, for both trial arms using the `df` dataframe described in the previous tab.  
+Calculate the mean operating time (`OR_time`), risk of complications (`Major_compl` & `Minor_compl`), length of stay at ICU (`Length_icu`) and MCU (`Length_mcu`), risk of death (`Death`), and quality of life (`Qol`) after procedure, for both trial arms using the `df` dataframe described in the previous tab.  
 
 ```{r mean_eff, exercise = TRUE}
 
