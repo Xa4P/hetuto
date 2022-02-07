@@ -1,3 +1,4 @@
+Type: Package
 Package: hetuto
 Title: Health Economic Tutorials
 Version: 0.0.0.9000
@@ -7,12 +8,9 @@ Authors@R:
            role = c("aut", "cre"),
            email = "x.g.l.v.pouwels@utwente.nl",
            comment = c(ORCID = "0000-0003-3563-0013"))
-Description: This package contains tutorials to introduce health economic principles.
+Description: This package contains tutorials to introduce health economic
+    principles.
 License: GPL (>= 3)
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
 Imports: 
     DiagrammeR,
     dplyr,
@@ -21,3 +19,7 @@ Imports:
     learnr,
     magrittr,
     shiny
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
