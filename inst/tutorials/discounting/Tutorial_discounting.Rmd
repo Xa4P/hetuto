@@ -26,10 +26,7 @@ df_thx <- as.data.frame(cbind(
 ))
 ```
 
-
-## Discounting
-
-### Before starting
+## Before starting
 Watch the video explaining discounting and why we discount in health economic evaluations (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
 ![](https://vimeo.com/453418628/ad1222ead5){width="70%"}
 Link to the video: https://vimeo.com/453418628/ad1222ead5
@@ -48,7 +45,7 @@ knitr::include_graphics("Tutorial_discounting_files/images/Image_solution.png")
 
 [Link to figures](https://education.rstudio.com/blog/2020/05/learnr-for-remote/)
 
-### The data
+## The data
 The assignment uses the `df_thx` object, which is already loaded in this tutorial. 
 
 The `df_thx` object contains 7 variables:  
@@ -67,6 +64,8 @@ The `df_thx` object is displayed herebelow. Have a look at this data.frame befor
 ```{r show_data}
 df_thx
 ```
+
+## Undiscounted results
 
 ### Total undiscounted costs and effects
 Before discounting the effects and costs, calculate the total **undiscounted** incremental costs and effects of each intervention.  
@@ -178,8 +177,9 @@ question("Which intervention provides the best value for money (most favourable 
 ### Explanation answers
 There are no differences concerning the **undiscounted** ICERs between the different interventions, because there are no differences between the **undiscounted** incremental costs and effects.  
 
-### Discount costs and effects
-Define the discount weight as 5%, and call it `r_disc`. Use `r_disc` to create a vector of discount weights for Years 0 to 12, and save it as `v_disc`. Use the following formula to determine the discount weights:  $$w_i = \frac{1} {(1+r)^{t_i}}$$ where $w_i$ is the discount weight in year $i$, $r$ the discount rate, and $t_i$ year $i$.  
+## Discounted results  
+First, define the discount weight as 5%, and call it `r_disc`. Use `r_disc` to create a vector of discount weights for Years 0 to 12, and save it as `v_disc`. Use the following formula to determine the discount weights:  $$w_i = \frac{1} {(1+r)^{t_i}}$$ where $w_i$ is the discount weight in year $i$, $r$ the discount rate, and $t_i$ year $i$.  
+
 ```{r create_v_disc, exercise = TRUE}
 # define r_disc
 r_disc
@@ -199,7 +199,6 @@ The following table and figure show how the discount weights changes over the ye
 numericInput("r_disc1", "Discount rate", min = 0, max = 1, value = 0.05)
 plotOutput("plot_v_disc")
 ```
-
 
 ```{r plot_v_disc_serv, context = "server", echo = FALSE}
 
@@ -272,34 +271,32 @@ df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
 ```
 
 ### Calculate total discounted costs, effects, and ICERs
-Calculate the total **discounted** incremental costs and effects, and ICERs for each intervention, store the **discounted** incremental costs and effects in the vector `v_res_disc`, and the ICERs in the vector `v_icer_disc`. The columns containing the discounted effects and costs have been added to the `df_thx` dataframe and are named as in the previous assignmend (for strategy A: `Inc_cost_A_d` and `Inc_QALY_A_d`).
+Calculate the total **discounted** incremental costs and effects, and ICERs for each intervention. Store the results in the below-described objects.
 
 ```{r calc_res_disc, exercise = TRUE, exercise.setup = "setup_t_disc_calc"}
-# define v_res_disc and v_icer_disc
-```
+t_inc_c_d_A # total incremental discounted costs of strategy A
+t_inc_qaly_d_A # total incremental discounted QALYs of strategy A
+t_inc_c_d_B # total incremental discounted costs of strategy B
+t_inc_qaly_d_B # total incremental discounted QALYs of strategy B
+t_inc_c_d_C # total incremental discounted costs of strategy C
+t_inc_qaly_d_C # total incremental discounted QALYs of strategy C
 
-```{r, include = FALSE}
-r_disc <- 0.05
-v_disc <- 1/(1 + r_disc) ^ df_thx$Year # create vector of discount weights
-
-df_thx$Inc_cost_A_d <- df_thx$Inc_cost_A * v_disc
-df_thx$Inc_QALY_A_d <- df_thx$Inc_QALY_A * v_disc
-df_thx$Inc_cost_B_d <- df_thx$Inc_cost_B * v_disc
-df_thx$Inc_QALY_B_d <- df_thx$Inc_QALY_B * v_disc
-df_thx$Inc_cost_C_d <- df_thx$Inc_cost_C * v_disc
-df_thx$Inc_QALY_C_d <- df_thx$Inc_QALY_C * v_disc
+icer_d_A # ICER of A versus usual care using discounted costs and effects
+icer_d_B # ICER of B versus usual care using discounted costs and effects
+icer_d_C # ICER of C versus usual care using discounted costs and effects
 ```
 
 ```{r calc_res_disc-solution}
-v_res_disc <- colSums(df_thx[, c("Inc_cost_A_d", "Inc_QALY_A_d",
-                                 "Inc_cost_B_d", "Inc_QALY_B_d",
-                                 "Inc_cost_C_d", "Inc_QALY_C_d")]) # calculate totals - discounted
-v_res_disc <- unname(v_res_disc) # [OPTIONAL]: remove names
+t_inc_c_d_A <- sum(df_thx$Inc_cost_A_d)
+t_inc_qaly_d_A <- sum(df_thx$Inc_QALY_A_d)
+t_inc_c_d_B <- sum(df_thx$Inc_cost_B_d)
+t_inc_qaly_d_B <- sum(df_thx$Inc_QALY_B_d)
+t_inc_c_d_C <- sum(df_thx$Inc_cost_C_d)
+t_inc_qaly_d_C <- sum(df_thx$Inc_QALY_C_d)
 
-v_icer_disc <- c(ICER_A = v_res_disc[1]/v_res_disc[2],
-                   ICER_B = v_res_disc[3]/v_res_disc[4],
-                   ICER_C = v_res_disc[5]/v_res_disc[6]
-) 
+icer_d_A <- t_inc_c_d_A / t_inc_qaly_d_A
+icer_d_B <- t_inc_c_d_B / t_inc_qaly_d_B
+icer_d_C <- t_inc_c_d_C / t_inc_qaly_d_C
 ```
 
 ### Questions
@@ -356,7 +353,7 @@ question("Can you explain the difference between the undiscounted and discounted
 )
 ```
 
-### Changing the discount rate
+## Changing the discount rate
 The following graph shows both the undiscounted results and discounted results for all three interventions, based on a user-defined discount rate. Answer the questions below by changing the discount rate appropriately. The default value is 5% (0.05) as in the exercises above.    
 ```{r plot_disc, context = "render", echo = FALSE}
 numericInput("r_disc", "Discount rate", min = 0, max = 1, value = 0.05)
