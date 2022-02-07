@@ -12,13 +12,9 @@
 
 <meta name="progressive" content="true" />
 <meta name="allow-skip" content="true" />
-<meta name="learnr-version-prerender" content="0.10.1.9018" />
 
 <title>Tutorial Decision tree</title>
 
-<!-- header-includes START -->
-<!-- header-includes END -->
-<!-- HEAD_CONTENT -->
 
 <!-- highlightjs -->
 <style type="text/css">code{white-space: pre;}</style>
@@ -37,15 +33,16 @@ if (window.hljs) {
 }
 </script>
 
-
-<!-- taken from https://github.com/rstudio/rmarkdown/blob/de8a9c38618903627ca509f5401d50a0876079f7/inst/rmd/h/default.html#L293-L343 -->
+<!-- taken from https://github.com/rstudio/rmarkdown/blob/67b7f5fc779e4cfdfd0f021d3d7745b6b6e17149/inst/rmd/h/default.html#L296-L362 -->
 <!-- tabsets -->
+
 <style type="text/css">
 .tabset-dropdown > .nav-tabs {
   display: inline-table;
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
+  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -81,7 +78,6 @@ if (window.hljs) {
   border: none;
   display: inline-block;
   border-radius: 4px;
-  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -93,7 +89,20 @@ if (window.hljs) {
   display: none;
 }
 </style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
 <!-- end tabsets -->
+
 
 
 </head>
@@ -118,27 +127,635 @@ if (window.hljs) {
 </div>
 <div id="section-aim-and-instructions" class="section level3">
 <h3>Aim and instructions</h3>
-<p>The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a management strategy for patients with unruptured intracranial aneurysms versus watchful waiting.</p>
+<p>The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a treatment strategy for patients with unruptured intracranial aneurysms versus watchful waiting.</p>
 <p><strong>NOTE</strong>: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula’s. The last ‘Hint’ is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the ‘Run code’ button on the upper-right side of the chunk.</p>
 <p><img src="Tutorial_decision_tree_files/images/Image_hint.png" width="70%" style="display: block; margin: auto;" /></p>
 <p><img src="Tutorial_decision_tree_files/images/Image_solution.png" width="70%" style="display: block; margin: auto;" /></p>
 </div>
 <div id="section-the-decision-tree" class="section level3">
 <h3>The decision tree</h3>
-<p>This section provides an explanation of the decision tree used in this practical assignment. The decision tree compares two strategies: “Aneurysm treatment” and “Watchful waiting”. The “Detection” rectangle represents the decision node (i.e. the point where the different strategies are defined). Both main branches of the decision tree describe the possible trajectories for each of these strategies. The circles are the chance nodes. Figure 1 provides a textual description of the trajectories, and Figure 2 provides a description of which probabilities belongs to each branch of the decision tree.<br />
-<strong>NOTE</strong>: the sum of the probabilities following a chance node must sum up to 1.</p>
-<div class="figure" style="text-align: center">
-<img src="Tutorial_decision_tree_files/images/DT_graph.png" alt="Description decision tree" width="420" />
-<p class="caption">
-Description decision tree
-</p>
+<p>This section provides an explanation of the decision tree used in this practical assignment. The decision tree compares two strategies: “Aneurysm treatment” and “Watchful waiting”. The “Detection” rectangle represents the <strong>decision node</strong> (i.e. the point where the different strategies are defined). Both main branches of the decision tree describe the possible trajectories for each of the strategies: the treatment strategy and “watchful waiting”. The circles are the <strong>chance nodes</strong>. The different trajectories that individuals can follow are called <strong>pathways</strong>. Each pathway is associated with <strong>rewards</strong> or outcomes. In this case, the outcomes are utility values (health effects) and costs.<br />
+Figure 1 provides a textual description of the trajectories, and Figure 2 provides a description of which probabilities belongs to each branch of the decision tree.<br />
+<strong>NOTE</strong>:</p>
+<ul>
+<li>the label of each arrow is on top of each arrow<br />
+</li>
+<li>the sum of the probabilities following a chance node must sum up to 1</li>
+</ul>
+<p><div id="graph_text" style="width:100%; height:400px; " class="grViz html-widget html-widget-output"></div><div id="graph_text_probs" style="width:100%; height:400px; " class="grViz html-widget html-widget-output"></div></p>
 </div>
-<div class="figure" style="text-align: center">
-<img src="Tutorial_decision_tree_files/images/DT_graph_probs.png" alt="Probabilities decision tree" width="319" />
-<p class="caption">
-Probabilities decision tree
-</p>
 </div>
+<div id="section-step-1-define-parameters" class="section level2">
+<h2>Step 1: Define parameters</h2>
+<p>This part of the assignment aims at defining the different parameters of the decision tree. In the following R code chunk, you can see the different parameters of the decision tree. The definition of each parameter follows in the comment.</p>
+<pre class="r"><code># Probabilities
+p_Rupture &lt;- 0.3 # Probability of Aneurysm rupture
+p_Stable &lt;- 0 # Probability of Aneurysm remaining stable
+p_DeathRupture &lt;- 0.4 # Probability of death when Aneurysm is ruptured
+p_DisabledRupture &lt;- 0.35 # Probability of disability when Aneurysm is ruptured
+p_SurvivalRupture &lt;- 0.25 # Probability of surviving and being in good health when Aneurysm is ruptured
+p_Anxious &lt;- 0.6 # Probability of being anxious when Aneurysm remains stable
+p_NotAnxious &lt;- 0.4 # Probability of not being anxious (and being in good health) when Aneurysm remains stable
+p_Clipping &lt;- 0.3 # Probability of clipping the Aneurysm
+p_Coiling &lt;- 0.7 # Probability of coiling the Aneurysm
+p_DeathClipping &lt;- 0 # Probability of death when Aneurysm is clipped
+p_DisabledClipping &lt;- 0.25 # Probability of disability when Aneurysm is clipped
+p_SurvivalClipping &lt;- 0.65 # Probability of surviving and being in good health when Aneurysm is clipped
+p_DeathCoiling &lt;- 0.05 # Probability of death when Aneurysm is coiled
+p_DisabledCoiling &lt;- 0 # Probability of disability when Aneurysm is coiled
+p_SurvivalCoiling &lt;- 0.8 # Probability of surviving and being in good health when Aneurysm is coiled
+
+# Utility values
+u_Healthy  &lt;- 0.80 # Utility of patient in good health
+u_Disabled &lt;- 0.40 # Utility of disabled patient
+u_Anxious  &lt;- 0.70 # Utility of anxious patient
+u_Death    &lt;- 0    # Utility of dying
+
+# Costs
+c_Rupture   &lt;- 50000 # Cost of Aneurysm rupture
+c_Clipping  &lt;- 20000 # Cost of Aneurysm clipping
+c_Coiling   &lt;- 13000 # Cost of Aneurysm coiling
+c_Disabled  &lt;- 5000  # Cost of disabled patient</code></pre>
+<p>As you can see, the <code>p_Stable</code>, <code>p_DeathClipping</code> and <code>p_DisabledCoiling</code> are not defined. Calculate <code>p_Stable</code>, <code>p_DeathClipping</code> and <code>p_DisabledCoiling</code> using the already defined probabilities and the diagram of the decision tree diagram displayed provided on the previous tab.</p>
+<div class="tutorial-exercise" data-label="calc_probs" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_Stable  
+p_DeathClipping 
+p_DisabledCoiling</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_probs-hint" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;Use &lt;- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1.&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_probs-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_Stable &lt;- 1 - p_Rupture 
+p_DeathClipping  &lt;- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling &lt;- 1- p_DeathCoiling - p_SurvivalCoiling</code></pre>
+</div>
+</div>
+<div id="section-step-2-calculate-probabilities-of-pathways" class="section level2">
+<h2>Step 2: Calculate probabilities of pathways</h2>
+<p>Now that we have calculated all probabilities of the decision tree, we have to calculate the probabilities associated with each pathway (A to K).</p>
+<div id="section-calculations" class="section level3">
+<h3>Calculations</h3>
+<div class="tutorial-exercise-support" data-label="setup_p_path" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_Stable &lt;- 1 - p_Rupture 
+p_DeathClipping  &lt;- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling &lt;- 1- p_DeathCoiling - p_SurvivalCoiling</code></pre>
+</div>
+<p>Calculate the probabilities of each pathway using the probabilities defined in the previous step. To facilitate it, the <code>p_Stable</code>, <code>p_DeathClipping</code> and <code>p_DisabledCoiling</code> have been loaded for this exercise.<br />
+Allocate the probabilities to the objects below. <code>p_path_</code> means “Probability of pathway”.</p>
+<div class="tutorial-exercise" data-label="calc_p_pathways" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_path_A
+p_path_B
+p_path_C
+p_path_D
+p_path_E
+p_path_F
+p_path_G
+p_path_H
+p_path_I
+p_path_J
+p_path_K</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"setup_p_path","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_p_pathways-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;The probability of a pathway is obtained by multiplying the probabilities leading to a final node of the graph.&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_p_pathways-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_path_A &lt;- p_Rupture * p_DeathRupture # Example: the probability of the pathway A is the multiplication of </code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_p_pathways-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_path_A &lt;- p_Rupture * p_DeathRupture
+p_path_B &lt;- p_Rupture * p_DisabledRupture
+p_path_C &lt;- p_Rupture * p_SurvivalRupture
+p_path_D &lt;- p_Stable * p_Anxious
+p_path_E &lt;- p_Stable * p_NotAnxious
+p_path_F &lt;- p_Clipping * p_DeathClipping
+p_path_G &lt;- p_Clipping * p_DisabledClipping
+p_path_H &lt;- p_Clipping * p_SurvivalClipping
+p_path_I &lt;- p_Coiling * p_DeathCoiling
+p_path_J &lt;- p_Coiling * p_DisabledCoiling
+p_path_K &lt;- p_Coiling * p_SurvivalCoiling</code></pre>
+</div>
+</div>
+<div id="section-answers" class="section level3">
+<h3>Answers</h3>
+The probability of the pathway should be the following:
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Names"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Probabilities"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"Probability of pathway A","2":"0.120"},{"1":"Probability of pathway B","2":"0.105"},{"1":"Probability of pathway C","2":"0.075"},{"1":"Probability of pathway D","2":"0.420"},{"1":"Probability of pathway E","2":"0.280"},{"1":"Probability of pathway F","2":"0.030"},{"1":"Probability of pathway G","2":"0.075"},{"1":"Probability of pathway H","2":"0.195"},{"1":"Probability of pathway I","2":"0.035"},{"1":"Probability of pathway J","2":"0.105"},{"1":"Probability of pathway K","2":"0.560"},{"1":"Sum of probabilities","2":"2.000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="section-step-3-assign-outcomes-to-pathways" class="section level2">
+<h2>Step 3: Assign outcomes to pathways</h2>
+<p>This steps consists of calculating the costs and effects attributed to each pathway.</p>
+<div id="section-utility-value-of-each-pathway" class="section level3">
+<h3>Utility value of each pathway</h3>
+<p>Assign the utility values to each pathway. The pathways are described at the beginning of the tutorial. For your convenience, the utility values are displayed here once again.</p>
+<pre class="r"><code># Utility values
+u_Healthy  &lt;- 0.80 # Utility of patient in good health
+u_Disabled &lt;- 0.40 # Utility of disabled patient
+u_Anxious  &lt;- 0.70 # Utility of anxious patient
+u_Death    &lt;- 0    # Utility of dying</code></pre>
+In the code chunk below <code>e_path_A</code> means “effects associated with pathway A”.
+<div class="tutorial-exercise" data-label="assign_utils" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>e_path_A 
+e_path_B  
+e_path_C 
+e_path_D 
+e_path_E 
+e_path_F 
+e_path_G 
+e_path_H 
+e_path_I 
+e_path_J 
+e_path_K </code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="assign_utils-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;Use &lt;- to assign the utility values to the effectiveness outcome of the pathways&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="assign_utils-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>e_path_A &lt;- u_Death # Example for pathway A</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="assign_utils-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>e_path_A &lt;- u_Death
+e_path_B &lt;- u_Disabled 
+e_path_C &lt;- u_Healthy
+e_path_D &lt;- u_Anxious
+e_path_E &lt;- u_Healthy
+e_path_F &lt;- u_Death
+e_path_G &lt;- u_Disabled
+e_path_H &lt;- u_Healthy
+e_path_I &lt;- u_Death
+e_path_J &lt;- u_Disabled
+e_path_K &lt;- u_Healthy</code></pre>
+</div>
+</div>
+<div id="section-costs-of-each-pathway" class="section level3">
+<h3>Costs of each pathway</h3>
+<p>Assign the costs to each pathway. The pathways are described at the beginning of the tutorial. For your convenience, the costs are displayed here once again.</p>
+<pre class="r"><code># Costs
+c_Rupture   &lt;- 50000 # Cost of Aneurysm rupture
+c_Clipping  &lt;- 20000 # Cost of Aneurysm clipping
+c_Coiling   &lt;- 13000 # Cost of Aneurysm coiling
+c_Disabled  &lt;- 5000  # Cost of disabled patient</code></pre>
+In the code chunk below <code>c_path_A</code> means “costs associated with pathway A”.
+<div class="tutorial-exercise" data-label="assign_costs" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>c_path_A 
+c_path_B  
+c_path_C 
+c_path_D 
+c_path_E 
+c_path_F 
+c_path_G 
+c_path_H 
+c_path_I 
+c_path_J 
+c_path_K </code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="assign_costs-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;Use &lt;- to assign the costs outcome to the pathways&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="assign_costs-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>c_path_A &lt;- c_Rupture # Example for pathway A</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="assign_costs-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>c_path_A &lt;- c_Rupture
+c_path_B &lt;- c_Rupture + c_Disabled
+c_path_C &lt;- c_Rupture
+c_path_D &lt;- 0
+c_path_E &lt;- 0
+c_path_F &lt;- c_Clipping
+c_path_G &lt;- c_Clipping + c_Disabled
+c_path_H &lt;- c_Clipping
+c_path_I &lt;- c_Coiling
+c_path_J &lt;- c_Coiling + c_Disabled
+c_path_K &lt;- c_Coiling</code></pre>
+</div>
+</div>
+<div id="section-overview-effects-and-costs-of-pathways" class="section level3">
+<h3>Overview effects and costs of pathways</h3>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Pathway"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Effects"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Costs"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"A","2":"0.0","3":"50000"},{"1":"B","2":"0.4","3":"55000"},{"1":"C","2":"0.8","3":"50000"},{"1":"D","2":"0.7","3":"0"},{"1":"E","2":"0.8","3":"0"},{"1":"F","2":"0.0","3":"20000"},{"1":"G","2":"0.4","3":"25000"},{"1":"H","2":"0.8","3":"20000"},{"1":"I","2":"0.0","3":"13000"},{"1":"J","2":"0.4","3":"18000"},{"1":"K","2":"0.8","3":"13000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="section-step-4-calculate-expected-effects-and-costs-of-pathways" class="section level2">
+<h2>Step 4: Calculate expected effects and costs of pathways</h2>
+<p>We have just calculated the utility values and costs of each pathway. These utility values and costs are the outcomes that an individual would obtain if he/she would follow a specific pathway. However, only a proportion of individuals will follow a specific pathway, based on the probabilities of each of these pathways. Therefore, to calculate the total expected outcomes of each strategy, we first have to calculate the <strong>expected</strong> utility values and costs of each pathway. These are obtained by multiplying the probabilities of each pathway by their outcomes: their utility value and costs.</p>
+<div id="section-calculations-1" class="section level3">
+<h3>Calculations</h3>
+<p>Calculate the expected utility values and costs of each pathway in the following chunk. To do so, use the probabilities, utility values, and costs of each pathway that we have defined in Steps 2 and 3. In the following code chunk, <code>t_e_path_A</code> means “total expected utility values (effects) of pathway A” and <code>t_c_path_A</code> means “total expected costs of pathway A” and so on for the other pathways. For your convenience, the probabilities (<code>p_path_</code> objects), utility values (<code>e_path_</code> objects), and costs (<code>c_path_</code> objects) of each pathway have been loaded and can be used to perform these calculations.</p>
+<div class="tutorial-exercise-support" data-label="setup_calc_out" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_Stable &lt;- 1 - p_Rupture 
+p_DeathClipping  &lt;- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling &lt;- 1- p_DeathCoiling - p_SurvivalCoiling
+
+# Probabilities
+p_path_A &lt;- p_Rupture * p_DeathRupture
+p_path_B &lt;- p_Rupture * p_DisabledRupture
+p_path_C &lt;- p_Rupture * p_SurvivalRupture
+p_path_D &lt;- p_Stable * p_Anxious
+p_path_E &lt;- p_Stable * p_NotAnxious
+p_path_F &lt;- p_Clipping * p_DeathClipping
+p_path_G &lt;- p_Clipping * p_DisabledClipping
+p_path_H &lt;- p_Clipping * p_SurvivalClipping
+p_path_I &lt;- p_Coiling * p_DeathCoiling
+p_path_J &lt;- p_Coiling * p_DisabledCoiling
+p_path_K &lt;- p_Coiling * p_SurvivalCoiling
+
+# Effects
+e_path_A &lt;- u_Death
+e_path_B &lt;- u_Disabled 
+e_path_C &lt;- u_Healthy
+e_path_D &lt;- u_Anxious
+e_path_E &lt;- u_Healthy
+e_path_F &lt;- u_Death
+e_path_G &lt;- u_Disabled
+e_path_H &lt;- u_Healthy
+e_path_I &lt;- u_Death
+e_path_J &lt;- u_Disabled
+e_path_K &lt;- u_Healthy
+
+# Costs
+c_path_A &lt;- c_Rupture
+c_path_B &lt;- c_Rupture + c_Disabled
+c_path_C &lt;- c_Rupture
+c_path_D &lt;- 0
+c_path_E &lt;- 0
+c_path_F &lt;- c_Clipping
+c_path_G &lt;- c_Clipping + c_Disabled
+c_path_H &lt;- c_Clipping
+c_path_I &lt;- c_Coiling
+c_path_J &lt;- c_Coiling + c_Disabled
+c_path_K &lt;- c_Coiling</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="calc_outcomes" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Expected effects
+t_e_path_A
+t_e_path_B
+t_e_path_C
+t_e_path_D
+t_e_path_E
+t_e_path_F
+t_e_path_G
+t_e_path_H
+t_e_path_I
+t_e_path_J
+t_e_path_K
+
+# Expected costs
+t_c_path_A
+t_c_path_B
+t_c_path_C
+t_c_path_D
+t_c_path_E
+t_c_path_F
+t_c_path_G
+t_c_path_H
+t_c_path_I
+t_c_path_J
+t_c_path_K</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"setup_calc_out","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_outcomes-hint-1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;Multiply the probability of each pathway by their utility value (effects) and costs&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_outcomes-hint-2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>t_e_path_A &lt;- p_path_A * e_path_A # Example for expected utility values of pathway A
+t_c_path_A &lt;- p_path_A * c_path_A # Example for expected costs of pathway A</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_outcomes-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>t_e_path_A &lt;- p_path_A * e_path_A
+t_e_path_B &lt;- p_path_B * e_path_B
+t_e_path_C &lt;- p_path_C * e_path_C
+t_e_path_D &lt;- p_path_D * e_path_D
+t_e_path_E &lt;- p_path_E * e_path_E
+t_e_path_F &lt;- p_path_F * e_path_F
+t_e_path_G &lt;- p_path_G * e_path_G
+t_e_path_H &lt;- p_path_H * e_path_H
+t_e_path_I &lt;- p_path_I * e_path_I
+t_e_path_J &lt;- p_path_J * e_path_J
+t_e_path_K &lt;- p_path_K * e_path_K
+
+t_c_path_A &lt;- p_path_A * c_path_A
+t_c_path_B &lt;- p_path_B * c_path_B
+t_c_path_C &lt;- p_path_C * c_path_C
+t_c_path_D &lt;- p_path_D * c_path_D
+t_c_path_E &lt;- p_path_E * c_path_E
+t_c_path_F &lt;- p_path_F * c_path_F
+t_c_path_G &lt;- p_path_G * c_path_G
+t_c_path_H &lt;- p_path_H * c_path_H
+t_c_path_I &lt;- p_path_I * c_path_I
+t_c_path_J &lt;- p_path_J * c_path_J
+t_c_path_K &lt;- p_path_K * c_path_K</code></pre>
+</div>
+</div>
+<div id="section-overview-expected-effects-and-costs" class="section level3">
+<h3>Overview expected effects and costs</h3>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Pathway"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Probabilities"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Effects"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Costs"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"A","2":"0.120","3":"0.000","4":"6000"},{"1":"B","2":"0.105","3":"0.042","4":"5775"},{"1":"C","2":"0.075","3":"0.060","4":"3750"},{"1":"D","2":"0.420","3":"0.294","4":"0"},{"1":"E","2":"0.280","3":"0.224","4":"0"},{"1":"F","2":"0.030","3":"0.000","4":"600"},{"1":"G","2":"0.075","3":"0.030","4":"1875"},{"1":"H","2":"0.195","3":"0.156","4":"3900"},{"1":"I","2":"0.035","3":"0.000","4":"455"},{"1":"J","2":"0.105","3":"0.042","4":"1890"},{"1":"K","2":"0.560","3":"0.448","4":"7280"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="section-step-5-calculate-expected-effects-and-costs-of-each-strategy" class="section level2">
+<h2>Step 5: Calculate expected effects and costs of each strategy</h2>
+<p>Now that we have calculated the expected outcomes of each pathway, we can finally calculate the expected outcomes of each strategy! This can be done by summing up all expected outcomes per strategy</p>
+<div id="section-calculations-2" class="section level3">
+<h3>Calculations</h3>
+<p>Calculate these expected outcomes in the following chunk. for your convenience, the <code>t_e_path_</code> and <code>t_c_path_</code> have been loaded and can be used to perform these calculations.</p>
+<div class="tutorial-exercise-support" data-label="setup_calc_strat_out" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Calculation missing probabilities
+p_Stable &lt;- 1 - p_Rupture 
+p_DeathClipping  &lt;- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling &lt;- 1- p_DeathCoiling - p_SurvivalCoiling
+
+# Probabilities
+p_path_A &lt;- p_Rupture * p_DeathRupture
+p_path_B &lt;- p_Rupture * p_DisabledRupture
+p_path_C &lt;- p_Rupture * p_SurvivalRupture
+p_path_D &lt;- p_Stable * p_Anxious
+p_path_E &lt;- p_Stable * p_NotAnxious
+p_path_F &lt;- p_Clipping * p_DeathClipping
+p_path_G &lt;- p_Clipping * p_DisabledClipping
+p_path_H &lt;- p_Clipping * p_SurvivalClipping
+p_path_I &lt;- p_Coiling * p_DeathCoiling
+p_path_J &lt;- p_Coiling * p_DisabledCoiling
+p_path_K &lt;- p_Coiling * p_SurvivalCoiling
+
+# Effects
+e_path_A &lt;- u_Death
+e_path_B &lt;- u_Disabled 
+e_path_C &lt;- u_Healthy
+e_path_D &lt;- u_Anxious
+e_path_E &lt;- u_Healthy
+e_path_F &lt;- u_Death
+e_path_G &lt;- u_Disabled
+e_path_H &lt;- u_Healthy
+e_path_I &lt;- u_Death
+e_path_J &lt;- u_Disabled
+e_path_K &lt;- u_Healthy
+
+# Costs
+c_path_A &lt;- c_Rupture
+c_path_B &lt;- c_Rupture + c_Disabled
+c_path_C &lt;- c_Rupture
+c_path_D &lt;- 0
+c_path_E &lt;- 0
+c_path_F &lt;- c_Clipping
+c_path_G &lt;- c_Clipping + c_Disabled
+c_path_H &lt;- c_Clipping
+c_path_I &lt;- c_Coiling
+c_path_J &lt;- c_Coiling + c_Disabled
+c_path_K &lt;- c_Coiling
+
+# Total expected effects
+t_e_path_A &lt;- p_path_A * e_path_A
+t_e_path_B &lt;- p_path_B * e_path_B
+t_e_path_C &lt;- p_path_C * e_path_C
+t_e_path_D &lt;- p_path_D * e_path_D
+t_e_path_E &lt;- p_path_E * e_path_E
+t_e_path_F &lt;- p_path_F * e_path_F
+t_e_path_G &lt;- p_path_G * e_path_G
+t_e_path_H &lt;- p_path_H * e_path_H
+t_e_path_I &lt;- p_path_I * e_path_I
+t_e_path_J &lt;- p_path_J * e_path_J
+t_e_path_K &lt;- p_path_K * e_path_K
+
+# Total expected costs
+t_c_path_A &lt;- p_path_A * c_path_A
+t_c_path_B &lt;- p_path_B * c_path_B
+t_c_path_C &lt;- p_path_C * c_path_C
+t_c_path_D &lt;- p_path_D * c_path_D
+t_c_path_E &lt;- p_path_E * c_path_E
+t_c_path_F &lt;- p_path_F * c_path_F
+t_c_path_G &lt;- p_path_G * c_path_G
+t_c_path_H &lt;- p_path_H * c_path_H
+t_c_path_I &lt;- p_path_I * c_path_I
+t_c_path_J &lt;- p_path_J * c_path_J
+t_c_path_K &lt;- p_path_K * c_path_K</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="calc_out_strat" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>t_e_ww  # expected effects &quot;watchful waiting&quot; strategy
+t_c_ww  # expected costs &quot;watchful waiting&quot; strategy
+
+t_e_trt # expected effects treatment strategy
+t_c_trt # expected costs treatment strategy</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"setup_calc_strat_out","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_out_strat-hint" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;Use the sum() function or +&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_out_strat-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>t_e_ww  &lt;- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+t_c_ww  &lt;- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+t_e_trt &lt;- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+t_c_trt &lt;- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)</code></pre>
+</div>
+</div>
+<div id="section-overview-totals-per-strategy" class="section level3">
+<h3>Overview totals per strategy</h3>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Strategy"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Total.effects"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Total.costs"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Watchful waiting","2":"0.620","3":"15525"},{"1":"Treatment","2":"0.676","3":"16000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="section-step-6-calculate-incremental-effects-costs-and-incremental-cost-effectiveness-ratio" class="section level2">
+<h2>Step 6: Calculate incremental effects, costs, and incremental cost-effectiveness ratio</h2>
+Based on the total expected utility value (effects) and costs of both strategies, we can now calculate the incremental effects and costs of the treatment strategy versus “watchful waiting”. We can also calculate the incremental cost-effectiveness ratio of the treatment strategy versus “watchful waiting”.<br />
+### Calculation The total effects and costs defined in previous step have been loaded and can be used to perform these calculations.<br />
+
+<div class="tutorial-exercise-support" data-label="set_up_comparison" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p_Stable &lt;- 1 - p_Rupture 
+p_DeathClipping  &lt;- 1 - p_DisabledClipping - p_SurvivalClipping
+p_DisabledCoiling &lt;- 1- p_DeathCoiling - p_SurvivalCoiling
+
+p_path_A &lt;- p_Rupture * p_DeathRupture
+p_path_B &lt;- p_Rupture * p_DisabledRupture
+p_path_C &lt;- p_Rupture * p_SurvivalRupture
+p_path_D &lt;- p_Stable * p_Anxious
+p_path_E &lt;- p_Stable * p_NotAnxious
+p_path_F &lt;- p_Clipping * p_DeathClipping
+p_path_G &lt;- p_Clipping * p_DisabledClipping
+p_path_H &lt;- p_Clipping * p_SurvivalClipping
+p_path_I &lt;- p_Coiling * p_DeathCoiling
+p_path_J &lt;- p_Coiling * p_DisabledCoiling
+p_path_K &lt;- p_Coiling * p_SurvivalCoiling
+
+e_path_A &lt;- u_Death
+e_path_B &lt;- u_Disabled 
+e_path_C &lt;- u_Healthy
+e_path_D &lt;- u_Anxious
+e_path_E &lt;- u_Healthy
+e_path_F &lt;- u_Death
+e_path_G &lt;- u_Disabled
+e_path_H &lt;- u_Healthy
+e_path_I &lt;- u_Death
+e_path_J &lt;- u_Disabled
+e_path_K &lt;- u_Healthy
+
+c_path_A &lt;- c_Rupture
+c_path_B &lt;- c_Rupture + c_Disabled
+c_path_C &lt;- c_Rupture
+c_path_D &lt;- 0
+c_path_E &lt;- 0
+c_path_F &lt;- c_Clipping
+c_path_G &lt;- c_Clipping + c_Disabled
+c_path_H &lt;- c_Clipping
+c_path_I &lt;- c_Coiling
+c_path_J &lt;- c_Coiling + c_Disabled
+c_path_K &lt;- c_Coiling
+
+t_e_path_A &lt;- p_path_A * e_path_A
+t_e_path_B &lt;- p_path_B * e_path_B
+t_e_path_C &lt;- p_path_C * e_path_C
+t_e_path_D &lt;- p_path_D * e_path_D
+t_e_path_E &lt;- p_path_E * e_path_E
+t_e_path_F &lt;- p_path_F * e_path_F
+t_e_path_G &lt;- p_path_G * e_path_G
+t_e_path_H &lt;- p_path_H * e_path_H
+t_e_path_I &lt;- p_path_I * e_path_I
+t_e_path_J &lt;- p_path_J * e_path_J
+t_e_path_K &lt;- p_path_K * e_path_K
+
+t_c_path_A &lt;- p_path_A * c_path_A
+t_c_path_B &lt;- p_path_B * c_path_B
+t_c_path_C &lt;- p_path_C * c_path_C
+t_c_path_D &lt;- p_path_D * c_path_D
+t_c_path_E &lt;- p_path_E * c_path_E
+t_c_path_F &lt;- p_path_F * c_path_F
+t_c_path_G &lt;- p_path_G * c_path_G
+t_c_path_H &lt;- p_path_H * c_path_H
+t_c_path_I &lt;- p_path_I * c_path_I
+t_c_path_J &lt;- p_path_J * c_path_J
+t_c_path_K &lt;- p_path_K * c_path_K
+
+t_e_ww  &lt;- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+t_c_ww  &lt;- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+t_e_trt &lt;- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+t_c_trt &lt;- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="calc_final" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>inc_e_trt # incremental effects
+inc_c_trt # incremental costs
+icer# incremental cost-effectiveness ratio</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"set_up_comparison","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_final-hint" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>&quot;The incremental effects (and costs) of the treatment strategy are calculated as the difference in effects (costs) between the treatment strategy and the watchful waiting strategy. The incremental cost-effectiveness ratio (ICER) is the ratio of the incremental costs by the incremental effects.&quot;</code></pre>
+</div>
+<div class="tutorial-exercise-support" data-label="calc_final-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>inc_e_trt &lt;- t_e_trt - t_e_ww
+inc_c_trt &lt;- t_c_trt - t_c_ww
+icer &lt;- inc_c_trt / inc_e_trt</code></pre>
+</div>
+<div id="section-overview-final-results" class="section level3">
+<h3>Overview final results</h3>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Strategy"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Total.effects"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Total.costs"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Incremental.effects"],"name":[4],"type":["chr"],"align":["left"]},{"label":["Incremental.costs"],"name":[5],"type":["chr"],"align":["left"]},{"label":["ICER"],"name":[6],"type":["chr"],"align":["left"]}],"data":[{"1":"Watchful waiting","2":"0.620","3":"15525","4":"-","5":"-","6":"-"},{"1":"Treatment","2":"0.676","3":"16000","4":"0.0559999999999999","5":"475","6":"8482"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="section-decision-tree-complete" class="section level2">
+<h2>Decision tree complete</h2>
+<p>In this tab, the decision tree has been filled with the input values of the previous steps. You can change the input values and evaluate what the impact of changing these inputs is on the results. This completed decision tree can be used to answer the questions in the following tab.</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="p_Rupture-label" for="p_Rupture">Probability of a rupture in watchful witing strategy</label>
+<input id="p_Rupture" type="number" class="form-control" value="0.3" min="0" max="1"/>
+</div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="u_Anxious-label" for="u_Anxious">Utility value of being anxious</label>
+<input id="u_Anxious" type="number" class="form-control" value="0.7" min="0" max="1"/>
+</div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="u_Healthy-label" for="u_Healthy">Utility value of being healthy</label>
+<input id="u_Healthy" type="number" class="form-control" value="0.8" min="0" max="1"/>
+</div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="p_Clipping-label" for="p_Clipping">Probability of Clipping</label>
+<input id="p_Clipping" type="number" class="form-control" value="0.3" min="0" max="1"/>
+</div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="p_Coiling-label" for="p_Coiling">Probability of Coiling</label>
+<input id="p_Coiling" type="number" class="form-control" value="0.7" min="0" max="1"/>
+</div>
+<p><hr/><div id="results" class="shiny-html-output"></div></p>
+</div>
+<div id="section-questions-concerning-the-results" class="section level2">
+<h2>Questions concerning the results</h2>
+<div id="section-questions" class="section level3">
+<h3>Questions</h3>
+<ol style="list-style-type: decimal">
+<li>Look at your final results:</li>
+</ol>
+<p>1.a. What is your conclusion?</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_1-label" for="Answer_1">Explain your answer</label>
+<input id="Answer_1" type="text" class="form-control" value=""/>
+</div>
+<p>1.b. Which strategy has the most favorable cost-effectiveness if we are willing to pay €20,000 for a gain in utility of 1 (or 1 additional QALY if we assume a one-year time horizon for this decision tree)?</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_2-label" for="Answer_2">Explain your answer</label>
+<input id="Answer_2" type="text" class="form-control" value=""/>
+</div>
+<p>1.c. How does the utility of patients with an untreated aneurysm (u_Anxious) affect the cost-effectiveness results? What happens if you disregard any potential anxiety and set u_Anxious equal to u_Healthy?</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_3-label" for="Answer_3">Explain your answer</label>
+<input id="Answer_3" type="text" class="form-control" value=""/>
+</div>
+<p>1.d. In the past, aneurysm coiling, which is an endovascular procedure was not yet available in all hospitals. What would you advise to a hospital which only offers aneurysm clipping, should they go with the Watchfull Waiting strategy or with the Aneurysm Treatment (100% clipping) strategy?</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_4-label" for="Answer_4">Explain your answer</label>
+<input id="Answer_4" type="text" class="form-control" value=""/>
+</div>
+<p>1.e. And what would you advise to new patients with a detected unruptured aneurysm?</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_5-label" for="Answer_5">Explain your answer</label>
+<input id="Answer_5" type="text" class="form-control" value=""/>
+</div>
+<ol start="2" style="list-style-type: decimal">
+<li>If you consider extending this decision tree model<br />
+2.a. How would you include evidence suggesting that intracranial aneurysms may remain stable for several years but then start to increase in size and rupture?</li>
+</ol>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_6-label" for="Answer_6">Explain your answer</label>
+<input id="Answer_6" type="text" class="form-control" value=""/>
+</div>
+<p>2.b. It is known that individuals with an unruptured intracranial aneurysm are at increased risk of developing new intracranial aneurysms, regardless of whether the first aneurysm ruptures or remains stable. How would you include the aspect of new aneurysm development in the model?</p>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="Answer_7-label" for="Answer_7">Explain your answer</label>
+<input id="Answer_7" type="text" class="form-control" value=""/>
+</div>
+</div>
+<div id="section-discussion-answers" class="section level3">
+<h3>Discussion answers</h3>
+1.a. What is your conclusion?<br />
+<strong>Answer:</strong> From the results we can conclude that the Aneurysm Treatment strategy results in additional health gain at additional costs compared to the Watchful waiting strategy.<br />
+1.b. Which strategy has the most favorable cost-effectiveness if we are willing to pay €20,000 for a gain in utility of 1 (or 1 additional QALY if we assume a one-year time horizon for this decision tree)?<br />
+<strong>Answer:</strong> The Aneurysm Treatment strategy has the most favorable cost-effectiveness if we apply a willingness-to-pay threshold of €20,000/QALY.<br />
+1.c. How does the utility of patients with an untreated aneurysm (<code>u_Anxious</code>) affect the cost-effectiveness results? What happens if you disregard any potential anxiety and set uAnxious equal to u_Healthy?<br />
+<strong>Answer:</strong> When <code>u_Anxious</code> is set to values much lower then uHealthy than the Watchful waiting strategy results in less and less QALYs. Therefore, the cost-effectiveness of the Aneurysm Treatment strategy compared to the Watchful waiting strategy becomes more and more favorable. If, on the other hand, we set <code>u_Anxious</code> equal to <code>u_Healthy</code> then NOT treating a patient with a stable aneurysm is a good strategy, as apparently these patient do not suffer from their untreated stable aneurysm in any way. Consequently, the cost-effectiveness of the Aneurysm Treatment strategy compared to the Watchful waiting strategy deteriorates, and we find: incremental costs = €475, incremental effects = 0.014 utility, and incremental cost-effectiveness ratio = €33,928.57 per QALY. This indicates that the cost-effectiveness of the Aneurysm Treatment strategy compared to the Watchful waiting strategy is no longer acceptable if we apply a willingness-to-pay threshold of €20,000/QALY.<br />
+1.d. In the past, aneurysm coiling, which is an endovascular procedure was not yet available in all hospitals. What would you advise to a hospital which only offers aneurysm clipping, should they go with the Watchfull Waiting strategy or with the Aneurysm Treatment (100% clipping) strategy?<br />
+<strong>Answer:</strong> To answer this question, set <code>p_Clipping</code> to 1 and <code>p_Coiling</code> to 0 (= all aneurysm treated with clipping). This results in the following outcomes: incremental costs = 5,725 eurors, incremental effects = 0.0 utility, and incremental cost-effectiveness ratio = <code>Inf</code> euros per QALY (cannot be calculated because difference in effect is 0). Thus, there is no difference in health outcomes between AneurysmTreatment-ClippingOnly and Watchful Waiting, but the former strategy is much more expensive than the latter! We would therefore advise hospitals which do not perform coiling to follow the Watchful Waiting strategy.<br />
+1.e. And what would you advise to new patients with a detected unruptured aneurysm?<br />
+<strong>Answer:</strong> Find a hospital in which your aneurysm can be coiled. Coiling provides better health outcomes (and is cheaper) than Watchful Waiting or Clipping.<br />
+2. If you consider extending this decision tree model<br />
+2.a. How would you include evidence suggesting that intracranial aneurysms may remain stable for several years but then start to increase in size and rupture?<br />
+<strong>Answer:</strong> Incorporating time explicitly in a decision tree model is hard and will make your model very complex. To allow aneurysms to remain stable and to increase in size and rupture later on chance nodes would need to be added for each separate year in the time horizon. This means the entire model (now defined for 1 year) would needs to be extended to 10 times its current size to allow a time horizon of 10 years.<br />
+2.b. It is known that individuals with an unruptured intracranial aneurysm are at increased risk of developing new intracranial aneurysms, regardless of whether the first aneurysm ruptures or remains stable. How would you include the aspect of new aneurysm development in the model?<br />
+<strong>Answer:</strong> Development of new aneurysm would require additional branches to be added to the tree. A new branch would need to be added for patients with 2 aneurysm, another for patients with 3 aneurysms etc. This extension would therefore only be feasible for patients with 1, 2, or 3+ aneurysms and even then the resulting decision tree would be huge.<br />
 
 <script type="application/shiny-prerendered" data-context="server-start">
 require(learnr, quietly = TRUE)
@@ -146,6 +763,308 @@ require(knitr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(shiny, quietly = TRUE)
 require(dplyr, quietly = TRUE)
+require(DiagrammeR, quietly = TRUE)
+require(magrittr, quietly = TRUE)
+
+string_graph_text <- paste0(as.character("graph LR; A[Detection] --> |Watchful waiting| B(( ));
+                                    A --> |Aneurysm treatment| C(( )); B --> |"), 
+                            "Aneurysm rupture",
+                       as.character("| D(( ));"),
+                       as.character("B --> |"), "Aneurysm remains stable",
+                       as.character("| E(( ));"),
+                       as.character("D --> |"), "Patient dies",
+                       as.character("| F[A];"),
+                       as.character("D --> |"), "Patient becomes disabled",
+                       as.character("| G[B];"),
+                       as.character("D --> |"), "Patient survives in good health",
+                       as.character("| H[C];"),
+                       as.character("E --> |"), "Patient anxious from aneurysm",
+                       as.character("| I[D];"),
+                       as.character("E --> |"), "Patient not anxious and in good health",
+                       as.character("| J[E];"),
+                       as.character("C --> |"), "Aneurysm is clipped",
+                       as.character("| K(( ));"),
+                       as.character("C --> |"), "Aneurysm is coiled",
+                       as.character("| L(( ));"),
+                       as.character("K --> |"), "Patient dies",
+                       as.character("| M[F];"),
+                       as.character("K --> |"), "Patient becomes disabled",
+                       as.character("| N[G];"),
+                       as.character("K --> |"), "Patient survives in good health",
+                       as.character("| O[H];"),
+                       as.character("L --> |"), "Patient dies",
+                       as.character("| P[I];"),
+                       as.character("L --> |"), "Patient becomes disabled",
+                       as.character("| Q[J];"),
+                       as.character("L --> |"), "Patient survives in good health",
+                       as.character("| R[K]")
+)
+
+string_graph_probs_txt <- paste0(as.character("graph LR; A[Detection] --> |Watchful waiting| B(( ));
+                                    A --> |Aneurysm treatment| C(( )); B --> |"), 
+                                 "p_Rupture",
+                             as.character("| D(( ));"),
+                             as.character("B --> |"), "p_Stable",
+                             as.character("| E(( ));"),
+                             as.character("D --> |"), "p_DeathRupture",
+                             as.character("| F[A];"),
+                             as.character("D --> |"), "p_DisabledRupture",
+                             as.character("| G[B];"),
+                             as.character("D --> |"), "p_SurvivalRupture",
+                             as.character("| H[C];"),
+                             as.character("E --> |"), "p_Anxious",
+                             as.character("| I[D];"),
+                             as.character("E --> |"), "p_NotAnxious" ,
+                             as.character("| J[E];"),
+                             as.character("C --> |"), "p_Clipping",
+                             as.character("| K(( ));"),
+                             as.character("C --> |"), "p_Coiling",
+                             as.character("| L(( ));"),
+                             as.character("K --> |"), "p_DeathClipping",
+                             as.character("| M[F];"),
+                             as.character("K --> |"), "p_DisabledClipping",
+                             as.character("| N[G];"),
+                             as.character("K --> |"), "p_SurvivalClipping",
+                             as.character("| O[H];"),
+                             as.character("L --> |"), "p_DeathCoiling",
+                             as.character("| P[I];"),
+                             as.character("L --> |"), "p_DisabledCoiling",
+                             as.character("| Q[J];"),
+                             as.character("L --> |"), "p_SurvivalCoiling",
+                             as.character("| R[K];")
+                             
+)
+
+diagram_1 <- "
+digraph {
+
+      # graph attributes
+      graph [overlap = true, 
+             rankdir = LR]
+
+      # edge attributes
+      edge [color = gray]
+
+      # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray,
+      label = '']
+      A [label = Detection] 
+      
+      # node statements
+      node [shape = oval,
+      fontname = Helvetica,
+      color = gray]
+      B [label = 'Watchful waiting'] 
+      C [label = 'Aneurysm treatment'] 
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      D; E
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      F; G; H; I 
+      
+       # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray]
+      
+      J [label = A]
+      K [label = B]
+      L [label = C]
+      M [label = D]
+      N [label = E]
+      O [label = F]
+      P [label = G]
+      Q [label = H]
+      R [label = I]
+      S [label = J]
+      T [label = K]
+      
+      1 [label = 'effect and costs pathway A']
+      2 [label = 'effect and costs pathway B']
+      3 [label = 'effect and costs pathway C']
+      4 [label = 'effect and costs pathway D']
+      5 [label = 'effect and costs pathway E']
+      6 [label = 'effect and costs pathway F']
+      7 [label = 'effect and costs pathway G']
+      8 [label = 'effect and costs pathway H']
+      9 [label = 'effect and costs pathway I']
+      10 [label = 'effect and costs pathway J']
+      11 [label = 'effect and costs pathway K']
+
+      # edge statements
+      A -> B [arrowhead = none]
+      A -> C [arrowhead = none]
+      B -> D 
+      C -> E
+      D -> F [label = 'Aneurysm rupture'] 
+      D -> G [label = 'Aneurysm remains stable']
+      E -> H [label = 'Aneurysm is clipped']
+      E -> I [label = 'Aneurysm is coiled']
+      F -> J [label = 'Patient dies']
+      F -> K [label = 'Patient becomes disabled']
+      F -> L [label = 'Patient survives in good health']
+      G -> M [label = 'Patient anxious from aneurysm']
+      G -> N [label = 'Patient not anxious and in good health']
+      H -> O [label = 'Patient dies']
+      H -> P [label = 'Patient becomes disabled']
+      H -> Q [label = 'Patient survives in good health']
+      I -> R [label = 'Patient dies']
+      I -> S [label = 'Patient becomes disabled']
+      I -> T [label = 'Patient survives in good health']
+      J -> 1
+      K -> 2
+      L -> 3
+      M -> 4
+      N -> 5
+      O -> 6
+      P -> 7
+      Q -> 8
+      R -> 9
+      S -> 10
+      T -> 11
+      }
+"
+diagram_2 <- "
+digraph {
+
+      # graph attributes
+      graph [overlap = true, 
+             rankdir = LR]
+
+      # edge attributes
+      edge [color = gray]
+
+      # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray,
+      label = '']
+      A [label = Detection] 
+      
+      # node statements
+      node [shape = oval,
+      fontname = Helvetica,
+      color = gray]
+      B [label = 'Watchful waiting'] 
+      C [label = 'Aneurysm treatment'] 
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      D; E
+      
+      # node attributes
+      node [shape = circle, 
+      width = 0.5,
+      color = black,
+      label = ' ']
+      F; G; H; I 
+      
+       # node statements
+      node [shape = box,
+      fontname = Helvetica,
+      color = gray]
+      
+      J [label = A]
+      K [label = B]
+      L [label = C]
+      M [label = D]
+      N [label = E]
+      O [label = F]
+      P [label = G]
+      Q [label = H]
+      R [label = I]
+      S [label = J]
+      T [label = K]
+      
+      
+      1 [label = 'e_path_A, c_path_A']
+      2 [label = 'e_path_B, c_path_B']
+      3 [label = 'e_path_C, c_path_C']
+      4 [label = 'e_path_D, c_path_D']
+      5 [label = 'e_path_E, c_path_E']
+      6 [label = 'e_path_F, c_path_F']
+      7 [label = 'e_path_G, c_path_G']
+      8 [label = 'e_path_H, c_path_H']
+      9 [label = 'e_path_I, c_path_I']
+      10 [label = 'e_path_J, c_path_J']
+      11 [label = 'e_path_K, c_path_K']
+      
+      # edge statements
+      A -> B [arrowhead = none]
+      A -> C [arrowhead = none]
+      B -> D 
+      C -> E
+      D -> F [label = 'p_Rupture'] 
+      D -> G [label = 'p_Stable']
+      E -> H [label = 'p_Clipping']
+      E -> I [label = 'p_Coiling']
+      F -> J [label = 'p_DeathRupture']
+      F -> K [label = 'p_DisabledRupture']
+      F -> L [label = 'p_SurvivalRupture']
+      G -> M [label = 'p_Anxious']
+      G -> N [label = 'p_NotAnxious ']
+      H -> O [label = 'p_DeathClipping']
+      H -> P [label = 'p_DisabledClipping']
+      H -> Q [label = 'p_SurvivalClipping']
+      I -> R [label = 'p_DeathCoiling']
+      I -> S [label = 'p_DisabledCoiling']
+      I -> T [label = 'p_SurvivalCoiling']
+      J -> 1
+      K -> 2
+      L -> 3
+      M -> 4
+      N -> 5
+      O -> 6
+      P -> 7
+      Q -> 8
+      R -> 9
+      S -> 10
+      T -> 11
+      }
+"
+
+# Probabilities
+p_Rupture <- 0.3 # Probability of Aneurysm rupture
+p_Stable <- 0 # Probability of Aneurysm remaining stable
+p_DeathRupture <- 0.4 # Probability of death when Aneurysm is ruptured
+p_DisabledRupture <- 0.35 # Probability of disability when Aneurysm is ruptured
+p_SurvivalRupture <- 0.25 # Probability of surviving and being in good health when Aneurysm is ruptured
+p_Anxious <- 0.6 # Probability of being anxious when Aneurysm remains stable
+p_NotAnxious <- 0.4 # Probability of not being anxious (and being in good health) when Aneurysm remains stable
+p_Clipping <- 0.3 # Probability of clipping the Aneurysm
+p_Coiling <- 0.7 # Probability of coiling the Aneurysm
+p_DeathClipping <- 0 # Probability of death when Aneurysm is clipped
+p_DisabledClipping <- 0.25 # Probability of disability when Aneurysm is clipped
+p_SurvivalClipping <- 0.65 # Probability of surviving and being in good health when Aneurysm is clipped
+p_DeathCoiling <- 0.05 # Probability of death when Aneurysm is coiled
+p_DisabledCoiling <- 0 # Probability of disability when Aneurysm is coiled
+p_SurvivalCoiling <- 0.8 # Probability of surviving and being in good health when Aneurysm is coiled
+
+# Utility values
+u_Healthy  <- 0.80 # Utility of patient in good health
+u_Disabled <- 0.40 # Utility of disabled patient
+u_Anxious  <- 0.70 # Utility of anxious patient
+u_Death    <- 0    # Utility of dying
+
+# Costs
+c_Rupture   <- 50000 # Cost of Aneurysm rupture
+c_Clipping	<- 20000 # Cost of Aneurysm clipping
+c_Coiling   <- 13000 # Cost of Aneurysm coiling
+c_Disabled  <- 5000  # Cost of disabled patient
 
 knitr::opts_chunk$set(echo = FALSE)
 </script>
@@ -155,26 +1074,192 @@ learnr:::register_http_handlers(session, metadata = NULL)
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-learnr:::prepare_tutorial_state(session)
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
-learnr:::i18n_observe_tutorial_language(input, session)
-</script>
- 
-<script type="application/shiny-prerendered" data-context="server">
 session$onSessionEnded(function() {
-        learnr:::event_trigger(session, "session_stop")
+        learnr:::session_stop_event(session)
       })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$graph_text <- renderGrViz({
+  grViz({
+    diagram_1
+    })
+  })
+
+output$graph_text_probs <- renderGrViz({
+ grViz({
+   diagram_2
+     })
+   })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-calc_probs-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-calc_probs-code-editor`)), session)
+output$`tutorial-exercise-calc_probs-output` <- renderUI({
+  `tutorial-exercise-calc_probs-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-calc_p_pathways-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-calc_p_pathways-code-editor`)), session)
+output$`tutorial-exercise-calc_p_pathways-output` <- renderUI({
+  `tutorial-exercise-calc_p_pathways-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-assign_utils-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-assign_utils-code-editor`)), session)
+output$`tutorial-exercise-assign_utils-output` <- renderUI({
+  `tutorial-exercise-assign_utils-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-assign_costs-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-assign_costs-code-editor`)), session)
+output$`tutorial-exercise-assign_costs-output` <- renderUI({
+  `tutorial-exercise-assign_costs-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-calc_outcomes-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-calc_outcomes-code-editor`)), session)
+output$`tutorial-exercise-calc_outcomes-output` <- renderUI({
+  `tutorial-exercise-calc_outcomes-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-calc_out_strat-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-calc_out_strat-code-editor`)), session)
+output$`tutorial-exercise-calc_out_strat-output` <- renderUI({
+  `tutorial-exercise-calc_out_strat-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-calc_final-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-calc_final-code-editor`)), session)
+output$`tutorial-exercise-calc_final-output` <- renderUI({
+  `tutorial-exercise-calc_final-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+output$results <- renderTable({
+  
+  p_Rupture <- input$p_Rupture 
+  u_Anxious <- input$u_Anxious
+  u_Healthy <- input$u_Healthy
+  p_Clipping <- input$p_Clipping
+  p_Coiling <- input$p_Coiling
+  
+  p_Stable <- 1 - p_Rupture 
+  p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
+  p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
+  
+  p_path_A <- p_Rupture * p_DeathRupture
+  p_path_B <- p_Rupture * p_DisabledRupture
+  p_path_C <- p_Rupture * p_SurvivalRupture
+  p_path_D <- p_Stable * p_Anxious
+  p_path_E <- p_Stable * p_NotAnxious
+  p_path_F <- p_Clipping * p_DeathClipping
+  p_path_G <- p_Clipping * p_DisabledClipping
+  p_path_H <- p_Clipping * p_SurvivalClipping
+  p_path_I <- p_Coiling * p_DeathCoiling
+  p_path_J <- p_Coiling * p_DisabledCoiling
+  p_path_K <- p_Coiling * p_SurvivalCoiling
+  
+  e_path_A <- u_Death
+  e_path_B <- u_Disabled 
+  e_path_C <- u_Healthy
+  e_path_D <- u_Anxious
+  e_path_E <- u_Healthy
+  e_path_F <- u_Death
+  e_path_G <- u_Disabled
+  e_path_H <- u_Healthy
+  e_path_I <- u_Death
+  e_path_J <- u_Disabled
+  e_path_K <- u_Healthy
+  
+  c_path_A <- c_Rupture
+  c_path_B <- c_Rupture + c_Disabled
+  c_path_C <- c_Rupture
+  c_path_D <- 0
+  c_path_E <- 0
+  c_path_F <- c_Clipping
+  c_path_G <- c_Clipping + c_Disabled
+  c_path_H <- c_Clipping
+  c_path_I <- c_Coiling
+  c_path_J <- c_Coiling + c_Disabled
+  c_path_K <- c_Coiling
+  
+  t_e_path_A <- p_path_A * e_path_A
+  t_e_path_B <- p_path_B * e_path_B
+  t_e_path_C <- p_path_C * e_path_C
+  t_e_path_D <- p_path_D * e_path_D
+  t_e_path_E <- p_path_E * e_path_E
+  t_e_path_F <- p_path_F * e_path_F
+  t_e_path_G <- p_path_G * e_path_G
+  t_e_path_H <- p_path_H * e_path_H
+  t_e_path_I <- p_path_I * e_path_I
+  t_e_path_J <- p_path_J * e_path_J
+  t_e_path_K <- p_path_K * e_path_K
+  
+  t_c_path_A <- p_path_A * c_path_A
+  t_c_path_B <- p_path_B * c_path_B
+  t_c_path_C <- p_path_C * c_path_C
+  t_c_path_D <- p_path_D * c_path_D
+  t_c_path_E <- p_path_E * c_path_E
+  t_c_path_F <- p_path_F * c_path_F
+  t_c_path_G <- p_path_G * c_path_G
+  t_c_path_H <- p_path_H * c_path_H
+  t_c_path_I <- p_path_I * c_path_I
+  t_c_path_J <- p_path_J * c_path_J
+  t_c_path_K <- p_path_K * c_path_K
+  
+  t_e_ww  <- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+  t_c_ww  <- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+  t_e_trt <- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+  t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)
+
+  t_e_ww  <- sum(t_e_path_A, t_e_path_B, t_e_path_C, t_e_path_D, t_e_path_E)
+  t_c_ww  <- sum(t_c_path_A, t_c_path_B, t_c_path_C, t_c_path_D, t_c_path_E)
+  t_e_trt <- sum(t_e_path_F, t_e_path_G, t_e_path_H, t_e_path_I, t_e_path_J, t_e_path_K)
+  t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_path_K)
+
+inc_e_trt <- t_e_trt - t_e_ww
+inc_c_trt <- t_c_trt - t_c_ww
+icer <- inc_c_trt / inc_e_trt
+
+data.frame(
+  Strategy = c("Watchful waiting",
+               "Treatment"
+               ),
+  `Total effects` = c(t_e_ww,
+                      t_e_trt
+                         ),
+  `Total costs` = round(c(t_c_ww,
+                    t_c_trt
+                       )),
+  `Incremental effects` = c("-", 
+                            inc_e_trt 
+                            ),
+  `Incremental costs` = c("-",
+                          round(inc_c_trt)
+                          ),
+  ICER = c("-",
+           round(icer)
+           )
+)
+  })
+
 </script>
  <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="dependencies">
-{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["i18n"]},{"type":"character","attributes":{},"value":["1.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/i18n"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["i18next.min.js","tutorial-i18n-init.js"]},{"type":"NULL"},{"type":"character","attributes":{},"value":["<script id=\"i18n-cstm-trns\" type=\"application/json\">{\"language\":\"en\",\"resources\":{\"en\":{\"translation\":{\"button\":{\"runcode\":\"Run Code\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Hint\",\"hint_plural\":\"Hints\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Next Hint\",\"hintprev\":\"Previous Hint\",\"solution\":\"Solution\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copy to Clipboard\",\"startover\":\"Start Over\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continue\",\"submitanswer\":\"Submit Answer\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Previous Topic\",\"nexttopic\":\"Next Topic\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Try Again\"},\"text\":{\"startover\":\"Start Over\",\"areyousure\":\"Are you sure you want to start over? (all exercise progress will be reset)\",\"youmustcomplete\":\"You must complete the\",\"exercise\":\"exercise\",\"exercise_plural\":\"exercises\",\"inthissection\":\"in this section before continuing.\",\"code\":\"Code\",\"enginecap\":\"{{engine}} $t(text.code)\",\"quiz\":\"Quiz\",\"blank\":\"blank\",\"blank_plural\":\"blanks\",\"exercisecontainsblank\":\"This exercise contains {{count}} $t(text.blank).\",\"pleasereplaceblank\":\"Please replace {{blank}} with valid code.\",\"unparsable\":\"It looks like this might not be valid R code. R cannot determine how to turn your text into a complete command. You may have forgotten to fill in a blank, to remove an underscore, to include a comma between arguments, or to close an opening <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> or <code>{<\\/code> with a matching <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code> or <code>}<\\/code>.\\n\",\"and\":\"and\",\"or\":\"or\",\"listcomma\":\", \",\"oxfordcomma\":\",\"}}},\"fr\":{\"translation\":{\"button\":{\"runcode\":\"Lancer le Code\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Indication\",\"hint_plural\":\"Indications\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Indication Suivante\",\"hintprev\":\"Indication Précédente\",\"solution\":\"Solution\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copier dans le Presse-papier\",\"startover\":\"Recommencer\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continuer\",\"submitanswer\":\"Soumettre\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Chapitre Précédent\",\"nexttopic\":\"Chapitre Suivant\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Réessayer\"},\"text\":{\"startover\":\"Recommencer\",\"areyousure\":\"Êtes-vous certains de vouloir recommencer? (La progression sera remise à zéro)\",\"youmustcomplete\":\"Vous devez d'abord compléter\",\"exercise\":\"l'exercice\",\"exercise_plural\":\"des exercices\",\"inthissection\":\"de cette section avec de continuer.\",\"code\":\"Code\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"and\":\"et\",\"or\":\"ou\",\"oxfordcomma\":\"\"}}},\"es\":{\"translation\":{\"button\":{\"runcode\":\"Ejecutar código\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Pista\",\"hint_plural\":\"Pistas\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Siguiente pista\",\"hintprev\":\"Pista anterior\",\"solution\":\"Solución\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copiar al portapapeles\",\"startover\":\"Reiniciar\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continuar\",\"submitanswer\":\"Enviar respuesta\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Tema anterior\",\"nexttopic\":\"Tema siguiente\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Volver a intentar\"},\"text\":{\"startover\":\"Reiniciar\",\"areyousure\":\"¿De verdad quieres empezar de nuevo? (todo el progreso del ejercicio se perderá)\",\"youmustcomplete\":\"Debes completar\",\"exercise\":\"el ejercicio\",\"exercise_plural\":\"los ejercicios\",\"inthissection\":\"en esta sección antes de continuar.\",\"code\":\"Código\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Cuestionario\",\"and\":\"y\",\"or\":\"o\",\"oxfordcomma\":\"\"}}},\"pt\":{\"translation\":{\"button\":{\"runcode\":\"Executar código\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Dica\",\"hint_plural\":\"Dicas\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Próxima dica\",\"hintprev\":\"Dica anterior\",\"solution\":\"Solução\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copiar para a área de transferência\",\"startover\":\"Reiniciar\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continuar\",\"submitanswer\":\"Enviar resposta\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Tópico anterior\",\"nexttopic\":\"Próximo tópico\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Tentar novamente\"},\"text\":{\"startover\":\"Reiniciar\",\"areyousure\":\"Tem certeza que deseja começar novamente? (todo o progresso feito será perdido)\",\"youmustcomplete\":\"Você deve completar\",\"exercise\":\"o exercício\",\"exercise_plural\":\"os exercícios\",\"inthissection\":\"nesta seção antes de continuar.\",\"code\":\"Código\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"and\":\"e\",\"or\":\"ou\",\"oxfordcomma\":\"\"}}},\"tr\":{\"translation\":{\"button\":{\"runcode\":\"Çalistirma Kodu\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Ipucu\",\"hint_plural\":\"Ipuçlari\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Sonraki Ipucu\",\"hintprev\":\"Önceki Ipucu\",\"solution\":\"Çözüm\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Pano'ya Kopyala\",\"startover\":\"Bastan Baslamak\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Devam et\",\"submitanswer\":\"Cevabi onayla\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Önceki Konu\",\"nexttopic\":\"Sonraki Konu\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Tekrar Deneyin\"},\"text\":{\"startover\":\"Bastan Baslamak\",\"areyousure\":\"Bastan baslamak istediginizden emin misiniz? (tüm egzersiz ilerlemesi kaybolacak)\",\"youmustcomplete\":\"Tamamlamalisin\",\"exercise\":\"egzersiz\",\"exercise_plural\":\"egzersizler\",\"inthissection\":\"devam etmeden önce bu bölümde\",\"code\":\"Kod\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Sinav\",\"oxfordcomma\":\"\"}}},\"emo\":{\"translation\":{\"button\":{\"runcode\":\"<U+0001F3C3>\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"<U+0001F4A1>\",\"hint_plural\":\"$t(button.hint)\",\"hinttitle\":\"$t(button.hint)\",\"solution\":\"<U+0001F3AF>\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"<U+0001F4CB>\",\"startover\":\"<U+23EE>\",\"startovertitle\":\"Start Over\",\"continue\":\"<U+2705>\",\"submitanswer\":\"<U+0001F197>\",\"submitanswertitle\":\"Submit Answer\",\"previoustopic\":\"<U+2B05>\",\"nexttopic\":\"<U+27A1>\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"<U+0001F501>\"},\"text\":{\"startover\":\"<U+23EE>\",\"areyousure\":\"<U+0001F914>\",\"youmustcomplete\":\"<U+26A0><U+FE0F> <U+0001F449> <U+0001F9D1><U+200D><U+0001F4BB>\",\"exercise\":\"\",\"exercise_plural\":\"\",\"inthissection\":\"\",\"code\":\"<U+0001F4BB>\",\"enginecap\":\"$t(text.code) {{engine}}\",\"oxfordcomma\":\"\"}}},\"eu\":{\"translation\":{\"button\":{\"runcode\":\"Kodea egikaritu\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Laguntza\",\"hint_plural\":\"Laguntza\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Aurreko laguntza\",\"hintprev\":\"Hurrengo laguntza\",\"solution\":\"Ebazpena\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Arbelean kopiatu\",\"startover\":\"Berrabiarazi\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Jarraitu\",\"submitanswer\":\"Erantzuna bidali\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Aurreko atala\",\"nexttopic\":\"Hurrengo atala\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Berriro saiatu\"},\"text\":{\"startover\":\"Berrabiarazi\",\"areyousure\":\"Berriro hasi nahi duzu? (egindako lana galdu egingo da)\",\"youmustcomplete\":\"Aurrera egin baino lehen atal honetako\",\"exercise\":\"ariketa egin behar duzu.\",\"exercise_plural\":\"ariketak egin behar dituzu.\",\"inthissection\":\"\",\"code\":\"Kodea\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Galdetegia\",\"oxfordcomma\":\"\"}}},\"de\":{\"translation\":{\"button\":{\"runcode\":\"Code ausführen\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Tipp\",\"hint_plural\":\"Tipps\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Nächster Tipp\",\"hintprev\":\"Vorheriger Tipp\",\"solution\":\"Lösung\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"In die Zwischenablage kopieren\",\"startover\":\"Neustart\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Weiter\",\"submitanswer\":\"Antwort einreichen\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Vorheriges Kapitel\",\"nexttopic\":\"Nächstes Kapitel\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Nochmal versuchen\"},\"text\":{\"startover\":\"Neustart\",\"areyousure\":\"Bist du sicher, dass du neustarten willst? (der gesamte Lernfortschritt wird gelöscht)\",\"youmustcomplete\":\"Vervollstädinge\",\"exercise\":\"die Übung\",\"exercise_plural\":\"die Übungen\",\"inthissection\":\"in diesem Kapitel, bevor du fortfährst.\",\"code\":\"Code\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"blank\":\"Lücke\",\"blank_plural\":\"Lücken\",\"pleasereplaceblank\":\"Bitte ersetze {{blank}} mit gültigem Code.\",\"unparsable\":\"Dies scheint kein gültiger R Code zu sein. R kann deinen Text nicht in einen gültigen Befehl übersetzen. Du hast vielleicht vergessen, die Lücke zu füllen, einen Unterstrich zu entfernen, ein Komma zwischen Argumente zu setzen oder ein eröffnendes <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> oder <code>{<\\/code> mit einem zugehörigen <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code> oder <code>}<\\/code> zu schließen.\\n\",\"and\":\"und\",\"or\":\"oder\",\"listcomma\":\", \",\"oxfordcomma\":\",\"}}},\"ko\":{\"translation\":{\"button\":{\"runcode\":\"<U+CF54><U+B4DC> <U+C2E4><U+D589>\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"<U+D78C><U+D2B8>\",\"hint_plural\":\"<U+D78C><U+D2B8><U+B4E4>\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"<U+B2E4><U+C74C> <U+D78C><U+D2B8>\",\"hintprev\":\"<U+C774><U+C804> <U+D78C><U+D2B8>\",\"solution\":\"<U+C194><U+B8E8><U+C158>\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"<U+D074><U+B9BD><U+BCF4><U+B4DC><U+C5D0> <U+BCF5><U+C0AC>\",\"startover\":\"<U+C7AC><U+D559><U+C2B5>\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"<U+B2E4><U+C74C> <U+D559><U+C2B5><U+C73C><U+B85C>\",\"submitanswer\":\"<U+C815><U+B2F5> <U+C81C><U+CD9C>\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"<U+C774><U+C804> <U+D1A0><U+D53D>\",\"nexttopic\":\"<U+B2E4><U+C74C> <U+D1A0><U+D53D>\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"<U+C7AC><U+C2DC><U+B3C4>\"},\"text\":{\"startover\":\"<U+C7AC><U+D559><U+C2B5>\",\"areyousure\":\"<U+B2E4><U+C2DC> <U+C2DC><U+C791> <U+D558><U+C2DC><U+ACA0><U+C2B5><U+B2C8><U+AE4C>? (<U+BAA8><U+B4E0> <U+C608><U+C81C><U+C758> <U+C9C4><U+D589> <U+C815><U+BCF4><U+AC00> <U+C7AC><U+C124><U+C815><U+B429><U+B2C8><U+B2E4>)\",\"youmustcomplete\":\"<U+B2F9><U+C2E0><U+C740> <U+C644><U+B8CC><U+D574><U+C57C> <U+D569><U+B2C8><U+B2E4>\",\"exercise\":\"<U+C5F0><U+C2B5><U+BB38><U+C81C>\",\"exercise_plural\":\"<U+C5F0><U+C2B5><U+BB38><U+C81C><U+B4E4>\",\"inthissection\":\"<U+C774> <U+C139><U+C158><U+C744> <U+C2E4><U+D589><U+D558><U+AE30> <U+C804><U+C5D0>\",\"code\":\"<U+CF54><U+B4DC>\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"<U+D034><U+C988>\",\"blank\":\"<U+ACF5><U+BC31>\",\"blank_plural\":\"<U+ACF5><U+BC31><U+B4E4>\",\"exercisecontainsblank\":\"<U+C774> <U+C5F0><U+C2B5><U+BB38><U+C81C><U+C5D0><U+B294> {{count}}<U+AC1C><U+C758> $t(text.blank)<U+C774> <U+D3EC><U+D568><U+B418><U+C5B4> <U+C788><U+C2B5><U+B2C8><U+B2E4>.\",\"pleasereplaceblank\":\"{{blank}}<U+B97C> <U+C720><U+D6A8><U+D55C> <U+CF54><U+B4DC><U+B85C> <U+BC14><U+AFB8><U+C2ED><U+C2DC><U+C624>.\",\"unparsable\":\"<U+C774><U+AC83><U+C740> <U+C720><U+D6A8><U+D55C> R <U+CF54><U+B4DC><U+AC00> <U+C544><U+B2D0> <U+C218> <U+C788><U+C2B5><U+B2C8><U+B2E4>. R<U+C740> <U+D14D><U+C2A4><U+D2B8><U+B97C> <U+C644><U+C804><U+D55C> <U+BA85><U+B839><U+C73C><U+B85C> <U+BCC0><U+D658><U+D558><U+B294> <U+BC29><U+BC95><U+C744> <U+ACB0><U+C815><U+D560> <U+C218> <U+C5C6><U+C2B5><U+B2C8><U+B2E4>. <U+B2F9><U+C2E0><U+C740> <U+ACF5><U+BC31><U+C774><U+B098> <U+BC11><U+C904><U+C744> <U+B300><U+CCB4><U+D558><U+C5EC> <U+CC44><U+C6B0><U+AE30>, <U+C778><U+C218><U+B97C> <U+CEF4><U+B9C8><U+B85C> <U+AD6C><U+BD84><U+D558><U+AE30>, <U+B610><U+B294> <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> , <code>{<\\/code><U+B85C> <U+C2DC><U+C791><U+D558><U+B294> <U+AD6C><U+BB38><U+C744> <U+B2EB><U+B294> <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code>, <code>}<\\/code><U+C744> <U+C78A><U+C5C8><U+C744> <U+C218><U+B3C4> <U+C788><U+C2B5><U+B2C8><U+B2E4>.\\n\",\"and\":\"<U+ADF8><U+B9AC><U+ACE0>\",\"or\":\"<U+D639><U+C740>\",\"listcomma\":\", \",\"oxfordcomma\":\"\"}}}}}<\/script>"]},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1.9018"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1.9018"]}]}]}
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.6"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.5.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.5.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["viz"]},{"type":"character","attributes":{},"value":["1.8.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/viz"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["viz.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DiagrammeR"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.0.6.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["DiagrammeR-styles"]},{"type":"character","attributes":{},"value":["0.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/styles"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["styles.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DiagrammeR"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.0.6.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["grViz-binding"]},{"type":"character","attributes":{},"value":["1.0.6.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["grViz.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DiagrammeR"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["1.0.6.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"character","attributes":{},"value":["1.5.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["www"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["htmlwidgets"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.5.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["viz"]},{"type":"character","attributes":{},"value":["1.8.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/viz"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["viz.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DiagrammeR"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.0.6.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["DiagrammeR-styles"]},{"type":"character","attributes":{},"value":["0.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets/lib/styles"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["styles.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DiagrammeR"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["1.0.6.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["grViz-binding"]},{"type":"character","attributes":{},"value":["1.0.6.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["htmlwidgets"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["grViz.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["DiagrammeR"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["1.0.6.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]}]}
 </script>
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60]}},"value":[{"type":"character","attributes":{},"value":["assertthat","backports","base","checkmate","colorspace","compiler","crayon","curl","datasets","DBI","digest","dplyr","ellipsis","evaluate","fastmap","generics","ggplot2","glue","graphics","grDevices","grid","gtable","highr","htmltools","htmlwidgets","httpuv","jsonlite","knitr","later","learnr","lifecycle","magrittr","markdown","methods","mime","munsell","pillar","pkgconfig","png","promises","purrr","R6","Rcpp","rlang","rmarkdown","rprojroot","scales","shiny","stats","stringi","stringr","tibble","tidyselect","tools","utils","vctrs","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["0.2.1","1.2.0","4.0.3","2.0.0","2.0-0","4.0.3","1.3.4","4.3","4.0.3","1.1.1","0.6.27","1.0.3","0.3.1","0.14","1.1.0","0.1.0","3.3.3","1.4.2","4.0.3","4.0.3","4.0.3","0.3.0","0.8","0.5.1.1","1.5.3","1.5.5","1.7.2","1.31","1.1.0.1","0.10.1.9018","1.0.0","2.0.1","1.1","4.0.3","0.9","0.5.0","1.4.7","2.0.3","0.1-7","1.1.1","0.3.4","2.5.0","1.0.6","0.4.10","2.6","2.0.2","1.1.1","1.6.0","4.0.3","1.5.3","1.4.0","3.0.5","1.1.0","4.0.3","4.0.3","0.3.6","2.4.1","0.20","1.8-4","2.2.1"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59]}},"value":[{"type":"character","attributes":{},"value":["assertthat","base","colorspace","compiler","crayon","datasets","DBI","DiagrammeR","digest","dplyr","ellipsis","evaluate","fastmap","generics","ggplot2","glue","graphics","grDevices","grid","gtable","highr","htmltools","htmlwidgets","httpuv","jsonlite","knitr","later","learnr","lifecycle","magrittr","markdown","methods","mime","munsell","pillar","pkgconfig","promises","purrr","R6","RColorBrewer","Rcpp","rlang","rmarkdown","rprojroot","scales","shiny","stats","stringi","stringr","tibble","tidyselect","tools","utils","vctrs","visNetwork","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["0.2.1","4.0.3","2.0-0","4.0.3","1.3.4","4.0.3","1.1.1","1.0.6.1","0.6.27","1.0.3","0.3.1","0.14","1.1.0","0.1.0","3.3.3","1.4.2","4.0.3","4.0.3","4.0.3","0.3.0","0.8","0.5.1.1","1.5.3","1.5.5","1.7.2","1.31","1.1.0.1","0.10.1","1.0.0","2.0.1","1.1","4.0.3","0.9","0.5.0","1.4.7","2.0.3","1.1.1","0.3.4","2.5.0","1.1-2","1.0.6","0.4.10","2.6","2.0.2","1.1.1","1.6.0","4.0.3","1.5.3","1.4.0","3.0.5","1.1.0","4.0.3","4.0.3","0.3.6","2.0.9","2.4.1","0.20","1.8-4","2.2.1"]}]}]}
 </script>
 <!--/html_preserve-->
 </div>
@@ -204,18 +1289,6 @@ session$onSessionEnded(function() {
 
 
 
-<!-- Build Tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("section-TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <script>
 // add bootstrap table styles to pandoc tables
