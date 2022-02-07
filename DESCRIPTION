@@ -1,13 +1,13 @@
 Package: hetuto
-Title: What the Package Does (One Line, Title Case)
+Title: Health Economic Tutorials
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Xavier",
+           family = "Pouwels",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "x.g.l.v.pouwels@utwente.nl",
+           comment = c(ORCID = "0000-0003-3563-0013"))
+Description: This package contains tutorials to teach basic principles of health economic evaluation.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
