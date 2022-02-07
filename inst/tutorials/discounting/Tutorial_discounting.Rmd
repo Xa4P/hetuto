@@ -325,7 +325,7 @@ v_icer_disc <- c(ICER_A = v_res_disc[1]/v_res_disc[2],
 ) 
 df <- data.frame(
   Outcome = c("Incremental costs Intervention A", "Incremental QALYs Intervention A", "Incremental costs  Intervention B", "Incremental QALYs B", "Incremental costs Intervention C", "Incremental QALYs Intervention C"),
-  Value = v_res_disc
+  Value = format(round(v_res_disc, 2), big.mark = ",", scientific = FALSE)
 )
 df
 v_icer_disc
