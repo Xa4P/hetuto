@@ -122,23 +122,35 @@ question("Based on these results, which intervention costs the most?",
 As can be seen in the table above, there are no differences concerning the UNDISCOUNTED incremental costs (`r paste("\u20ac", sum(df_thx[, 2]))`) and effects (`r sum(df_thx[, 3])` QALYs) between the different interventions. 
 
 ### Undiscounted ICERs
-Calculate the **undiscounted** ICERS for each of these interventions using the total incremental costs and effects you calculated in the previous step, or using the original `df_thx` object. Suggestion: store the results in the `v_icer_undisc` for instance. `v_res_undisc` contains the total **undiscounted** costs and QALYs for each strategy.
+Calculate the **undiscounted** ICERS for each of these interventions using the total incremental costs and effects you calculated in the previous step, or using the original `df_thx` object. Suggestion: store the results in the `v_icer_undisc` for instance. The `t_inc_c_` and `t_inc_qaly_` respectively contain the total **undiscounted** incremental costs and QALYs of each strategy.
 
 ```{r cacl_icer_undisc, exercise = TRUE}
-v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))]) # contains the total UNDISCOUNTED costs and QALYs
+t_inc_c_A     <- sum(df_thx$Inc_cost_A) # total undiscounted incremental costs of strategy A
+t_inc_qaly_A  <- sum(df_thx$Inc_QALY_A) # total undiscounted incremental QALYs of strategy A
+t_inc_c_B     <- sum(df_thx$Inc_cost_B) # total undiscounted incremental costs of strategy B
+t_inc_qaly_B  <- sum(df_thx$Inc_QALY_B) # total undiscounted incremental QBLYs of strategy B
+t_inc_c_C     <- sum(df_thx$Inc_cost_C) # total undiscounted incremental costs of strategy C
+t_inc_qaly_C  <- sum(df_thx$Inc_QALY_C) # total undiscounted incremental QCLYs of strategy C
+
 # calculate undiscounted ICERs
 
 ```
 
 ```{r cacl_icer_undisc-hint}
-"Since the different columns contain the incremental results. You have to divide total incremental costs by tot incremental effects for each intervention separately."
+"To calculate the incremental cost-effectiveness ratios (ICER), you have to divide total incremental costs by the total incremental effects for each intervention separately."
 ```
 
 ```{r cacl_icer_undisc-solution}
-v_res_undisc <- unname(v_res_undisc) # removes names, for clarity
-v_icer_undisc <- c(ICER_A = v_res_undisc[1]/v_res_undisc[2],
-                   ICER_B = v_res_undisc[3]/v_res_undisc[4],
-                   ICER_C = v_res_undisc[5]/v_res_undisc[6]
+t_inc_c_A     <- sum(df_thx$Inc_cost_A) # total undiscounted incremental costs of strategy A
+t_inc_qaly_A  <- sum(df_thx$Inc_QALY_A) # total undiscounted incremental QALYs of strategy A
+t_inc_c_B     <- sum(df_thx$Inc_cost_B) # total undiscounted incremental costs of strategy B
+t_inc_qaly_B  <- sum(df_thx$Inc_QALY_B) # total undiscounted incremental QBLYs of strategy B
+t_inc_c_C     <- sum(df_thx$Inc_cost_C) # total undiscounted incremental costs of strategy C
+t_inc_qaly_C  <- sum(df_thx$Inc_QALY_C) # total undiscounted incremental QCLYs of strategy C
+
+v_icer_undisc <- c(ICER_A = t_inc_c_A/t_inc_qaly_A,
+                   ICER_B = t_inc_c_B/t_inc_qaly_B,
+                   ICER_C = t_inc_c_C/t_inc_qaly_C
 )
 ```
 
@@ -147,9 +159,9 @@ The table below provides the ICERs for the different interventions.
 ```{r, echo = FALSE}
 v_res_undisc <- colSums(df_thx[, c(2:ncol(df_thx))])
 v_res_undisc <- unname(v_res_undisc) # removes names, for clarity
-df_icer_undisc <- data.frame(ICER_A = v_res_undisc[1]/v_res_undisc[2],
-                   ICER_B = v_res_undisc[3]/v_res_undisc[4],
-                   ICER_C = v_res_undisc[5]/v_res_undisc[6]
+df_icer_undisc <- data.frame(ICER_A = format(v_res_undisc[1]/v_res_undisc[2], big.mark = ",", scientific = FALSE),
+                   ICER_B = format(v_res_undisc[3]/v_res_undisc[4], big.mark = ",", scientific = FALSE),
+                   ICER_C = format(v_res_undisc[5]/v_res_undisc[6], big.mark = ",", scientific = FALSE)
 )
 df_icer_undisc
 ```
