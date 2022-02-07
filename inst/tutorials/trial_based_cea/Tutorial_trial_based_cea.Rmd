@@ -154,6 +154,17 @@ Other objects, which represent the costs of the surgeries, hospital days, advers
 - `c_Minor_compl` = costs of a minor complication  
 - `c_OK_hour` = costs of operating in the OK, per hour
 
+```{r show_c_inputs, echo = TRUE}
+# Declare costs inputs for the analysis
+c_Robot <- 3000 
+c_Open <- 2000 
+c_OK_hour <- 500 
+c_Major_compl <- 10000 
+c_Minor_compl <- 1500 
+c_ICU_day <- 1250 
+c_MCU_day <- 550 
+```
+
 ## Assignment 1
 
 ### Effects calculations
