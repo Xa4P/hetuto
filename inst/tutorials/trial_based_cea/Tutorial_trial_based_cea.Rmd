@@ -379,14 +379,14 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 
 ```{r calc_icer-hint-2}
 t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
-t_qol_open # mean costs per patient in the open surgery strategy
+#t_qol_open # mean costs per patient in the open surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
-t_costs_open  # mean costs per patient in the open surgery strategy
+#t_costs_open  # mean costs per patient in the open surgery strategy
 
-diff_qol   <- t_qol_robot - t_qol_open # difference in Qol
-diff_costs # difference in costs
+#diff_qol # difference in Qol
+#diff_costs # difference in costs
 
-ICER # difference in costs / difference in Qol
+#ICER # difference in costs / difference in Qol
 ```
 
 ```{r calc_icer-solution}
