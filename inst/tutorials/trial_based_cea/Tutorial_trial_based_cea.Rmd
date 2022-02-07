@@ -377,7 +377,7 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 "Calculate first the mean outcomes per patient for each strategy and then calculate the difference. To calculate the ICER, divide the difference in costs by the difference in effects between the two strategies."
 ```
 
-```{r calc_icer-hint-2, eval = FALSE}
+```{r calc_icer-hint-2}
 t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
 t_qol_open # mean costs per patient in the open surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
