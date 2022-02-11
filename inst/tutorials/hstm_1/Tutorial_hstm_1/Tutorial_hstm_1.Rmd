@@ -49,9 +49,12 @@ determine_m_tp <- function() {
 ```
 
 ## Before starting
-1. Watch the video explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+1. Watch the videos explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA), and on uncertainty assessment. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
 ![](https://vimeo.com/453418864/050bf4acaf){width="70%"}
 Link to the video: https://vimeo.com/453418864/050bf4acaf.
+
+![](https://vimeo.com/453418898/90a5e63f1e){width="70%"}
+Link to the video: https://vimeo.com/453418898/90a5e63f1e.
 
 ## Aim and instructions
 The aim of this practical assignment is to get you acquainted with the principle of health state transition models (HSTM). To do so, you will define a transition matrix for a simple HSTM and explore how you can use it to define your cohort simulation. The example used in the practical focuses on evaluating the life course of patients at risk of developing intracranial aneurysms using a HSTM. The model structure is provided in the next tab.    
