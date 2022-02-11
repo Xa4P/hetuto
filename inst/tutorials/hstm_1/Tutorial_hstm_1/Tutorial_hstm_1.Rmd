@@ -1,0 +1,42 @@
+---
+title: "Tutorial"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  Learn how to build a simple cohort simulation using a
+  health state transition (Markov) model.
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+require(learnr, quietly = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Before starting
+1. Watch the video explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+![](https://vimeo.com/453418819/6c13bffaf4){width="70%"}
+Link to the video: https://vimeo.com/453418819/6c13bffaf4.
+
+## Aim and instructions
+The aim of this practical assignment is to get you acquainted with the principle of health state transition models (HSTM). To do so, you will define a transition matrix for a simple HSTM and explore how you can use it to define your cohort simulation. The example used in the practical focuses on evaluating the life course of patients at risk of developing intracranial aneurysms using a HSTM. The model structure is provided in the next tab.    
+
+```{r, fig.align = 'center', out.width = "70%", echo = F}
+knitr::include_graphics("Tutorial_hstm_1/images/Image_hint.png")
+```
+
+```{r, fig.align = 'center', out.width = "70%", echo = F}
+knitr::include_graphics("Tutorial_hstm_1/images/Image_solution.png")
+```
+
+## Model structure
+This section provides an explaination of the health state transition model (HSTM) used in this practical assignment. The HSTM represents the disease progression and treatment of patients who may develop an aneurysm. All patients start in the "Healthy" health state. From there, they can die from other causes of disease than an aneurysm, or they can develop a new intracranial aneurysm.  If they develop an aneurysm, the aneurysm can be detected, or they can die. If the aneurysm is detected, it is assumed that patients receive treatment. The treatment can either be succesful and the patients return to "Healthy", or the treatment can be fatal and patients die. When patients die (from any causes), they remain in that health state ('dead' is an absorbing health state).  
+In this model, patients move as an homogeneous cohort, all individuals start in the "Healthy" health state, the time cycle (or cycle length) in this model is **1 month**. Costs and health effects are not included in this simple model.  
+  
+```{r,fig.align = 'center', out.width = "90%", echo = F}
+knitr::include_graphics("Tutorial_hstm_1/images/Fig_model_structure.png")
+```
