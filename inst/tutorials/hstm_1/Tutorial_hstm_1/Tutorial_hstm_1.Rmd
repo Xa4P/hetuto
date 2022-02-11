@@ -20,6 +20,32 @@ p_NewAneurysm       <- 	0.10 # Probability that an individual develops a new int
 p_AneurysmDetection <- 	0.50 # Probability that a newly developed aneurysm is detected
 p_TreatmentIsFatal  <- 	0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
 p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to aneurysms
+
+
+# function determine m_tp
+determine_m_tp <- function() {
+  v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
+  n_hs <- length(v_names_hs) # this equals 5
+  
+  m_tp <- matrix(0, 
+                 ncol = n_hs, # or 5
+                 nrow = n_hs, # or 5
+                 dimnames = list(v_names_hs,
+                                 v_names_hs)
+                 )
+  m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
+  m_tp["Healthy", "DeathOther"]  <- p_DeathOther
+  m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
+  m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
+  m_tp["NewAneurysm", "DeathOther"] <- p_DeathOther
+  m_tp["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
+  m_tp["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
+  m_tp["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
+  m_tp["DeathOther", "DeathOther"] <- 1
+  m_tp["DeathTreatment", "DeathTreatment"] <- 1
+  
+  return(m_tp)
+}
 ```
 
 ## Before starting
@@ -37,6 +63,12 @@ knitr::include_graphics("Tutorial_hstm_1_files/images/Image_hint.png")
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_hstm_1_files/images/Image_solution.png")
 ```
+
+### Prerequisites
+You should be able to following commands to perform this exercise:  
+
+- `matrix()` function  
+
 
 ## Model structure & parameters
 
@@ -200,4 +232,73 @@ axis(1, at = c(log(1), log(10), log(20), log(50), log(100), log(500), log(1000))
 ```
 
 ## Cohort simulation
-Using the transition probabilities described in the previous step, we can define the life course of individuals in this model. This is done by multiplying the number of patients in each health state by the probabilities which affect the state membership of that health state.  
+Using the transition probabilities described in the previous step, we can define the life course of individuals in this model. This is done by multiplying the number of patients in each health state by the probabilities which affect the state membership of that health state. We will do this in several steps:
+
+- Step 1: Defining the transition matrix for the cohort simulation  
+- Step 2: Defining the cohort simulation matrix  
+- Step 3: Filling in the cohort simulation matrix using the transition matrix and the starting position of individuals  
+
+### Defining the transition matrix  
+To evaluate the life course of individuals over a large number of time cycles we need a transition matrix. Create a transition matrix called `m_tp`. `m_tp` should contain 5 rows and 5 columns because we have 5 health state ("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment"). To do so, use the `matrix()` function. Assign the value NA or 0 to all cells of the matrix to start with. Name the rows and columns (`dimnames` argument of the function) with the following names: "Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment". You can also create a vector with these names, `v_names_hs`, that you then use within the `dimnames` argument.    
+
+```{r trans_mat, exercise = TRUE}
+
+```
+
+```{r trans_mat-solution}
+v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
+n_hs <- length(v_names_hs) # this equals 5
+
+m_tp <- matrix(0, 
+               ncol = n_hs, # or 5
+               nrow = n_hs, # or 5
+               dimnames = list(v_names_hs,
+                               v_names_hs)
+               )
+#data.frame(m_tp) # show, data.frame() used because prettier
+```
+
+### Filling the transition matrix with transition probabilities
+Fill the matrix with the values of the transition probabilities. The rows indicate the health state from which persons transit. The columns indicate the health state to which persons transit. You can use the names of the rows and columns to assign the transition probabilities to each cell. Do not forget to define the probability of remaining in a health state!  
+
+```{r fill_trans_mat, exercise = TRUE, exercise.setup = "trans_mat-solution"}
+
+```
+
+```{r fill_trans_mat-hint}
+m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther # Example: probability of remaining healthy when healthy
+```
+
+```{r fill_trans_mat-solution}
+m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
+m_tp["Healthy", "DeathOther"]  <- p_DeathOther
+m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
+m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
+m_tp["NewAneurysm", "DeathOther"] <- p_DeathOther
+m_tp["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
+m_tp["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
+m_tp["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
+m_tp["DeathOther", "DeathOther"] <- 1
+m_tp["DeathTreatment", "DeathTreatment"] <- 1
+
+#data.frame(m_tp) # show, data.frame() used because prettier
+```
+
+### Check
+```{r trans_mat_setup}
+m_tp <- determine_m_tp()
+```
+
+Check whether all rows sum up to one.  
+```{r check_trans_mat, exercise = TRUE, exercise.setup = "trans_mat_setup"}
+
+```
+
+```{r check_trans_mat-hint}
+"Use the rowSums() function"
+```
+
+```{r check_trans_mat-solution}
+rowSums(m_tp) == 1 # all true!
+```
+
