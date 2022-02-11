@@ -24,8 +24,8 @@ p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to a
 
 ## Before starting
 1. Watch the video explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
-![](https://vimeo.com/453418819/6c13bffaf4){width="70%"}
-Link to the video: https://vimeo.com/453418819/6c13bffaf4.
+![](https://vimeo.com/453418864/050bf4acaf){width="70%"}
+Link to the video: https://vimeo.com/453418864/050bf4acaf.
 
 ## Aim and instructions
 The aim of this practical assignment is to get you acquainted with the principle of health state transition models (HSTM). To do so, you will define a transition matrix for a simple HSTM and explore how you can use it to define your cohort simulation. The example used in the practical focuses on evaluating the life course of patients at risk of developing intracranial aneurysms using a HSTM. The model structure is provided in the next tab.    
