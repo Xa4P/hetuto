@@ -231,7 +231,7 @@ axis(1, at = c(log(1), log(10), log(20), log(50), log(100), log(500), log(1000))
      )
 ```
 
-## Cohort simulation
+## Transition matrix
 Using the transition probabilities described in the previous step, we can define the life course of individuals in this model. This is done by multiplying the number of patients in each health state by the probabilities which affect the state membership of that health state. We will do this in several steps:
 
 - Step 1: Defining the transition matrix for the cohort simulation  
@@ -302,3 +302,249 @@ Check whether all rows sum up to one.
 rowSums(m_tp) == 1 # all true!
 ```
 
+## Transition matrix - illustration
+This part of the assignment illustrates the functioning of the transition matrix. Fill in the transition probabilities that you have used to define your transition matrix. The transition matrices are then automatically filled in based on your inputs. The transition matrices to calculate the health state distribution after 2, 3, or N cycles is obtained by multiplying the transition matrix by itself 2, 3, and N times respectively. The health state distribution after 2, 3, and N cycles is obtained by multiplying these transition matrices by the starting health state distribution The resulting health state memberships (after 1, 2,3 and N cycles), given all patients start in the "Healthy" health state, are provided in the tables titled "Health state distribution after 1, 2, 3, N cycles".   
+Answer the questions below using this information, and by changing the number of cycles and the proportion of individuals starting in each health state.  
+**OF NOTE**: Probabilities and proportions should be written in decimals, example: 20% should be 0.2).  
+
+```{r shiny_m_tp}
+h2("Inputs")
+h3("Transition probabilities")
+div(style="display:inline-block",
+numericInput(inputId = "p_NewAneurysm",
+             label = "Probability of new aneurysm",
+             value = 0,
+             min = 0,
+             max = 1,
+             width = "175px")
+)
+div(style="display:inline-block",
+numericInput(inputId = "p_AneurysmDetection",
+             label = "Probability aneurysm is detected",
+             value = 0,
+             min = 0,
+             max = 1,
+             width = "175px")
+)
+div(style="display:inline-block",
+numericInput(inputId = "p_TreatmentIsFatal",
+             label = "Probability aneurysm's treatment is fatal",
+             value = 0,
+             min = 0,
+             max = 1,
+             width = "175px")
+)
+div(style="display:inline-block",
+numericInput(inputId = "p_DeathOther",
+             label = "Probability of death from other causes",
+             value = 0,
+             min = 0,
+             max = 1,
+             width = "175px")
+)
+tags$hr()
+h3("Cycle at which health state membership has to be defined")
+numericInput(inputId = "n_cycle",
+            label = "Health state membership after:",
+            value = 2,
+            min = 2,
+            max = 100,
+            width = "175px")
+tags$hr()
+h3("Health state membership at start")
+div(style="display:inline-block",
+numericInput(inputId = "n_Healthy",
+             label = "Proportion of individuals starting in health state: 'Healthy'",
+             value = 1,
+             min = 0,
+             max = 1,
+             width = "175px")
+)
+div(style="display:inline-block",
+numericInput(inputId = "n_NewAneurysm",
+            label = "Proportion of individuals starting in health state: 'New aneurysm'",
+            value = 0,
+            min = 0,
+            max = 1,
+            width = "175px")
+)
+div(style="display:inline-block",
+numericInput(inputId = "n_AneurysmDetection",
+            label = "Proportion of individuals starting in health state: 'Aneurysm detected'",
+            value = 0,
+            min = 0,
+            max = 1,
+            width = "175px")
+)
+tags$hr()
+h2("Outputs")
+h3("Transition matrix after 1 cycle")
+tableOutput("m_tp_1")
+h3("Health state distribution after 1 cycle")
+tableOutput("t_dist_1")
+tags$hr()
+h3("Transition matrix after 2 cycles")
+tableOutput("m_tp_2")
+h3("Health state distribution after 2 cycles")
+tableOutput("t_dist_2")
+tags$hr()
+h3("Transition matrix after 3 cycles")
+tableOutput("m_tp_3")
+h3("Health state distribution after 3 cycles")
+tableOutput("t_dist_3")
+tags$hr()
+h3(textOutput("txt_m_tp_n"))
+tableOutput("m_tp_n")
+h3(textOutput("txt_dist_tp_n"))
+tableOutput("t_dist_n")
+```
+
+```{r shiny_m_tp_server, context = "server"}
+mat_tp <- function() {
+  v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
+  m_tp <- matrix(0, 
+               ncol = 5,
+               nrow = 5,
+               dimnames = list(v_names_hs,
+                               v_names_hs))
+
+  m_tp["Healthy", "Healthy"]     <- 1- input$p_NewAneurysm - input$p_DeathOther # Example
+  m_tp["Healthy", "DeathOther"]  <- input$p_DeathOther
+  m_tp["Healthy", "NewAneurysm"] <- input$p_NewAneurysm
+  m_tp["NewAneurysm", "DetectedAneurysm"] <- input$p_AneurysmDetection
+  m_tp["NewAneurysm", "DeathOther"] <- input$p_DeathOther
+  m_tp["NewAneurysm", "NewAneurysm"] <- 1 - input$p_AneurysmDetection - input$p_DeathOther
+  m_tp["DetectedAneurysm", "Healthy"] <- 1 - input$p_TreatmentIsFatal
+  m_tp["DetectedAneurysm", "DeathTreatment"] <- input$p_TreatmentIsFatal
+  m_tp["DeathOther", "DeathOther"] <- 1
+  m_tp["DeathTreatment", "DeathTreatment"] <- 1
+
+  return(m_tp)
+  }
+
+v_start <- function() {c(input$n_Healthy,
+                         input$n_NewAneurysm,
+                         input$n_AneurysmDetection,
+                         0,
+                         0)}
+
+output$m_tp_1 <- renderTable({
+  cbind(` `=colnames(mat_tp()), mat_tp())
+  
+})
+
+output$t_dist_1 <- renderTable({
+  v_start() %*% mat_tp() 
+})
+
+output$m_tp_2 <- renderTable({
+  m_tp_2 <- mat_tp() %*% mat_tp() 
+  
+  cbind(` `=colnames(mat_tp()), m_tp_2)
+})
+
+output$t_dist_2 <- renderTable({
+  v_start() %*% (mat_tp() %*% mat_tp())
+})
+
+output$m_tp_3 <- renderTable({
+  m_tp_3 <- (mat_tp() %*% mat_tp() %*% mat_tp()) 
+  
+  cbind(` `=colnames(mat_tp()), m_tp_3)
+})
+
+output$t_dist_3 <- renderTable({
+  v_start() %*% (mat_tp() %*% mat_tp() %*% mat_tp())
+})
+
+output$m_tp_n <- renderTable({
+  
+  for (i in 2:input$n_cycle) {
+    if(i == 2) {
+      m_tp_n <- mat_tp() %*% mat_tp()
+    } else {
+      m_tp_n <- m_tp_n %*% mat_tp()
+    }
+  }
+  
+  cbind(` `= colnames(mat_tp()), round(m_tp_n,3))
+})
+
+output$t_dist_n <- renderTable({
+  
+  for (i in 2:input$n_cycle) {
+    if(i == 2) {
+      m_tp_n <- mat_tp() %*% mat_tp()
+    } else {
+      m_tp_n <- m_tp_n %*% mat_tp()
+    }
+  }
+  
+  v_start() %*% m_tp_n
+}, digits = 3)
+
+output$txt_m_tp_n <- renderText({
+  paste("Transition matrix after", input$n_cycle ,"cycles", sep = " ")
+})
+
+output$txt_dist_tp_n <- renderText({
+  paste("Health state distribution after", input$n_cycle ,"cycles", sep = " ")
+})
+```
+
+### Questions
+a. What is the probability that an individual is healthy after exactly 1 year?  
+
+```{r 2a}
+textInput("Answer_a", "Type your answer")
+```
+
+b. Compare the previous answer with the answer of question b. under the "Model structure & parameters"-tab. Why is the probability above larger than the answer of question b. under the "Model structure & parameters"-tab?  
+
+```{r 2b}
+textInput("Answer_b", "Type your answer")
+```
+
+c. How many months does it take until 60% of all individuals have died?  
+
+```{r 2c}
+textInput("Answer_c", "Type your answer")
+```
+
+d. What percentage of all individuals is still alive after 2 years?  
+
+```{r 2d}
+textInput("Answer_d", "Type your answer")
+```
+
+e. How much more likely are individuals to die from other causes than from aneurysm treatment? Hint: this only becomes apparent when all individuals have died.  
+
+```{r 2e}
+textInput("Answer_e", "Type your answer")
+```
+
+f. Change the starting state membership of the model (using the input fields) to reflect 50% individuals starting in the "New Aneurysm" state and 50% starting in the "Detected Aneurysm" state. How does this change the probability of an individual being healthy after exactly 1 year? Compare your answer to the answer of question a.  
+
+```{r 2f}
+textInput("Answer_f", "Type your answer")
+```
+
+g. Why doesn’t the distribution of individuals over the health states change when you apply a time horizon of 7 years instead of 6 years?  
+
+```{r 2g}
+textInput("Answer_g", "Type your answer")
+```
+
+### Answers
+a. 19.5% (0.195). To obtain this answer, the number of cycle should be set to 12.  
+
+b. The 0.195 from question a. also includes all individuals who develop an aneurysm which is then succesfully treated, while this is not taken into account answer b. of the previous assignment.  
+
+c. 8 cycles. For N = 8 we find approximately 52% of individuals have died from other causes and 6% from treatment, which makes a total of ~ 60%  
+
+d. 4.9% in the "Healthy" health state, 1% in the "New Aneurysm" health state, and 0.6% in the "Detected Aneurysm" health state, which is a total of 6.5%.  
+
+e. After any number of cycles > 65, everybody has died and we can answer this question: 87.5% of individuals have died from other causes, and 12.5% have died from treatment. This results in a relative risk of 0.875/0.125 = 7.  
+
+f. The probability of being health after a year is now 17.7%, which is lower than the 19.5% of answer a. This is a reduction of 1.8% in absolute term, and a decrease of 9.2% in relative terms.  
+g. 7 years means N = 12\*7 = 84, and 6 years means N = 12\*6 = 72. From testing different values of N we find that the distribution of individuals over the 5 health states does not change anymore (at least in 3 decimals) for N > 65. Indeed, for any time horizon longer than 65 months we will find the same results as all individuals will die within 65 months time.  
