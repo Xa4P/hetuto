@@ -14,8 +14,13 @@ description: >
 rm(list = ls())
 require(learnr, quietly = TRUE)
 knitr::opts_chunk$set(echo = FALSE)
-```
 
+# Probabilities
+p_NewAneurysm       <- 	0.10 # Probability that an individual develops a new intracranial aneurysm 
+p_AneurysmDetection <- 	0.50 # Probability that a newly developed aneurysm is detected
+p_TreatmentIsFatal  <- 	0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
+p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to aneurysms
+```
 
 ## Before starting
 1. Watch the video explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
@@ -26,17 +31,173 @@ Link to the video: https://vimeo.com/453418819/6c13bffaf4.
 The aim of this practical assignment is to get you acquainted with the principle of health state transition models (HSTM). To do so, you will define a transition matrix for a simple HSTM and explore how you can use it to define your cohort simulation. The example used in the practical focuses on evaluating the life course of patients at risk of developing intracranial aneurysms using a HSTM. The model structure is provided in the next tab.    
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
-knitr::include_graphics("Tutorial_hstm_1/images/Image_hint.png")
+knitr::include_graphics("Tutorial_hstm_1_files/images/Image_hint.png")
 ```
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
-knitr::include_graphics("Tutorial_hstm_1/images/Image_solution.png")
+knitr::include_graphics("Tutorial_hstm_1_files/images/Image_solution.png")
 ```
 
-## Model structure
+## Model structure & parameters
+
+### Model structure
 This section provides an explaination of the health state transition model (HSTM) used in this practical assignment. The HSTM represents the disease progression and treatment of patients who may develop an aneurysm. All patients start in the "Healthy" health state. From there, they can die from other causes of disease than an aneurysm, or they can develop a new intracranial aneurysm.  If they develop an aneurysm, the aneurysm can be detected, or they can die. If the aneurysm is detected, it is assumed that patients receive treatment. The treatment can either be succesful and the patients return to "Healthy", or the treatment can be fatal and patients die. When patients die (from any causes), they remain in that health state ('dead' is an absorbing health state).  
 In this model, patients move as an homogeneous cohort, all individuals start in the "Healthy" health state, the time cycle (or cycle length) in this model is **1 month**. Costs and health effects are not included in this simple model.  
+In the following exercises, the health states are called as follows:
+
+- "Healthy" = "Healthy"  
+- "Death due to other causes" = "DeathOther"  
+- "A new intracranial aneurysm is detected" = "NewAneurysm"  
+- "Detected unruptured intracranial aneurysm" = "DetectedAneurysm"  
+- "Death due to aneurysm treatment"= "DeathTreatment"  
   
-```{r,fig.align = 'center', out.width = "90%", echo = F}
-knitr::include_graphics("Tutorial_hstm_1/images/Fig_model_structure.png")
+```{r, fig.align = 'center', out.width = "90%", echo = F}
+knitr::include_graphics("Tutorial_hstm_1_files/images/Fig_model_structure.png")
 ```
+
+### Probabilities
+The probabilities below describe which proportion of the cohort transit from one health state to another per cycle. For instance, `p_NewAneurysm`, the probability that an individual develops a new intracranial aneurysm, means that 10% of individuals in the "Healthy" health state, will transit from "Healthy" to "A new intracranial aneurysm is present".  
+
+```{r probs, echo = TRUE}
+p_NewAneurysm       <- 	0.10 # Probability that an individual develops a new intracranial aneurysm 
+p_AneurysmDetection <- 	0.50 # Probability that a newly developed aneurysm is detected
+p_TreatmentIsFatal  <- 	0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
+p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to aneurysms
+```
+
+
+### Questions
+Use these transition probabilities and the model structure to calculate the following probabilities/quantities (subquestions a to j). For your convenience, the probabilities have been loaded.    
+
+a. The probability than an individual dies from aneurysm treatment in month 2  
+
+```{r 1a, exercise = TRUE}
+ 
+```
+
+```{r 1a-solution}
+ 
+```
+
+b. The probability that an individual starts in the "Healthy" state and remains there, that is, survives and does not develop an aneurysm, in 1 year  
+
+```{r 1b, exercise = TRUE}
+ 
+```
+
+```{r 1b-solution}
+(1 - p_NewAneurysm - p_DeathOther) ^ 12
+```
+
+c. The probability that an individual develops 2 aneurysms and is treated successfully twice (starting health state for this calculation is "Healthy")  
+
+```{r 1c, exercise = TRUE}
+
+```
+
+```{r 1c-solution}
+(p_NewAneurysm * p_AneurysmDetection * (1 - p_TreatmentIsFatal)) ^ 2
+# OR: (p_NewAneurysm * p_AneurysmDetection * (1 - p_TreatmentIsFatal)) * (p_NewAneurysm * p_AneurysmDetection * (1 - p_TreatmentIsFatal))
+```
+
+d. The probability that an individual dies of other causes within the first month  
+
+```{r 1d, exercise = TRUE}
+
+```
+
+```{r 1d-solution}
+p_DeathOther
+```
+
+e. The probability that an individual dies of other causes within the first 2 months  
+
+```{r 1e, exercise = TRUE}
+
+```
+
+```{r 1e-solution}
+p_DeathOther + p_DeathOther * (1 - p_DeathOther - p_NewAneurysm) + p_DeathOther * p_NewAneurysm
+```
+
+
+f. The probability that an individual with a new and untreated aneurysm (that remains untreated) develops an additional, new aneurysm, in 2 years’ time  
+
+```{r 1f, exercise = TRUE}
+
+```
+
+```{r 1f-solution}
+0
+```
+
+g. The excess mortality risk (expressed as relative risk) of individuals with successfully treated aneurysms compared to healthy individuals  
+
+```{r 1g, exercise = TRUE}
+
+```
+
+```{r 1g-solution}
+1
+```
+
+h. The risk of death from a car accident for an individual with a detected unruptured aneurysm  
+
+```{r 1h, exercise = TRUE}
+
+```
+
+```{r 1h-solution}
+0
+```
+
+i. [OPTIONAL] The sensitivity of the (unknown) test used to detect aneurysms after 4 months/repetitions  
+
+```{r 1i, exercise = TRUE}
+
+```
+
+```{r 1i-solution}
+p_AneurysmDetection + p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOther) +
+  p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOther) ^ 2 +
+  p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOther) ^ 3
+```
+
+j. [OPTIONAL] The probability that an individual with a new aneurysm dies before it is detected (you can give an approximation, or the exact value)  
+
+```{r 1j, exercise = TRUE}
+
+```
+
+```{r 1j-solution}
+# Approximation
+sum((p_DeathOther) * (1 - p_DeathOther - p_AneurysmDetection) ^ c(0:1000)) # limit, the number 1000 can be increased if needed
+```
+
+### Explanations
+a. It is not possible to reach the "DeathTreatment" state in 2 cycles because individuals have to develop the aneurysm, the aneurysm has to be detected, and then be treated to be fatal.  
+b. Survival without new aneurysm has probability 0.8 per cycle. This probability is multiplied 12 times by itself because the cycle length is 1 month.  
+c. This is calculated as the probability of new anerism x probability it is detected * probability it is sucessfully treated. This has to be exponentiated by because this process should occur twice in a row to answer this question.  
+d. This is just the probability of dying from other causes (`p_DeathOther` or 10%)  
+e. This is calculated as the probability of Death from Healthy in cycle 1 (`p_DeathOther`) plus the probability of remaining health and dying from other causes in cycle 2 (`p_DeathOther` * (1 - `p_DeathOther` - `p_NewAneurysm`)) plus death from a new aneurysm in cycle 2 (`p_DeathOther` * `p_NewAneurysm`).  
+f. In this health economic model, it is not possible to have more than 1 untreated aneurysm. This cannot be calculated based on this model.  
+g. Given they survive treatment, all treated individuals will return to the "Healthy" health state in the cycle following treatment. This Markov model has no 'memory': all individuals in a health state are similar, regardless of their history. Consequently, having survived aneurysm treatment does not affect the survival of individuals once they have transited to the "Healthy" health state.    
+h. Due to the severity of aneurysm treatment death from other causes is ignored in the cycle patients are treated.  
+i. Every cycle, there is 50% probability of detection of the aneurysm in individuals with an aneurysm who are still alive and without previous detection. Hence, for each cycle, the probability of staying in the "NewAneurysm" health state is 40% (calculated as 1 - `p_AneurysmDetection` - `p_DeathOther`) and is multiplied by the probability of detecting the aneurysm (50% or 0.5, `p_AneurysmDetection`).  
+j. The approximation for 2, 3, 4 cycles is 0.140, 0.156, 0.162 respectively, the true value (limit) equals 1/6 = 0.166. See http://www.mathsisfun.com/algebra/sequences-sums-geometric.html for a more extensive explanation. Here we have `a` = 1/10 (`p_DeathOther` = 10% or 0.1 )and `r` = 2/5 (1 - `p_AneurysmDetection` - `p_DeathOther` = 60% or 0.6) so the sum of our geometric series converges to `a`\*(1/(1-`r`)) = 1/10\*(1/(1 - 2/5)) = 1/6. The demonstration is provided in the graph below.  
+
+```{r plot_1j}
+plot(y = cumsum((p_DeathOther) * (1 - p_DeathOther - p_AneurysmDetection) ^ c(0:1000)), 
+     x = log(c(0:1000)),
+     type = "l",
+     main = "Convergence probability to die before the aneurysm is detected",
+     xlab = "Number of cycles (log scale)",
+     xaxt = "n",
+     ylab = "Probability") # graphic of the solution (x on the log scale)
+axis(1, at = c(log(1), log(10), log(20), log(50), log(100), log(500), log(1000)), 
+     labels = c(1, 10, 20, 50, 100, 500, 1000)
+     )
+```
+
+## Cohort simulation
+Using the transition probabilities described in the previous step, we can define the life course of individuals in this model. This is done by multiplying the number of patients in each health state by the probabilities which affect the state membership of that health state.  
