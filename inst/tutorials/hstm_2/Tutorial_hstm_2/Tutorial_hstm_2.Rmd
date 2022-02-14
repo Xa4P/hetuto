@@ -7,49 +7,51 @@ output:
 runtime: shiny_prerendered
 description: >
   Learn how to build a simple cohort simulation using a
-  health state transition (Markov) model.
+  health state transition (Markov) model with time-dependent
+  probabilities and to interpret the results of a probabilistic
+  analysis.
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 rm(list = ls())
 require(learnr, quietly = TRUE)
 knitr::opts_chunk$set(echo = FALSE)
 
-# Probabilities
-p_NewAneurysm       <- 	0.10 # Probability that an individual develops a new intracranial aneurysm 
-p_AneurysmDetection <- 	0.50 # Probability that a newly developed aneurysm is detected
-p_TreatmentIsFatal  <- 	0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
-p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to aneurysms
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
 
+# Input parameters
 
-# function determine m_tp
-determine_m_tp <- function() {
-  v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
-  n_hs <- length(v_names_hs) # this equals 5
-  
-  m_tp <- matrix(0, 
-                 ncol = n_hs, # or 5
-                 nrow = n_hs, # or 5
-                 dimnames = list(v_names_hs,
-                                 v_names_hs)
-                 )
-  m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
-  m_tp["Healthy", "DeathOther"]  <- p_DeathOther
-  m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
-  m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
-  m_tp["NewAneurysm", "DeathOther"] <- p_DeathOther
-  m_tp["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
-  m_tp["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
-  m_tp["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
-  m_tp["DeathOther", "DeathOther"] <- 1
-  m_tp["DeathTreatment", "DeathTreatment"] <- 1
-  
-  return(m_tp)
-}
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
 ```
 
 ## Before starting
-1. Watch the videos explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA), and on uncertainty assessment. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+1. Watch the videos explaining how a Health State Transition Model (HSTM) works and can be used for a cost-effectiveness analyses (CEA), and on uncertainty assessment. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
 ![](https://vimeo.com/453418864/050bf4acaf){width="70%"}
 Link to the video: https://vimeo.com/453418864/050bf4acaf.
 
@@ -57,7 +59,8 @@ Link to the video: https://vimeo.com/453418864/050bf4acaf.
 Link to the video: https://vimeo.com/453418898/90a5e63f1e.
 
 ## Aim and instructions
-The aim of this practical assignment is to get you acquainted with the principle of health state transition models (HSTM). To do so, you will define a transition matrix for a simple HSTM and explore how you can use it to define your cohort simulation. The example used in the practical focuses on evaluating the life course of patients at risk of developing intracranial aneurysms using a HSTM. The model structure is provided in the next tab.    
+The aim of this practical assignment is to get you acquainted with the principle of HSTM. This assignmment focuses on evaluating the cost-effectiveness of aspirin treatment versus no aspirin treatment for the primary prevention of cardiovascular disease events using a HSTM, also called Markov model. During this assignment, you will first define the cohort simulation of both strategies (using transition probabilities, and matrix multiplication) and then calculate the outcomes (quality-adjusted life years, costs). First, familiarise yourself with the model structure.  
+The method described in this practical is more extensively described in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824).  
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_hstm_1_files/images/Image_hint.png")
@@ -74,1041 +77,79 @@ You should be able to following commands to perform this exercise:
 - perform matrix multiplication using `%*%`  
 - using the command `for()` to perform forward loop  
 
-## Model structure & parameters
+## Model structure & parameters  
+**DISCLAIMER: FOR THE FOLLOWING ASSIGNMENT, ASSUME THAT PROBABILITIES ARE THE SAME AS RATES. SEE *[Fleurence & Hollenbeak 2007]*(https://doi.org/10.2165/00019053-200725010-00002) FOR AN EXPLANATION OF THE DIFFERENCES BETWEEN RATES AND PROBABILITIES AND REMEMBER THAT WE USUALLY USE PROBABILITIES IN HEALTH ECONOMIC MODELLING** 
 
 ### Model structure
-This section provides an explaination of the health state transition model (HSTM) used in this practical assignment. The HSTM represents the disease progression and treatment of patients who may develop an aneurysm. All patients start in the "Healthy" health state. From there, they can die from other causes of disease than an aneurysm, or they can develop a new intracranial aneurysm.  If they develop an aneurysm, the aneurysm can be detected, or they can die. If the aneurysm is detected, it is assumed that patients receive treatment. The treatment can either be succesful and the patients return to "Healthy", or the treatment can be fatal and patients die. When patients die (from any causes), they remain in that health state ('dead' is an absorbing health state).  
-In this model, patients move as an homogeneous cohort, all individuals start in the "Healthy" health state, the time cycle (or cycle length) in this model is **1 month**. Costs and health effects are not included in this simple model.  
-In the following exercises, the health states are called as follows:
-
-- "Healthy" = "Healthy"  
-- "Death due to other causes" = "DeathOther"  
-- "A new intracranial aneurysm is detected" = "NewAneurysm"  
-- "Detected unruptured intracranial aneurysm" = "DetectedAneurysm"  
-- "Death due to aneurysm treatment"= "DeathTreatment"  
+In this HSTM, individuals either receive aspirin or not (the two strategies we compare).In this model, individuals may remain "Well", or they can experience a stroke or a myocardial infarction (MI). These two events may be fatal or individuals may remain alive in the "Post-minor stroke", "Post-major stroke", or "Post-MI" health states when they survive these events. From all health states, individuals may die from general causes of death to "Death other".  
   
 ```{r, fig.align = 'center', out.width = "90%", echo = F}
-knitr::include_graphics("Tutorial_hstm_1_files/images/Fig_model_structure.png")
+knitr::include_graphics("Tutorial_hstm_2_files/images/Fig_model_structure.png")
 ```
 
-### Probabilities
-The probabilities below describe which proportion of the cohort transit from one health state to another per cycle. For instance, `p_NewAneurysm`, the probability that an individual develops a new intracranial aneurysm, means that 10% of individuals in the "Healthy" health state, will transit from "Healthy" to "A new intracranial aneurysm is present".  
+### Model inputs
+As you can see both strategies (prescribing aspirin or not) have similar diagrams. However, there will be differences in the values of the parameters applied in these strategies. First, we will focus on the disease progression of patients not using aspirin. Have a look at the input parameters which are already defined herebelow.   
 
-```{r probs, echo = TRUE}
-p_NewAneurysm       <- 	0.10 # Probability that an individual develops a new intracranial aneurysm 
-p_AneurysmDetection <- 	0.50 # Probability that a newly developed aneurysm is detected
-p_TreatmentIsFatal  <- 	0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
-p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to aneurysms
-```
+```{r inputs_gen, echo = TRUE, eval = FALSE}
+# Setting parameters
+n_cycles <- 10 # number of cycles in the health economic model
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
 
+# Input parameters
 
-### Questions
-Use these transition probabilities and the model structure to calculate the following probabilities/quantities (subquestions a to j). For your convenience, the probabilities have been loaded.    
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI - no-Aspirin strategy
+r_fatal_stroke	<- 0.3 # rate fatal stroke - no-Aspirin strategy
 
-a. The probability than an individual dies from aneurysm treatment in month 2  
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
 
-```{r 1a, exercise = TRUE}
- 
-```
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
 
-```{r 1a-solution}
- 
-```
-
-b. The probability that an individual starts in the "Healthy" state and remains there, that is, survives and does not develop an aneurysm, in 1 year  
-
-```{r 1b, exercise = TRUE}
- 
-```
-
-```{r 1b-solution}
-(1 - p_NewAneurysm - p_DeathOther) ^ 12
-```
-
-c. The probability that an individual develops 2 aneurysms and is treated successfully twice (starting health state for this calculation is "Healthy")  
-
-```{r 1c, exercise = TRUE}
-
-```
-
-```{r 1c-solution}
-(p_NewAneurysm * p_AneurysmDetection * (1 - p_TreatmentIsFatal)) ^ 2
-# OR: (p_NewAneurysm * p_AneurysmDetection * (1 - p_TreatmentIsFatal)) * (p_NewAneurysm * p_AneurysmDetection * (1 - p_TreatmentIsFatal))
-```
-
-d. The probability that an individual dies of other causes within the first month  
-
-```{r 1d, exercise = TRUE}
-
-```
-
-```{r 1d-solution}
-p_DeathOther
-```
-
-e. The probability that an individual dies of other causes within the first 2 months  
-
-```{r 1e, exercise = TRUE}
-
-```
-
-```{r 1e-solution}
-p_DeathOther + p_DeathOther * (1 - p_DeathOther - p_NewAneurysm) + p_DeathOther * p_NewAneurysm
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspirin
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
 ```
 
 
-f. The probability that an individual with a new and untreated aneurysm (that remains untreated) develops an additional, new aneurysm, in 2 years’ time  
+When developing a health economic model we often have to combine evidence from different sources of literature. Assume that there was evidence that 235 out of 1,000 patients **who had a stroke and survived** moved into a post major stroke state (the remaining patients experienced a minor stroke). Based on this evidence, please define the parameter `p_minor_stroke` (probability of transiting to the "post-minor stroke" health state **after having experienced a NON-FATAL stroke** and `p_major_stroke` (probability of transiting to the "post-major stroke" health state **after having experienced a NON-FATAL stroke**.   
+1.b. From other sources, you found that the incidence rates for myocardial infarction (MI), stroke, and death from other causes were respectively **400, 50, and 650 per 100,000 person-years**. Calculate the yearly incidence rates of MI, stroke, and death from other causes than MI and stroke in the placeholder of parameters `r_inc_mi`, `r_inc_stroke`, and `r_mort`.  
 
-```{r 1f, exercise = TRUE}
-
+```{r calc_inputs, exercise = TRUE}
+# Parameters to calculate
+# probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+# probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+# yearly incidence rate MI
+# yearly incidence rate stroke
+# yearly rate of death
 ```
 
-```{r 1f-solution}
-0
+```{r calc_inputs-hint}
+# Example
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
 ```
 
-g. The excess mortality risk (expressed as relative risk) of individuals with successfully treated aneurysms compared to healthy individuals  
-
-```{r 1g, exercise = TRUE}
-
+```{r calc_inputs-solution}
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+#data.frame(c(p_post_major_stroke, p_post_minor_stroke, r_inc_mi, r_inc_stroke, r_mort)) # show
 ```
 
-```{r 1g-solution}
-1
-```
-
-h. The risk of death from a car accident for an individual with a detected unruptured aneurysm  
-
-```{r 1h, exercise = TRUE}
-
-```
-
-```{r 1h-solution}
-0
-```
-
-i. [OPTIONAL] The sensitivity of the (unknown) test used to detect aneurysms after 4 months/repetitions  
-
-```{r 1i, exercise = TRUE}
-
-```
-
-```{r 1i-solution}
-p_AneurysmDetection + p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOther) +
-  p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOther) ^ 2 +
-  p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOther) ^ 3
-```
-
-j. [OPTIONAL] The probability that an individual with a new aneurysm dies before it is detected (you can give an approximation, or the exact value)  
-
-```{r 1j, exercise = TRUE}
-
-```
-
-```{r 1j-solution}
-# Approximation
-sum((p_DeathOther) * (1 - p_DeathOther - p_AneurysmDetection) ^ c(0:1000)) # limit, the number 1000 can be increased if needed
-```
-
-### Explanations
-a. It is not possible to reach the "DeathTreatment" state in 2 cycles because individuals have to develop the aneurysm, the aneurysm has to be detected, and then be treated to be fatal.  
-b. Survival without new aneurysm has probability 0.8 per cycle. This probability is multiplied 12 times by itself because the cycle length is 1 month.  
-c. This is calculated as the probability of new anerism x probability it is detected * probability it is sucessfully treated. This has to be exponentiated by because this process should occur twice in a row to answer this question.  
-d. This is just the probability of dying from other causes (`p_DeathOther` or 10%)  
-e. This is calculated as the probability of Death from Healthy in cycle 1 (`p_DeathOther`) plus the probability of remaining health and dying from other causes in cycle 2 (`p_DeathOther` * (1 - `p_DeathOther` - `p_NewAneurysm`)) plus death from a new aneurysm in cycle 2 (`p_DeathOther` * `p_NewAneurysm`).  
-f. In this health economic model, it is not possible to have more than 1 untreated aneurysm. This cannot be calculated based on this model.  
-g. Given they survive treatment, all treated individuals will return to the "Healthy" health state in the cycle following treatment. This Markov model has no 'memory': all individuals in a health state are similar, regardless of their history. Consequently, having survived aneurysm treatment does not affect the survival of individuals once they have transited to the "Healthy" health state.    
-h. Due to the severity of aneurysm treatment death from other causes is ignored in the cycle patients are treated.  
-i. Every cycle, there is 50% probability of detection of the aneurysm in individuals with an aneurysm who are still alive and without previous detection. Hence, for each cycle, the probability of staying in the "NewAneurysm" health state is 40% (calculated as 1 - `p_AneurysmDetection` - `p_DeathOther`) and is multiplied by the probability of detecting the aneurysm (50% or 0.5, `p_AneurysmDetection`).  
-j. The approximation for 2, 3, 4 cycles is 0.140, 0.156, 0.162 respectively, the true value (limit) equals 1/6 = 0.166. See http://www.mathsisfun.com/algebra/sequences-sums-geometric.html for a more extensive explanation. Here we have `a` = 1/10 (`p_DeathOther` = 10% or 0.1 )and `r` = 2/5 (1 - `p_AneurysmDetection` - `p_DeathOther` = 60% or 0.6) so the sum of our geometric series converges to `a`\*(1/(1-`r`)) = 1/10\*(1/(1 - 2/5)) = 1/6. The demonstration is provided in the graph below.  
-
-```{r plot_1j}
-plot(y = cumsum((p_DeathOther) * (1 - p_DeathOther - p_AneurysmDetection) ^ c(0:1000)), 
-     x = log(c(0:1000)),
-     type = "l",
-     main = "Convergence probability to die before the aneurysm is detected",
-     xlab = "Number of cycles (log scale)",
-     xaxt = "n",
-     ylab = "Probability") # graphic of the solution (x on the log scale)
-axis(1, at = c(log(1), log(10), log(20), log(50), log(100), log(500), log(1000)), 
-     labels = c(1, 10, 20, 50, 100, 500, 1000)
-     )
-```
-
-## Transition matrix
-Defining the transition matrix based on the transition probabilities described in the previous step, is the first step to define the life course of the cohort of individuals in this model. Defining the life course of the cohort is done by multiplying the number of patients in each health state by the probabilities which affect the state membership of that health state. We will do this in several steps:
-
-- Step 1: Defining the transition matrix for the cohort simulation  
-- Step 2: Defining the cohort simulation matrix  
-- Step 3: Filling in the cohort simulation matrix using the transition matrix and the starting position of individuals  
-
-Steps 2 & 3 will be performed under the "Cohort simulation" tab.  
-
-### Defining the transition matrix  
-To evaluate the life course of individuals over a large number of time cycles we need a transition matrix. Create a transition matrix called `m_tp`. `m_tp` should contain 5 rows and 5 columns because we have 5 health state ("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment"). To do so, use the `matrix()` function. Assign the value NA or 0 to all cells of the matrix to start with. Name the rows and columns (`dimnames` argument of the function) with the following names: "Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment". You can also create a vector with these names, `v_names_hs`, that you then use within the `dimnames` argument.    
-
-```{r trans_mat, exercise = TRUE}
-
-```
-
-```{r trans_mat-solution}
-v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
-n_hs <- length(v_names_hs) # this equals 5
-
-m_tp <- matrix(0, 
-               ncol = n_hs, # or 5
-               nrow = n_hs, # or 5
-               dimnames = list(v_names_hs,
-                               v_names_hs)
-               )
-#data.frame(m_tp) # show, data.frame() used because prettier
-```
-
-### Filling the transition matrix with transition probabilities
-Fill the matrix with the values of the transition probabilities. The rows indicate the health state from which persons transit. The columns indicate the health state to which persons transit. You can use the names of the rows and columns to assign the transition probabilities to each cell. Do not forget to define the probability of remaining in a health state!  
-
-```{r fill_trans_mat, exercise = TRUE, exercise.setup = "trans_mat-solution"}
-
-```
-
-```{r fill_trans_mat-hint}
-m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther # Example: probability of remaining healthy when healthy
-```
-
-```{r fill_trans_mat-solution}
-m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
-m_tp["Healthy", "DeathOther"]  <- p_DeathOther
-m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
-m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
-m_tp["NewAneurysm", "DeathOther"] <- p_DeathOther
-m_tp["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
-m_tp["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
-m_tp["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
-m_tp["DeathOther", "DeathOther"] <- 1
-m_tp["DeathTreatment", "DeathTreatment"] <- 1
-
-#data.frame(m_tp) # show, data.frame() used because prettier
-```
-
-### Check
-```{r trans_mat_setup}
-m_tp <- determine_m_tp()
-```
-
-Check whether all rows sum up to one.  
-```{r check_trans_mat, exercise = TRUE, exercise.setup = "trans_mat_setup"}
-
-```
-
-```{r check_trans_mat-hint}
-"Use the rowSums() function"
-```
-
-```{r check_trans_mat-solution}
-rowSums(m_tp) == 1 # all true!
-```
-
-## Transition matrix - illustration
-This part of the assignment illustrates the functioning of the transition matrix. Fill in the transition probabilities that you have used to define your transition matrix. The transition matrices are then automatically filled in based on your inputs. The transition matrices to calculate the health state distribution after 2, 3, or N cycles is obtained by multiplying the transition matrix by itself 2, 3, and N times respectively. The health state distribution after 2, 3, and N cycles is obtained by multiplying these transition matrices by the starting health state distribution The resulting health state memberships (after 1, 2,3 and N cycles), given all patients start in the "Healthy" health state, are provided in the tables titled "Health state distribution after 1, 2, 3, N cycles".   
-Answer the questions below using this information, and by changing the number of cycles and the proportion of individuals starting in each health state.  
-**OF NOTE**: Probabilities and proportions should be written in decimals, example: 20% should be 0.2).  
-
-```{r shiny_m_tp}
-h2("Inputs")
-h3("Transition probabilities")
-div(style="display:inline-block",
-numericInput(inputId = "p_NewAneurysm",
-             label = "Probability of new aneurysm",
-             value = 0,
-             min = 0,
-             max = 1,
-             width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "p_AneurysmDetection",
-             label = "Probability aneurysm is detected",
-             value = 0,
-             min = 0,
-             max = 1,
-             width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "p_TreatmentIsFatal",
-             label = "Probability aneurysm's treatment is fatal",
-             value = 0,
-             min = 0,
-             max = 1,
-             width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "p_DeathOther",
-             label = "Probability of death from other causes",
-             value = 0,
-             min = 0,
-             max = 1,
-             width = "175px")
-)
-tags$hr()
-h3("Cycle at which health state membership has to be defined")
-numericInput(inputId = "n_cycle",
-            label = "Health state membership after:",
-            value = 2,
-            min = 2,
-            max = 100,
-            width = "175px")
-tags$hr()
-h3("Health state membership at start")
-div(style="display:inline-block",
-numericInput(inputId = "n_Healthy",
-             label = "Proportion of individuals starting in health state: 'Healthy'",
-             value = 1,
-             min = 0,
-             max = 1,
-             width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "n_NewAneurysm",
-            label = "Proportion of individuals starting in health state: 'New aneurysm'",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "n_AneurysmDetection",
-            label = "Proportion of individuals starting in health state: 'Aneurysm detected'",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-tags$hr()
-h2("Outputs")
-h3("Transition matrix after 1 cycle")
-tableOutput("m_tp_1")
-h3("Health state distribution after 1 cycle")
-tableOutput("t_dist_1")
-tags$hr()
-h3("Transition matrix after 2 cycles")
-tableOutput("m_tp_2")
-h3("Health state distribution after 2 cycles")
-tableOutput("t_dist_2")
-tags$hr()
-h3("Transition matrix after 3 cycles")
-tableOutput("m_tp_3")
-h3("Health state distribution after 3 cycles")
-tableOutput("t_dist_3")
-tags$hr()
-h3(textOutput("txt_m_tp_n"))
-tableOutput("m_tp_n")
-h3(textOutput("txt_dist_tp_n"))
-tableOutput("t_dist_n")
-```
-
-```{r shiny_m_tp_server, context = "server"}
-mat_tp <- function() {
-  v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
-  m_tp <- matrix(0, 
-               ncol = 5,
-               nrow = 5,
-               dimnames = list(v_names_hs,
-                               v_names_hs))
-
-  m_tp["Healthy", "Healthy"]     <- 1- input$p_NewAneurysm - input$p_DeathOther # Example
-  m_tp["Healthy", "DeathOther"]  <- input$p_DeathOther
-  m_tp["Healthy", "NewAneurysm"] <- input$p_NewAneurysm
-  m_tp["NewAneurysm", "DetectedAneurysm"] <- input$p_AneurysmDetection
-  m_tp["NewAneurysm", "DeathOther"] <- input$p_DeathOther
-  m_tp["NewAneurysm", "NewAneurysm"] <- 1 - input$p_AneurysmDetection - input$p_DeathOther
-  m_tp["DetectedAneurysm", "Healthy"] <- 1 - input$p_TreatmentIsFatal
-  m_tp["DetectedAneurysm", "DeathTreatment"] <- input$p_TreatmentIsFatal
-  m_tp["DeathOther", "DeathOther"] <- 1
-  m_tp["DeathTreatment", "DeathTreatment"] <- 1
-
-  return(m_tp)
-  }
-
-v_start <- function() {c(input$n_Healthy,
-                         input$n_NewAneurysm,
-                         input$n_AneurysmDetection,
-                         0,
-                         0)}
-
-output$m_tp_1 <- renderTable({
-  cbind(` `=colnames(mat_tp()), mat_tp())
-  
-})
-
-output$t_dist_1 <- renderTable({
-  v_start() %*% mat_tp() 
-})
-
-output$m_tp_2 <- renderTable({
-  m_tp_2 <- mat_tp() %*% mat_tp() 
-  
-  cbind(` `=colnames(mat_tp()), m_tp_2)
-})
-
-output$t_dist_2 <- renderTable({
-  v_start() %*% (mat_tp() %*% mat_tp())
-})
-
-output$m_tp_3 <- renderTable({
-  m_tp_3 <- (mat_tp() %*% mat_tp() %*% mat_tp()) 
-  
-  cbind(` `=colnames(mat_tp()), m_tp_3)
-})
-
-output$t_dist_3 <- renderTable({
-  v_start() %*% (mat_tp() %*% mat_tp() %*% mat_tp())
-})
-
-output$m_tp_n <- renderTable({
-  
-  for (i in 2:input$n_cycle) {
-    if(i == 2) {
-      m_tp_n <- mat_tp() %*% mat_tp()
-    } else {
-      m_tp_n <- m_tp_n %*% mat_tp()
-    }
-  }
-  
-  cbind(` `= colnames(mat_tp()), round(m_tp_n,3))
-})
-
-output$t_dist_n <- renderTable({
-  
-  for (i in 2:input$n_cycle) {
-    if(i == 2) {
-      m_tp_n <- mat_tp() %*% mat_tp()
-    } else {
-      m_tp_n <- m_tp_n %*% mat_tp()
-    }
-  }
-  
-  v_start() %*% m_tp_n
-}, digits = 3)
-
-output$txt_m_tp_n <- renderText({
-  paste("Transition matrix after", input$n_cycle ,"cycles", sep = " ")
-})
-
-output$txt_dist_tp_n <- renderText({
-  paste("Health state distribution after", input$n_cycle ,"cycles", sep = " ")
-})
-```
-
-### Questions
-a. What is the probability that an individual is healthy after exactly 1 year?  
-
-```{r 2a}
-textInput("Answer_a", "Type your answer")
-```
-
-b. Compare the previous answer with the answer of question b. under the "Model structure & parameters"-tab. Why is the probability above larger than the answer of question b. under the "Model structure & parameters"-tab?  
-
-```{r 2b}
-textInput("Answer_b", "Type your answer")
-```
-
-c. How many months does it take until 60% of all individuals have died?  
-
-```{r 2c}
-textInput("Answer_c", "Type your answer")
-```
-
-d. What percentage of all individuals is still alive after 2 years?  
-
-```{r 2d}
-textInput("Answer_d", "Type your answer")
-```
-
-e. How much more likely are individuals to die from other causes than from aneurysm treatment? Hint: this only becomes apparent when all individuals have died.  
-
-```{r 2e}
-textInput("Answer_e", "Type your answer")
-```
-
-f. Change the starting state membership of the model (using the input fields) to reflect 50% individuals starting in the "New Aneurysm" state and 50% starting in the "Detected Aneurysm" state. How does this change the probability of an individual being healthy after exactly 1 year? Compare your answer to the answer of question a.  
-
-```{r 2f}
-textInput("Answer_f", "Type your answer")
-```
-
-g. Why doesn’t the distribution of individuals over the health states change when you apply a time horizon of 7 years instead of 6 years?  
-
-```{r 2g}
-textInput("Answer_g", "Type your answer")
-```
-
-### Answers
-a. 19.5% (0.195). To obtain this answer, the number of cycle should be set to 12.  
-
-b. The 0.195 from question a. also includes all individuals who develop an aneurysm which is then succesfully treated, while this is not taken into account answer b. of the previous assignment.  
-
-c. 8 cycles. For N = 8 we find approximately 52% of individuals have died from other causes and 6% from treatment, which makes a total of ~ 60%  
-
-d. 4.9% in the "Healthy" health state, 1% in the "New Aneurysm" health state, and 0.6% in the "Detected Aneurysm" health state, which is a total of 6.5%.  
-
-e. After any number of cycles > 65, everybody has died and we can answer this question: 87.5% of individuals have died from other causes, and 12.5% have died from treatment. This results in a relative risk of 0.875/0.125 = 7.  
-
-f. The probability of being health after a year is now 17.7%, which is lower than the 19.5% of answer a. This is a reduction of 1.8% in absolute term, and a decrease of 9.2% in relative terms.  
-g. 7 years means N = 12\*7 = 84, and 6 years means N = 12\*6 = 72. From testing different values of N we find that the distribution of individuals over the 5 health states does not change anymore (at least in 3 decimals) for N > 65. Indeed, for any time horizon longer than 65 months we will find the same results as all individuals will die within 65 months time.  
-
-## Cohort simulation
-This part of the assignment focuses on defining the life course of the cohort of individuals included in the health economic model. We perform this by modelling the disease progression of individuals through the cohort simulation using the matrix (`m_tp`) defined under the "Transition matrix"-tab. The method used to perform these calculations are described extensively in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824). In this part of the tutorial, we focus on steps 2 and 3 of this sequence:  
-
-- Step 1: Defining the transition matrix for the cohort simulation  
-- Step 2: Defining the cohort simulation matrix  
-- Step 3: Filling in the cohort simulation matrix using the transition matrix and the starting position of individuals
-
-Remember the transition probabilities and transition matrix we have defined earlier.  
-```{r show_tp_m, echo = T}
-# Probabilities
-p_NewAneurysm  	    <- 0.10 # Probability that an individual develops a new intracranial aneurysm 
-p_AneurysmDetection <- 0.50 # Probability that a newly developed aneurysm is detected
-p_TreatmentIsFatal  <- 0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
-p_DeathOther  	    <- 0.10 # Probability of death due to causes unrelated to aneurysms
-
-# Defining transition matrix
-v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
-m_tp <- matrix(0, 
-               ncol = length(v_names_hs),
-               nrow = length(v_names_hs),
-               dimnames = list(from = v_names_hs,
-                               to = v_names_hs))
-
-m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
-m_tp["Healthy", "DeathOther"]  <- p_DeathOther
-m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
-m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
-m_tp["NewAneurysm", "DeathOther"] <- p_DeathOther
-m_tp["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
-m_tp["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
-m_tp["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
-m_tp["DeathOther", "DeathOther"] <- 1
-m_tp["DeathTreatment", "DeathTreatment"] <- 1
-
-data.frame(m_tp)
-```
-
-### Initiate cohort simulation
-To evaluate the progression of individuals over multiple cycles, define the following objects:  
-- `n_cycles`: the number of cycles to simulate, assume 3 years (36 monthly cycles)  
-- `n_pt`: the number of individuals to simulate, assume 10,000  
-- `m_hs`: a matrix to store the number of individuals in each health state during each cycle. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states (5). Numerate the rows from 0 to `n_cycles` and name the column with the names of the health states ("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment"). Fill this matrix with 0's.    
-- `v_start_hs`: a vector determining the starting position of the individuals over the different cycles (assume all individuals start in the "Healthy" health state)  
-
-Once you have determined these parameters, use `v_start_hs` to determine the starting position of the individuals in the simulation.  
-
-```{r start_m_hs, exercise = TRUE}
-n_cycles # the number of cycles to simulate, assume 3 years
-n_pt # the size of the cohort, assume 10,000 persons
-m_hs # a cohort state matrix, containing [n_cycles + 1] rows (because the first row is the start position), and as much column as the number of health states.
-
-
-v_start_hs # start distribution ("Healthy" is the first health state)
-m_hs[1, ] # assign start distribution to cycle 0
-```
-
-```{r start_m_hs-solution}
-n_cycles <- 36 
-n_pt <- 10000  
-m_hs <- matrix(0, 
-               nrow = n_cycles + 1,
-               ncol = length(v_names_hs),
-               dimnames = list(cycles = c(0:n_cycles),
-                               states = v_names_hs)) 
-
-v_start_hs <- c(n_pt, 0, 0, 0, 0) 
-m_hs[1, ] <- v_start_hs 
-
-#head(m_hs) # show first 6 rows/ cycles
-```
-
-### Fill in cohort simulation
-Afterwards, perform the matrix multiplication to determine the health state membership of all individuals over the cycles. To determine the number of individuals in each health state during each cycle, one need to multiply the vector of state membership in the previous cycle (so, the previous row in `m_hs`) by the transition matrix (`m_tp`).  
-Example: to calculate the number of individuals in each health state in cycle 1, multiply the state membership in cycle 0, `m_hs[1, ]` (cycle 0 is row 1 because there is no row 0 in R), by the transition matrix, `m_tp`.
-*HINT:* to do these calculation automatically, use a a for loop over rows 1 to `n_cycles` of the `m_hs` matrix. 
-
-```{r fill_cohort_setup}
-m_tp <- determine_m_tp()
-
-n_cycles <- 36 
-n_pt <- 10000  
-m_hs <- matrix(0, 
-               nrow = n_cycles + 1,
-               ncol = length(v_names_hs),
-               dimnames = list(cycles = c(0:n_cycles),
-                               states = v_names_hs)) 
-
-v_start_hs <- c(n_pt, 0, 0, 0, 0) 
-m_hs[1, ] <- v_start_hs
-```
-
-```{r fill_cohort, exercise = TRUE, exercise.setup = "fill_cohort_setup"}
-# perform a forward loop over the cycles to fill the cohort simulation
-
-
-# Inspect the first row of the cohort simulation, using the head() function
-
-```
-
-```{r fill_cohort-hint}
-# perform a forward loop over the cycles to fill the cohort simulation
-for(cycle in 1:n_cycles){
-  
-  m_hs[cycle + 1, ] # fill in matrix multiplication
-
-}
-
-# Inspect the first row of the cohort simulation, using the head() function
-head(m_hs)
-```
-
-```{r fill_cohort-solution}
-# Forward loop over the cycles to fill the cohort simulation
-for(cycle in 1:n_cycles){
-  
-  m_hs[cycle + 1, ] <- m_hs[cycle, ] %*% m_tp # matrix multiplication
-
-}
-
-# Inspect the first row of the cohort simulation, using the head() function
-head(m_hs)
-```
-
-### Cohort simulation - complete
-The cohort simulation looks as follows.  
-```{r }
-m_tp <- determine_m_tp()
-
-n_cycles <- 36 
-n_pt <- 10000  
-m_hs <- matrix(0, 
-               nrow = n_cycles + 1,
-               ncol = length(v_names_hs),
-               dimnames = list(cycles = c(0:n_cycles),
-                               states = v_names_hs)) 
-
-v_start_hs <- c(n_pt, 0, 0, 0, 0) 
-m_hs[1, ] <- v_start_hs
-
-for(cycle in 1:n_cycles){
-  
-  m_hs[cycle + 1, ] <- m_hs[cycle, ] %*% m_tp # matrix multiplication
-
-}
-
-m_hs
-
-plot(y = m_hs[, "Healthy"]/ n_pt, 
-     x = rownames(m_hs),
-     type = 'l',
-     main = 'Health state membership over model cycles',
-     xlab = 'Cycle number',
-     ylab = 'Proportion of individuals')
-lines(y = m_hs[, "NewAneurysm"]/ n_pt, 
-      x = rownames(m_hs), 
-      col = 'red')
-lines(y = m_hs[, "DetectedAneurysm"]/ n_pt, 
-      x = rownames(m_hs), 
-      col = 'blue')
-lines(y = m_hs[, "DeathOther"]/ n_pt, 
-      x = rownames(m_hs), 
-      col = 'orange')
-lines(y = m_hs[, "DeathTreatment"]/ n_pt, 
-      x = rownames(m_hs), 
-      col = 'lightgrey')
-legend("right",  
-       legend = v_names_hs, 
-       col = c('black', 'red', 'blue', 'orange', 'lightgrey'),
-       lty = 1
-       )
-```
-
-### Questions
-Have a look at the cohort simulation. 
-```{r quiz}
-quiz(
-  question("How many individuals are still alive after exactly 3 years?",
-           answer("None"),
-           answer("123"),
-           answer("148"),
-           answer("163", correct = TRUE),
-           incorrect = "Too bad, the answer was 163. It is the sum of all individuals in th 36th cycle in the 'Healthy', 'NewAneurysm' and 'DetectedAneurysm' health states.")
-)
-```
-
-```{r m_hs_quest}
-m_tp <- determine_m_tp()
-
-n_cycles <- 36 
-n_pt <- 10000  
-m_hs <- matrix(0, 
-               nrow = n_cycles + 1,
-               ncol = length(v_names_hs),
-               dimnames = list(cycles = c(0:n_cycles),
-                               states = v_names_hs)) 
-
-v_start_hs <- c(n_pt, 0, 0, 0, 0) 
-m_hs[1, ] <- v_start_hs
-
-for(cycle in 1:n_cycles){
-  
-  m_hs[cycle + 1, ] <- m_hs[cycle, ] %*% m_tp # matrix multiplication
-
-}
-```
-
-Calculate the cumulative number of person-months that is spent in the health states “Healthy” , “ NewAneurysm”  and “Detected Aneurysm”. Assume that we count state membership at the beginning of the cycles. For your convenience `m_tp` and `m_hs` have been loaded.  
-
-```{r cum_month1, exercise = TRUE, exercise.setup = "m_hs_quest"}
-
-```
-
-```{r cum_month1-hint}
-"Use the sum() function."
-```
-
-```{r cum_month1-solution}
-n_months_Healthy <- round(sum(m_hs[1:36, "Healthy"]))
-n_months_NewAneurysm <- round(sum(m_hs[1:36, "NewAneurysm"]))
-n_months_DetectedAneurysm <- round(sum(m_hs[1:36, "DetectedAneurysm"]))
-n_total <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-#data.frame(cbind(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm, n_total)) # show
-```
-
-Can you determine the average number of months that individuals in this model are alive, over the 3 year time horizon?
-
-```{r average_month1, exercise = TRUE, exercise.setup = "m_hs_quest"}
-
-```
-
-```{r average_month1-hint}
-"You know the cohort size (10,000) (`n_pt`) and the cumulative number of months lived (re-use calculation from the previous chunk if necessary)."
-```
-
-```{r average_month1-solution}
-n_months_Healthy <- round(sum(m_hs[1:36, "Healthy"]))
-n_months_NewAneurysm <- round(sum(m_hs[1:36, "NewAneurysm"]))
-n_months_DetectedAneurysm <- round(sum(m_hs[1:36, "DetectedAneurysm"]))
-n_total <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-#n_total/n_pt # show
-```
-
-### Answers
-```{r m_hs_answer, eval = TRUE}
-m_tp <- determine_m_tp()
-
-n_cycles <- 36 
-n_pt <- 10000  
-m_hs <- matrix(0, 
-               nrow = n_cycles + 1,
-               ncol = length(v_names_hs),
-               dimnames = list(cycles = c(0:n_cycles),
-                               states = v_names_hs)) 
-
-v_start_hs <- c(n_pt, 0, 0, 0, 0) 
-m_hs[1, ] <- v_start_hs
-
-for(cycle in 1:n_cycles){
-  
-  m_hs[cycle + 1, ] <- m_hs[cycle, ] %*% m_tp # matrix multiplication
-
-}
-n_months_Healthy <- round(sum(m_hs[1:36, "Healthy"]))
-n_months_NewAneurysm <- round(sum(m_hs[1:36, "NewAneurysm"]))
-n_months_DetectedAneurysm <- round(sum(m_hs[1:36, "DetectedAneurysm"]))
-n_total <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-```
-The cumulative number of person-months after 3 years equals `r format(n_months_Healthy, big.mark = ",", scientific = FALSE)` + `r format(n_months_NewAneurysm, big.mark = ",", scientific = FALSE)` + `r format(n_months_DetectedAneurysm, big.mark = ",", scientific = FALSE)` =  `r format(n_total, big.mark = ",", scientific = FALSE)` in our cohort of `r format(n_pt, big.mark = ",", scientific = FALSE)` individuals. On average, an individual will thus be alive for `r format(n_total, big.mark = ",", scientific = FALSE)` / `r format(n_pt, big.mark = ",", scientific = FALSE)` ~ `r format(round(n_total/n_pt, 1), big.mark = ",", scientific = FALSE)` months. 
-
-## Cohort simulation - interactive
-This part of the assignment illustrates the functioning of the cohort simulation. On this tab, the complete cohort simulation had been pre-programmed. Use this cohort simulation to answer the questions below. Fill in the transition probabilities that you have used to define your transition matrix. The transition matrix is then automatically completed based on your input.  
-For these calculations, we assume that all persons start in the "Healthy" health state, but you can of course change that.  
-
-```{r shiny_cohort}
-h2("Inputs")
-h3("Transition probabilities")
-div(style="display:inline-block",
-numericInput(inputId = "p_NewAneurysm_2",
-            label = "Probability of new aneurysm",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "p_AneurysmDetection_2",
-            label = "Probability aneurysm is detected",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "p_TreatmentIsFatal_2",
-            label = "Probability aneurysm's treatment is fatal",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "p_DeathOther_2",
-            label = "Probability of death from other causes",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-tags$hr()
-h3("Health state distribution at start")
-div(style="display:inline-block",
-numericInput(inputId = "n_Healthy_2",
-            label = "Proportion of individuals starting in health state: 'Healthy'",
-            value = 1,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "n_NewAneurysm_2",
-            label = "Proportion of individuals starting in health state: 'New aneurysm'",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-div(style="display:inline-block",
-numericInput(inputId = "n_AneurysmDetection_2",
-            label = "Proportion of individuals starting in health state: 'Aneurysm detected'",
-            value = 0,
-            min = 0,
-            max = 1,
-            width = "175px")
-)
-tags$hr()
-h2("Outputs")
-h3("Plot cohort simulation")
-plotOutput("plot_cohort")
-h3("Cohort simulation")
-tableOutput("tbl_cohort")
-tags$hr()
-h3("Cumulative number of person-months over the 3 years")
-tableOutput("tbl_cum")
-```
-
-```{r shiny_cohort_serv, context = "server"}
-m_hs_fct <- function() {
-  v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
-  m_tp <- matrix(0, 
-                 ncol = 5,
-                 nrow = 5,
-                 dimnames = list(v_names_hs,
-                                 v_names_hs))
-  
-  m_tp["Healthy", "Healthy"]     <- 1- input$p_NewAneurysm_2 - input$p_DeathOther_2 # Example
-  m_tp["Healthy", "DeathOther"]  <- input$p_DeathOther_2
-  m_tp["Healthy", "NewAneurysm"] <- input$p_NewAneurysm_2
-  m_tp["NewAneurysm", "DetectedAneurysm"] <- input$p_AneurysmDetection_2
-  m_tp["NewAneurysm", "DeathOther"] <- input$p_DeathOther_2
-  m_tp["NewAneurysm", "NewAneurysm"] <- 1 - input$p_AneurysmDetection_2 - input$p_DeathOther_2
-  m_tp["DetectedAneurysm", "Healthy"] <- 1 - input$p_TreatmentIsFatal_2
-  m_tp["DetectedAneurysm", "DeathTreatment"] <- input$p_TreatmentIsFatal_2
-  m_tp["DeathOther", "DeathOther"] <- 1
-  m_tp["DeathTreatment", "DeathTreatment"] <- 1
-  
-  
-  v_start <- c(input$n_Healthy_2 * 10000,
-                             input$n_NewAneurysm_2 * 10000,
-                             input$n_AneurysmDetection_2 * 10000,
-                             0,
-                             0)
-  
-  n_cycles <- 36 # the number of cycles to simulate, assume 3 years
-  n_pt <- 10000  # the size of the cohort, assume 10000 persons
-  m_hs <- matrix(0, 
-                 nrow = n_cycles + 1,
-                 ncol = length(v_names_hs),
-                 dimnames = list(c(0:n_cycles),
-                                 v_names_hs)) 
-  m_hs[1, ] <- v_start
-  
-  for(cycle in 1:n_cycles){
-    
-    # For your matrix of health state
-    m_hs[cycle + 1, ] <- m_hs[cycle, ] %*% m_tp # matrix multiplication
-    
-  }
-  
-  
-  return(m_hs)
-}
-
-
-output$plot_cohort<- renderPlot({
-  
-  n_pt <- 10000
-  v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
-  m_hs <- m_hs_fct()
-  
-  plot(y = m_hs[, "Healthy"]/ n_pt, 
-       x = rownames(m_hs),
-       type = 'l',
-       main = 'Health state membership over model cycles',
-       xlab = 'Cycle number',
-       ylab = 'Proportion of individuals')
-  lines(y = m_hs[, "NewAneurysm"]/ n_pt, 
-        x = rownames(m_hs), 
-        col = 'red')
-  lines(y = m_hs[, "DetectedAneurysm"]/ n_pt, 
-        x = rownames(m_hs), 
-        col = 'blue')
-  lines(y = m_hs[, "DeathOther"]/ n_pt, 
-        x = rownames(m_hs), 
-        col = 'orange')
-  lines(y = m_hs[, "DeathTreatment"]/ n_pt, 
-        x = rownames(m_hs), 
-        col = 'lightgrey')
-  legend("right",  
-         legend = v_names_hs, 
-         col = c('black', 'red', 'blue', 'orange', 'lightgrey'),
-         lty = 1
-  )
-  
-  
-})
-
-output$tbl_cohort <- renderTable({
-  cbind("Cycle" = c(0:abs(nrow(m_hs_fct())-1)), m_hs_fct())
-  }, 
-  digits = 0)
-
-output$tbl_cum <- renderTable({
-  m_hs <- m_hs_fct()
-  
-  n_months_Healthy <- round(cumsum(m_hs[, "Healthy"])[36])
-  n_months_NewAneurysm <- round(cumsum(m_hs[, "NewAneurysm"])[36])
-  n_months_DetectedAneurysm <- round(cumsum(m_hs[, "DetectedAneurysm"])[36])
-  n_total <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-  
-  return(cbind(n_months_Healthy,
-               n_months_NewAneurysm,
-               n_months_DetectedAneurysm,
-               n_total))
-  
-}, 
-digits = 0)
-```
-
-### Questions
-
-a. Decrease the value of the parameter `pDeathOther` by 50% (enter the value 0.05) and double the value of the parameter `p_TreatmentIsFatal` (enter the value 0.40). How do you think these changes will affect the average number of months that individuals in this model are alive? Try to answer this question before looking at the results.  
-b. Reset the parameters `p_DeathOther` to value 0.1 and `p_TreatmentIsFatal` to value 0.2.  What do you think will happen if we improve the sensitivity of the test to detect new aneurysms, from looking at the model structure? Try to answer this question before looking at the results. To check your feeling, change the value of the parameter `p_AneurysmDetection` from 0.50 to 0.80 and look at the average number of months that individuals in this model are alive after 3 years. Can you explain the result?  
-
-c. Think of different extensions/adaptations that would make this model more realistic  
-c.1.	Do you think the time cycle of 1 month is appropriate for this analysis?  
-c.2.	Can you think of a health state that might be added?  
-c.3.	Can you think of a transition that might be added?  
-c.4.	What is missing in this model to do a cost-effectiveness analysis?  
-c.5.	What is missing in this model to do a probabilistic sensitivity analysis?  
-
-### Answers
-```{r, eval = T}
-# Clone transition matrix
-m_tp_2 <- determine_m_tp()
-
-# Re-define transition probabilities
-p_TreatmentIsFatal  <- 0.40 # Probability that treatment of a detected aneurysm induces a fatal complication
-p_DeathOther  	    <- 0.05 # Probability of death due to causes unrelated to aneurysms
-
-# Re-define transitions in m_tp_2
-m_tp_2["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther # Example
-m_tp_2["Healthy", "DeathOther"]  <- p_DeathOther
-m_tp_2["Healthy", "NewAneurysm"] <- p_NewAneurysm
-m_tp_2["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
-m_tp_2["NewAneurysm", "DeathOther"] <- p_DeathOther
-m_tp_2["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
-m_tp_2["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
-m_tp_2["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
-m_tp_2["DeathOther", "DeathOther"] <- 1
-m_tp_2["DeathTreatment", "DeathTreatment"] <- 1
-
-# Re-define matrix of health states
-m_hs_2 <- matrix(0, 
-               nrow = n_cycles + 1,
-               ncol = length(v_names_hs),
-               dimnames = list(c(0:n_cycles),
-                               v_names_hs))
-m_hs_2[1, ] <- v_start_hs # Define state membership start
-
-# matrix multiplication to fill cohort simulation
-for(cycle in 1:n_cycles){
-  
-  # For your matrix of health state
-  m_hs_2[cycle + 1, ] <- m_hs_2[cycle, ] %*% m_tp_2 # matrix multiplication
-  
-}
-
-## Re-calculate the cummulative number of individuals
-n_months_Healthy <- round(cumsum(m_hs_2[, "Healthy"])[36])
-n_months_NewAneurysm <- round(cumsum(m_hs_2[, "NewAneurysm"])[36])
-n_months_DetectedAneurysm <- round(cumsum(m_hs_2[, "DetectedAneurysm"])[36])
-n_total_2 <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-```
-
-a. Individuals will, on average, live (`r format(n_months_Healthy, big.mark = ",", scientific = FALSE)` + `r format(n_months_NewAneurysm, big.mark = ",", scientific = FALSE)` + `r format(n_months_DetectedAneurysm, big.mark = ",", scientific = FALSE)`)/`r format(n_pt, big.mark = ",", scientific = FALSE)` ~ `r round(n_total_2/ n_pt, 2)` months. This is an overall increase of `r round((n_total_2 - n_total) / n_pt, 1)` months, caused by the fact that the reduction in risk of death due to other causes applies to all individuals (except those having their aneurysm treated) whereas the increase in the risk of death due to treatment affects only individuals with detected aneurysms who are treated.
-
-```{r, eval = T}
-# Clone transition matrix
-m_tp_3 <- determine_m_tp()
-
-# Re-define transition probabilities
-p_TreatmentIsFatal  <- 0.2 # Probability that treatment of a detected aneurysm induces a fatal complication
-p_DeathOther  	    <- 0.1 # Probability of death due to causes unrelated to aneurysms
-p_AneurysmDetection  <- 0.80 # Probability to detect the Aneurysm
-
-# Re-define transitions in m_tp_3
-m_tp_3["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther # Example
-m_tp_3["Healthy", "DeathOther"]  <- p_DeathOther
-m_tp_3["Healthy", "NewAneurysm"] <- p_NewAneurysm
-m_tp_3["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
-m_tp_3["NewAneurysm", "DeathOther"] <- p_DeathOther
-m_tp_3["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
-m_tp_3["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
-m_tp_3["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
-m_tp_3["DeathOther", "DeathOther"] <- 1
-m_tp_3["DeathTreatment", "DeathTreatment"] <- 1
-
-# Re-define matrix of health states
-m_hs_3 <- matrix(0, 
-                 nrow = n_cycles + 1,
-                 ncol = length(v_names_hs),
-                 dimnames = list(c(0:n_cycles),
-                                 v_names_hs))
-m_hs_3[1, ] <- v_start_hs # Define state membership start
-
-# matrix multiplication to fill cohort simulation
-for(cycle in 1:n_cycles){
-  
-  # For your matrix of health state
-  m_hs_3[cycle + 1, ] <- m_hs_3[cycle, ] %*% m_tp_3 # matrix multiplication
-  
-}
-
-## Re-calculate the cummulative number of individuals
-n_months_Healthy <- round(cumsum(m_hs_3[, "Healthy"])[36])
-n_months_NewAneurysm <- round(cumsum(m_hs_3[, "NewAneurysm"])[36])
-n_months_DetectedAneurysm <- round(cumsum(m_hs_3[, "DetectedAneurysm"])[36])
-n_total_3 <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-```
-
-b. After improving detection we end up with `r round(n_total_3/n_pt, 2)` person months in total, in our cohort. This represents a decrease of (`r format(n_total_3, big.mark = ",", scientific = FALSE)` - `r format(n_total, big.mark = ",", scientific = FALSE)`) / `r format(n_pt, big.mark = ",", scientific = FALSE)` ~ `r round((n_total_3 - n_total) / n_pt, 2)`  months, on average, per individual. From the model representation we can understand this: individuals whose aneurysm is detected are actually worse off (in the treatment cycle following detection) than individuals whose aneurysms remain undetected! Although understandable from the model representation, this characteristic indicates our model is too simplistic to be used in a formal cost-effectiveness analysis.  
-
-c. A time cycle of one month seems appropriate, much larger cycles would be unrealistic and much shorter cycles would probably not have much added value. When it comes to extending the model, we might add, for example, a health state for individuals who have non-fatal complications from aneurysm treatment (“ DisabledAfterTreatment”), we surely want to add a transition from the “DetectedAneurysm” state to the “DeathOther” state, to avoid the issue identified in b.). For a proper cost-effectiveness analysis we need to associate costs and utilities to all health states and possibly to some of the transitions. For a probabilistic analysis we would need to define distributions for all model parameters, including transition probabilities, costs and utilities. Then we can perform the probabilistic analysis based on Monte Carlo sampling.  
-
-You have now listed a number of improvements and extensions to this model, so apparently this model is a bit too simple to be of much value. Therefore, you will develop your own, much better model during the next exercises!  
-
-**THE END**
+## Transition matrices  
