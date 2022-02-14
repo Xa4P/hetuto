@@ -49,7 +49,7 @@ determine_m_tp <- function() {
 ```
 
 ## Before starting
-1. Watch the videos explaining how a HSTM work and can be used for a cost-effectiveness analyses (CEA), and on uncertainty assessment. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+1. Watch the videos explaining how a Health State Transition Model (HSTM) works and can be used for a cost-effectiveness analyses (CEA), and on uncertainty assessment. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
 ![](https://vimeo.com/453418864/050bf4acaf){width="70%"}
 Link to the video: https://vimeo.com/453418864/050bf4acaf.
 
