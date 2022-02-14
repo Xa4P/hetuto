@@ -14,7 +14,9 @@ description: >
 
 ```{r setup, include = FALSE}
 rm(list = ls())
+options(scipen = 999)
 require(learnr, quietly = TRUE)
+require(shiny, quietly = TRUE)
 knitr::opts_chunk$set(echo = FALSE)
 
 # Setting parameters
@@ -63,17 +65,18 @@ The aim of this practical assignment is to get you acquainted with the principle
 The method described in this practical is more extensively described in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824).  
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
-knitr::include_graphics("Tutorial_hstm_1_files/images/Image_hint.png")
+knitr::include_graphics("Tutorial_hstm_2_files/images/Image_hint.png")
 ```
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
-knitr::include_graphics("Tutorial_hstm_1_files/images/Image_solution.png")
+knitr::include_graphics("Tutorial_hstm_2_files/images/Image_solution.png")
 ```
 
 ### Prerequisites
-You should be able to following commands to perform this exercise:  
+You should be able to use the following commands to perform this exercise:  
 
-- `matrix()` function  
+- `matrix()` and `array()` functions  
+- `rowSums()` function
 - perform matrix multiplication using `%*%`  
 - using the command `for()` to perform forward loop  
 
@@ -153,3 +156,230 @@ r_mort <- 650 / 100000 # yearly rate of death
 ```
 
 ## Transition matrices  
+
+### Define the transition matrix of the "No aspirin" strategy  
+The input parameter values looks as follows now. Based on these parameter values, determine the transition matrix of the "No aspirin" strategy, and call it `m_tp_comp` (for matrix transition probabilities of the comparator). Assume here that `r_mort` can be used for the probability of ‘Death other’.  
+
+```{r inputs_complete_setup, echo = TRUE}
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
+
+# Input parameters
+
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+
+## Calculated parameters
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+```
+
+```{r m_tp_1, exercise = TRUE, exercise.setup = "inputs_complete_setup"}
+
+
+```
+
+```{r m_tp_1-hint-1}
+"To do so, create a matrix of 7 by 7, and use the evidence `p_` and `r_` parameters to fill it in. Use the model structure to fill in the transition matrix. Once an individuals die, that person remains in that health state. The transition probabilities to the post-minor stroke health states are the product of experiencing a non-fatal stroke and of the consequences being minor or major."
+```
+
+```{r m_tp_1-hint-2}
+# Create transition matrix
+m_tp_comp <- matrix(0,
+                    ncol = n_hs,
+                    nrow = n_hs,
+                    dimnames = list(from = v_names_hs,
+                                    to = v_names_hs)
+                    )
+# Fill in transition matrix
+m_tp_comp["Well", "Well"] <- 1 - r_inc_mi - r_inc_stroke - r_mort # example
+```
+
+```{r m_tp_1-solution}
+# Create transition matrix
+m_tp_comp <- matrix(0,
+                    ncol = n_hs,
+                    nrow = n_hs,
+                    dimnames = list(from = v_names_hs,
+                                    to = v_names_hs)
+                    )
+# Fill in transition matrix
+m_tp_comp["Well", "Well"] <- 1 - r_inc_mi - r_inc_stroke - r_mort 
+m_tp_comp["Well", "Post-minor_stroke"] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+m_tp_comp["Well", "Post-major_stroke"] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+m_tp_comp["Well", "Post-MI"] <- r_inc_mi * (1 - r_fatal_mi)
+m_tp_comp["Well", "Death_stroke"] <- r_inc_stroke * r_fatal_stroke
+m_tp_comp["Well", "Death_MI"] <- r_inc_mi * r_fatal_mi
+m_tp_comp["Well", "Death_other"] <- r_mort
+
+m_tp_comp["Post-minor_stroke", "Post-minor_stroke"] <- 1 - r_mort
+m_tp_comp["Post-minor_stroke", "Death_other"] <- r_mort
+
+m_tp_comp["Post-major_stroke", "Post-major_stroke"] <- 1 - r_mort
+m_tp_comp["Post-major_stroke", "Death_other"] <- r_mort
+
+m_tp_comp["Post-MI", "Post-MI"] <- 1 - r_mort
+m_tp_comp["Post-MI", "Death_other"] <- r_mort
+
+m_tp_comp["Death_stroke", "Death_stroke"] <- 1
+m_tp_comp["Death_MI", "Death_MI"] <- 1
+m_tp_comp["Death_other", "Death_other"] <- 1
+# m_tp_comp # show
+```
+
+### Transition matrix complete
+The transition matrix should looks as follows:
+```{r m_tp_1_show}
+## Calculated parameters
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+
+# Create transition matrix
+m_tp_comp <- matrix(0,
+                    ncol = n_hs,
+                    nrow = n_hs,
+                    dimnames = list(from = v_names_hs,
+                                    to = v_names_hs)
+                    )
+# Fill in transition matrix
+m_tp_comp["Well", "Well"] <- 1 - r_inc_mi - r_inc_stroke - r_mort 
+m_tp_comp["Well", "Post-minor_stroke"] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+m_tp_comp["Well", "Post-major_stroke"] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+m_tp_comp["Well", "Post-MI"] <- r_inc_mi * (1 - r_fatal_mi)
+m_tp_comp["Well", "Death_stroke"] <- r_inc_stroke * r_fatal_stroke
+m_tp_comp["Well", "Death_MI"] <- r_inc_mi * r_fatal_mi
+m_tp_comp["Well", "Death_other"] <- r_mort
+
+m_tp_comp["Post-minor_stroke", "Post-minor_stroke"] <- 1 - r_mort
+m_tp_comp["Post-minor_stroke", "Death_other"] <- r_mort
+
+m_tp_comp["Post-major_stroke", "Post-major_stroke"] <- 1 - r_mort
+m_tp_comp["Post-major_stroke", "Death_other"] <- r_mort
+
+m_tp_comp["Post-MI", "Post-MI"] <- 1 - r_mort
+m_tp_comp["Post-MI", "Death_other"] <- r_mort
+
+m_tp_comp["Death_stroke", "Death_stroke"] <- 1
+m_tp_comp["Death_MI", "Death_MI"] <- 1
+m_tp_comp["Death_other", "Death_other"] <- 1
+data.frame(round(m_tp_comp, 4)) # show
+```
+
+### Validation check  
+Check whether the sum of all rows equals 1 to ensure you will not "add" or "loose" individuals in the simulation because the sum of probabilities do not sum up to 1 for each health states.  
+
+```{r check_tp, exercise = TRUE, exercise.setup = "m_tp_1-solution"}
+# check the sum of all rows
+```
+
+
+```{r check_tp-hint}
+"Use the rowSums() function"
+```
+
+```{r check_tp-solution}
+rowSums(m_tp_comp) == 1
+```
+
+## Cohort simulation
+It is now time to define and fill in the cohort simulation for the "No aspirin" strategy!  
+
+### Fill in the transition matrix of the "No aspirin" strategy  
+Assume all 100,000 individuals (`n_ind` object) start in the "Well" health state (first element of the `v_start_hs` vector), and perform the cohort simulation for the "No aspirin" strategy using the transition matrix `m_tp_comp`. Remember from previous assignment that you need the following elements to perform the cohort simulation:    
+- `n_cycles`: the number of cycles to simulate, assume 10 years (yearly cycles)  
+- `n_ind`: the number of individuals to simulate, assume 100,000  
+- `v_start_hs`: a vector determining the starting position of the individuals over the different cycles (assume all individuals start in the "Well" health state)  
+- `m_hs_comp`: a matrix to store the number of individuals in each health state during each cycle for the comparator. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states 75). Numerate the rows from 0 to `n_cycles` and name the column with the names of the health states ("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other").  
+`m_tp_comp`, `n_cycles`, and `n_ind` are already loaded. First, define `v_start_hs` and `m_hs_comp`. Second, use `v_start_hs` to determine the starting position of the individuals in the simulation, i.e. the first row of `m_hs_comp`. Finally, fill in `m_hs_comp` using matrix multiplication and the objects: `m_tp_comp` and `m_hs_comp`.  
+
+```{r cohort_comp, exercise = TRUE, exercise.setup = "inputs_complete_setup"}
+# Define cohort simulation matrix
+
+# Define the starting position of the individuals in each health state
+
+# Perform the matrix multiplication (for loop) to fill in the cohort simulation
+```
+
+```{r cohort_comp-hint}
+# Define cohort simulation matrix
+m_hs_comp <- matrix(0,
+                    ncol = '__',
+                    nrow = '__',
+                    dimnames = list(cycle = '__',
+                                    health_state = '__'
+                    )
+)
+
+# Define the starting position of the individuals in each health state
+m_hs_comp[1, ] <- '__'
+
+# Perform the matrix multiplication (for loop) to fill in the cohort simulation
+for(cycle in 1:n_cycles){
+  
+  m_hs_comp[cycle + 1, ] <- '__' # perform matrix multiplication here
+  
+}
+```
+
+```{r cohort_comp-solution}
+# Define cohort simulation matrix
+m_hs_comp <- matrix(0,
+                    ncol = n_hs,
+                    nrow = n_cycles + 1,
+                    dimnames = list(cycle = c(0:n_cycles),
+                                    health_state = v_names_hs)
+                    )
+
+# Define the starting position of the individuals in each health state
+m_hs_comp[1, ] <- v_start_hs
+
+# Perform the matrix multiplication (for loop) to fill in the cohort simulation
+for(cycle in 1:n_cycles){
+  
+  m_hs_comp[cycle + 1, ] <- m_hs_comp[cycle, ] %*% m_tp_comp # matrix multiplication
+  
+}
+```
+
+### Validation check  
+Check whether all rows sum up to 100,000 to ensure you do not 'loose' or 'add' any person to the cohort simulation. Sometimes, due to rounding errors, you may seem that the sum does not exactly match the number of individuals, so round your sums to 5 decimals.  
+
+```{r cohort_check, exercise = TRUE, exercise.setup = "cohort_comp-solution"}
+
+
+```
+
+```{r cohort_check-solution}
+round(rowSums(m_hs_comp), 5) == n_ind
+```
+
