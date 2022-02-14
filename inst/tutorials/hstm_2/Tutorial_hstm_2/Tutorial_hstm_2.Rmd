@@ -372,7 +372,7 @@ for(cycle in 1:n_cycles){
 ```
 
 ### Validation check  
-Check whether all rows sum up to 100,000 to ensure you do not 'loose' or 'add' any person to the cohort simulation. Sometimes, due to rounding errors, you may seem that the sum does not exactly match the number of individuals, so round your sums to 5 decimals.  
+Check whether all rows sum up to 100,000 to ensure you do not 'loose' or 'add' any person to the cohort simulation. Sometimes, due to rounding errors, it may seem that the sum does not exactly match the number of individuals, so round your sums to 5 decimals.  
 
 ```{r cohort_check, exercise = TRUE, exercise.setup = "cohort_comp-solution"}
 
