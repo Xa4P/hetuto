@@ -68,7 +68,7 @@ knitr::include_graphics("Tutorial_hstm_1_files/images/Image_solution.png")
 ```
 
 ### Prerequisites
-You should be able to following commands to perform this exercise:  
+You should be able to use the following commands to perform this exercise:  
 
 - `matrix()` function  
 - perform matrix multiplication using `%*%`  
