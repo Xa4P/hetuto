@@ -417,7 +417,7 @@ We will now use age-dependent mortality values since we only used a mean estimat
 To do so, you will first define the cohort simulations of both strategies (using (age-dependent) transition probabilities, a three-dimentional array, and matrix multiplication) and then calculate the outcomes (quality-adjusted life years, costs). 
 The method described in this practical is more extensively described in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824). The approach we will use to do so is also similar to the one described in this [video](https://www.youtube.com/watch?v=s4ZeRL-HeSs&list=PLIT7NqYN7YT3fUQhsAQ8Pn7-SHRpCy-U7&index=3).  
 
-### Transition array "No Aspirin" strategy
+### Model inputs
 Here below you can see the inputs we will use in the model.
 
 ```{r inputs_time_var_setup, echo = T}
@@ -462,6 +462,7 @@ c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL 
 c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
 ```
 
+### Age-dependent mortality data  
 As you can see in the R chunk above, there are no transition probabilities defined for the yearly rate of death (from other causes), `r_mort`. This is because we will now make this probability of death dependent on the age of individuals in the health economic model.  
 To do so, we need the rate of death for each age. For this assignment, these rates have been obtained from the central bureau of statistics and are displayed below per 10,000 individuals. These rates are stored in the `df_mort` dataframe displayed below. The `df_mort` dataframe contain two variables:  
 
@@ -481,12 +482,16 @@ Using the `df_mort` dataframe, calculate the per-person mortality rate as a new 
 
 ```{r calc_mort_data-solution}
 df_mort$R_mort <- df_mort$R_mort_10000 / 10000
+#df_mort[, c("Age", "R_mort")] # show
 ```
 
+
+### Filling in the "No aspirin" strategy transition array
 Now that we have calculated the per person mortality rates for each age, we can include them in the transition array that we will use in the health economic model. To include these age-dependent transition probabilities in the model, we have to use 3-dimentional (3D) arrays instead of fixed transition matrices. The use of these 3D arrays allow to select a different transition matrix (containing different transition probabilities) for each cycle of the model. Arrays are defined using the `array()` function. The code chunk below shows how to define the transition array for the "No aspirin group. The comments describe what is happening. Have a look at the code and try to understand it! Below the code chunk, you can see the two first and two last transition matrix contained in the array. As you can see, the transition of to the `Death_other` health state has increased between the first and last cycles, as we expected!       
+*NOTE: elements in a array are called by the number of dimension of the array. Thus, a single element of a 3D array is called via a x, y, and z dimension. If only the x and y coordinates are provided, the vector of elements with the coordinates x and y is returned. In this case, the third dimension (the 'z') represents the cycle number while the rows and columns represent the same as in the transition matrix (transition from - to).*  
 
 ```{r a_tp_1, echo = TRUE}
-#### 1. Define 3D array "No aspirin" group ----
+#### Define 3D array "No aspirin" group ----
 
 # Define start age cohort
 n_start_age <- 45
@@ -532,4 +537,632 @@ a_tp_comp["Death_other", "Death_other",] <- 1
 a_tp_comp[, , c(1, 2, 9, 10)]
 ```
 
+### Filling in the "Aspirin" strategy transition array  
+It is now time to define and fill in the transition array for the "Aspirin" strategy, the intervention which will be compared to the "No aspirin" strategy.  
+To do so, we have to perform the following:  
+1. Make a copy of `a_tp_comp` and call it `a_tp_int`. This will be the transition array we will use for the "Aspirin" strategy.  
+2. Aspirin has an effect on the probability of experiencing an MI (object `eff_mi`) and stroke (object `eff_stroke`). Use these two input parameters to adjust the probabilities to experience these cardiovascular events in the `a_tp_int` array. Again you may use the rates as probabilities when calculating the transitions. Assume that once individuals had an event they will no longer use aspirin.  
 
+```{r a_tp_2, exercise = TRUE}
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+
+```
+
+```{r a_tp_2-hint}
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+## Multiply `r_inc_stroke` and `r_inc_mi` by  `eff_stroke` and `eff_mi` respectively to apply the effectiveness of Aspirin on the occurence of stroke and MI
+## Do not forget to also modify the probability of staying in the "WELL" health state since less individuals will experience cardiovascular events!
+```
+
+```{r a_tp_2-solution}
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+#a_tp_int[,, 1] # show first transition matrix of the array
+```
+
+### Performing the cohort simulation
+Since we now have transition matrices for both strategies, we can perform the cohort simulation for both strategies. As a reminder, the steps to perform the cohort simulations are the following:  
+- Define the matrix in which the cohort simulation will be stored (`m_hs_comp` and `m_hs_int`)  
+- Determine the starting position of the cohort in the matrix of the cohort simulation, using `v_hs_start` (already defined)  
+- Perform the simulation by using matrix multiplication of the cohort simulation and the transition array. In this case, we have to loop over the cycles (rows) of the cohort simulation but also over the matrices of the `a_tp_comp` and `a_tp_int` arrays.  
+
+The R code chunk below shows how to do this for the "No aspirin" strategy.  
+
+```{r time_dep_cohort_show}
+#### Fill the cohort simulation for the "No aspirin" strategy ----
+
+# Create a matrix to store the cohort simulation (`m_hs_comp`)
+m_hs_comp <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+                    ) 
+
+# Define the start position of individuals (all in "well")
+m_hs_comp[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_comp[cycle + 1,] <- m_hs_comp[cycle,] %*% a_tp_comp[, , cycle]
+}
+```
+
+Perform the matrix multiplication for the "Aspirin" strategy using the same method.  
+
+```{r time_dep_cohort_int, exercise = TRUE, exercise.setup = "a_tp_2-solution"}
+#### Fill the cohort simulation for the "Aspirin" strategy ----
+
+# Create a matrix to store the cohort simulation (`m_hs_int`)
+
+# Define the start position of individuals (all in "well")
+
+# Perform the matrix multiplication using the 3D array.
+
+```
+
+```{r time_dep_cohort_int-solution}
+#### Fill the cohort simulation for the "Aspirin" strategy ----
+
+# Create a matrix to store the cohort simulation (`m_hs_int`)
+m_hs_int <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+) 
+
+# Define the start position of individuals (all in "well")
+m_hs_int[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
+}
+```
+
+### Results
+The following data frame show the cohort simulation of both strategies.  
+
+#### Aspirin strategy
+
+```{r time_dep_cohort_2_show}
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+#### Fill the cohort simulation for the "Aspirin" group ----
+# Create a matrix to store the cohort simulation (`m_hs_int`)
+m_hs_int <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+) 
+
+# Define the start position of individuals (all in "well")
+m_hs_int[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
+}
+data.frame(round(m_hs_int))
+```
+
+#### No aspirin strategy
+
+```{r comp_hs_show}
+data.frame(round(m_hs_comp))
+```
+
+## Calculating undiscounted outcomes
+Now that we know the life course of the hypothetical individuals in both strategies, we can calculate the (un)discounted costs and effects (LYs and QALYs) over time. For convenience, account for state membership at the end of the year. Not all 100,000 individuals are considered to be "Well" at the start of year 1. You do not have to apply half-cycle correction. Practically, this means that you do not account for the state membership at cycle 0, the starting position.  
+
+### Life years
+Calculate the life years of both strategies and the cumulative life years over the 10 years of the model. This is done in two steps:  
+1.Define two vectors (`v_ly_comp` & `v_ly_int`) of 7 values which determine the number of life  years gained by an individual in each health state during a single cycle. These vectors are called the **rewards** vectors. The rewards vector should be ordered as the health states in the `m_hs_comp` & `m_hs_int` cohort simulation. For health state where individuals are alive, the reward should be 1, and 0 for the "Death" health states.  
+2. Use matrix multiplication to multiply these health state rewards by the membership of individuals over the cycles (from row 2 onwards!). Store these results in vectors called `v_t_ly_comp` & `v_t_ly_int`, calculate the cumulative number of life years over the cycles (`v_cum_ly_comp` & `v_cum_ly_int`, using the `cumsum()` function) and calculate the total number of life years for each strategy as the sum of these vectors (`n_t_ly_comp` & `n_t_ly_int`).  
+The calculations for the LYs are provided in the R code chunk below.  
+
+```{r calc_ly_show, echo = T}
+#### Calculate for undiscounted outcomes ---
+
+## Life years
+## Determine the number of life years won by 1 individual during 1 cycle in both strategies
+v_ly_comp <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+v_ly_int <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+
+## Determine the number of life year gained over the cycles (reward at the end of the cycle!)
+v_t_ly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_ly_comp
+v_t_ly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_ly_int
+
+## Determine the cumulative number of life year gained over the cycles (reward at the end of the cycle!)
+v_cum_ly_comp <- cumsum(v_t_ly_comp)
+v_cum_ly_int  <- cumsum(v_t_ly_int)
+
+## Determine the total number of life year gained (sum of all cycles; reward at the end of the cycle!)
+n_t_ly_comp <- sum(v_t_ly_comp)
+n_t_ly_int <- sum(v_t_ly_int)
+```
+
+### QALYs
+Using the utility values per health state defined below, calculate the total quality adjusted life-years (QALYs) in each year for the 100,000 hypothetical individuals in each group. Use the same approach as for the life years calculations, except that the state rewards are different and may differ across strategies. Calculate also the cumulative and total QALY gained.  
+**Assumptions:** Individuals in the "Well" health state have a utility value equal to`u_healthy` in the "No Aspirin" group, while in the "Aspirin" group, they have the utility associated with use of aspirin, `u_aspiring_use`. Individuals in the "Death" health states do not accrue QALYs. 
+
+```{r show_utils, echo = TRUE, eval = FALSE}
+# Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+``` 
+
+```{r calc_q_out, exercise = TRUE}
+# QALY's
+## Determine the number of QALYs won by 1 individual during 1 cycle
+
+## Determine the number of QALYs gained over the cycles (rewards at the end of the cycle!)
+
+## Determine the cumulative number of QALYsr gained over the cycles (rewards at the end of the cycle!)
+
+## Determine the total number of QALYs gained (sum of all cycles; rewards at the end of the cycle!)
+
+```
+
+```{r calc_q_out-hint}
+# QALY's
+## Determine the number of QALYs won by 1 individual during 1 cycle
+v_qaly_comp <- c("Well" = u_healthy,
+                 "Post-minor_stroke" = u_post_minor_stroke, 
+                 "Post-major_stroke" = u_post_major_stroke, 
+                 "Post-MI" = u_post_mi, 
+                 "Death_stroke" = 0, 
+                 "Death_MI" = 0, 
+                 "Death_other" = 0)
+
+v_qaly_int <- c("Well" = '__',
+                "Post-minor_stroke" = '__', 
+                "Post-major_stroke" = '__', 
+                "Post-MI" = '__', 
+                "Death_stroke" = '__', 
+                "Death_MI" = '__', 
+                "Death_other" = '__')
+
+## Determine the number of QALYs gained over the cycles (rewards at the end of the cycle!)
+v_t_qaly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_qaly_comp
+v_t_qaly_int  <- '__'
+
+## Determine the cumulative number of QALYsr gained over the cycles (rewards at the end of the cycle!)
+v_cum_qaly_comp <- '__'
+v_cum_qaly_int <- '__'
+
+## Determine the total number of QALYs gained (sum of all cycles; rewards at the end of the cycle!)
+n_t_qaly_comp <- '__'
+n_t_qaly_int  <- '__'
+```
+
+```{r calc_q_out-solution}
+# QALY's
+## Determine the number of QALYs won by 1 individual during 1 cycle
+v_qaly_comp <- c("Well" = u_healthy,
+                 "Post-minor_stroke" = u_post_minor_stroke, 
+                 "Post-major_stroke" = u_post_major_stroke, 
+                 "Post-MI" = u_post_mi, 
+                 "Death_stroke" = 0, 
+                 "Death_MI" = 0, 
+                 "Death_other" = 0)
+
+v_qaly_int <- c("Well" = u_aspirin_use,
+                "Post-minor_stroke" = u_post_minor_stroke, 
+                "Post-major_stroke" = u_post_major_stroke, 
+                "Post-MI" = u_post_mi, 
+                "Death_stroke" = 0, 
+                "Death_MI" = 0, 
+                "Death_other" = 0)
+
+## Determine the number of QALYs gained over the cycles (rewards at the end of the cycle!)
+v_t_qaly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_qaly_comp
+v_t_qaly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_qaly_int
+
+## Determine the cumulative number of QALYsr gained over the cycles (rewards at the end of the cycle!)
+v_cum_qaly_comp <- cumsum(v_t_qaly_comp)
+v_cum_qaly_int <- cumsum(v_t_qaly_int)
+
+## Determine the total number of QALYs gained (sum of all cycles; rewards at the end of the cycle!)
+n_t_qaly_comp <- sum(v_t_qaly_comp)
+n_t_qaly_int  <- sum(v_t_qaly_int)
+```
+
+### Costs
+Using the annual costs per health state defined below, calculate the total costs in each year for the 100,000 hypothetical individuals. Use the same approach as for the life years calculation, except that the state rewards are different and may differ across strategies. Calculate also the cumulative and total costs.  
+**Assumptions:** Individuals in the "Well" health state do not incur any costs in the "No aspirin" group. However, in the "Apsirin" group, individuals in the "Well" health state incur the costs associated with aspirin use. Assume that after a MI or stroke, individuals stop with aspirin. Individuals in the "Death" health states do not incur any costs.   
+
+```{r show_costs, echo = TRUE, eval = FALSE}
+# Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+``` 
+
+```{r calc_c_out, exercise = TRUE}
+# Costs
+## Determine the costs accrued by 1 individual during 1 cycle
+
+## Determine the costs accrued over the cycles (rewards at the end of the cycle!)
+
+## Determine the costs accrued over the cycles (rewards at the end of the cycle!)
+
+## Determine the total costs accrued (sum of all cycles; rewards at the end of the cycle!)
+```
+
+```{r calc_c_out-solution}
+# Costs
+## Determine the costs accrued by 1 individual during 1 cycle
+v_c_comp <- c("Well" = 0,
+              "Post-minor_stroke" = c_post_minor_stroke, 
+              "Post-major_stroke" = c_post_major_stroke, 
+              "Post-MI" = c_post_mi, 
+              "Death_stroke" = 0, 
+              "Death_MI" = 0, 
+              "Death_other" = 0)
+
+v_c_int <- c("Well" = c_aspirin_use,
+             "Post-minor_stroke" = c_post_minor_stroke, 
+             "Post-major_stroke" = c_post_major_stroke, 
+             "Post-MI" = c_post_mi, 
+             "Death_stroke" = 0, 
+             "Death_MI" = 0, 
+             "Death_other" = 0)
+
+## Determine the costs accrued over the cycles (rewards at the end of the cycle!)
+v_t_c_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_c_comp
+v_t_c_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_c_int
+
+## Determine the costs accrued over the cycles (rewards at the end of the cycle!)
+v_cum_c_comp <- cumsum(v_t_c_comp)
+v_cum_c_int  <- cumsum(v_t_c_int)
+
+## Determine the total costs accrued (sum of all cycles; rewards at the end of the cycle!)
+n_t_c_comp <- sum(v_t_c_comp)
+n_t_c_int  <- sum(v_t_c_int)
+```
+
+### Mean outcomes and comparison
+Using the total undiscounted total outcomes, calculate the mean outcomes (life years, QALYs, costs) per individual for each strategy. Calculate the incremental QALYs and costs of the "Aspirin" versus "No aspirin" group and calculate the incremental cost-effectiveness ratio.  
+
+```{r calc_out_setup}
+#### Calculate life years, quality-adjusted life years, and costs for both strategy ---
+
+## Determine the number of life year won by 1 individual during 1 cycle
+v_ly_comp <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+v_ly_int <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+
+## Determine the number of life year gained over the cycles (reward at the end of the cycle!)
+v_t_ly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_ly_comp
+v_t_ly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_ly_int
+
+## Determine the cumulative number of life year gained over the cycles (reward at the end of the cycle!)
+v_cum_ly_comp <- cumsum(v_t_ly_comp)
+v_cum_ly_int  <- cumsum(v_t_ly_int)
+
+## Determine the total number of life year gained (sum of all cycles; reward at the end of the cycle!)
+n_t_ly_comp <- sum(v_t_ly_comp)
+n_t_ly_int <- sum(v_t_ly_int)
+
+# QALY's
+## Determine the number of QALYs won by 1 individual during 1 cycle
+v_qaly_comp <- c("Well" = u_healthy,
+                 "Post-minor_stroke" = u_post_minor_stroke, 
+                 "Post-major_stroke" = u_post_major_stroke, 
+                 "Post-MI" = u_post_mi, 
+                 "Death_stroke" = 0, 
+                 "Death_MI" = 0, 
+                 "Death_other" = 0)
+
+v_qaly_int <- c("Well" = u_aspirin_use,
+                "Post-minor_stroke" = u_post_minor_stroke, 
+                "Post-major_stroke" = u_post_major_stroke, 
+                "Post-MI" = u_post_mi, 
+                "Death_stroke" = 0, 
+                "Death_MI" = 0, 
+                "Death_other" = 0)
+
+## Determine the number of QALYs gained over the cycles (reward at the end of the cycle!)
+v_t_qaly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_qaly_comp
+v_t_qaly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_qaly_int
+
+## Determine the cumulative number of QALYsr gained over the cycles (reward at the end of the cycle!)
+v_cum_qaly_comp <- cumsum(v_t_qaly_comp)
+v_cum_qaly_int <- cumsum(v_t_qaly_int)
+
+## Determine the total number of QALYs gained (sum of all cycles; reward at the end of the cycle!)
+n_t_qaly_comp <- sum(v_t_qaly_comp)
+n_t_qaly_int  <- sum(v_t_qaly_int)
+
+# Costs
+## Determine the costs accrued by 1 individual during 1 cycle
+v_c_comp <- c("Well" = 0,
+              "Post-minor_stroke" = c_post_minor_stroke, 
+              "Post-major_stroke" = c_post_major_stroke, 
+              "Post-MI" = c_post_mi, 
+              "Death_stroke" = 0, 
+              "Death_MI" = 0, 
+              "Death_other" = 0)
+
+v_c_int <- c("Well" = c_aspirin_use,
+             "Post-minor_stroke" = c_post_minor_stroke, 
+             "Post-major_stroke" = c_post_major_stroke, 
+             "Post-MI" = c_post_mi, 
+             "Death_stroke" = 0, 
+             "Death_MI" = 0, 
+             "Death_other" = 0)
+
+## Determine the costs accrued over the cycles (reward at the end of the cycle!)
+v_t_c_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_c_comp
+v_t_c_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_c_int
+
+## Determine the costs accrued over the cycles (reward at the end of the cycle!)
+v_cum_c_comp <- cumsum(v_t_c_comp)
+v_cum_c_int  <- cumsum(v_t_c_int)
+
+## Determine the total costs accrued (sum of all cycles; reward at the end of the cycle!)
+n_t_c_comp <- sum(v_t_c_comp)
+n_t_c_int  <- sum(v_t_c_int)
+```
+
+```{r calc_out, exercise = TRUE, exercise.setup = "calc_out_setup"}
+ly_comp # mean LY per individuals of the "No aspirin" strategy  
+ly_int # mean LY per individuals of the "Aspirin" strategy  
+qaly_comp # mean QALY of the "No aspirin" strategy  
+qaly_int # mean QALY of the "Aspirin" strategy  
+c_comp # mean costs of the "No aspirin" strategy  
+c_int # mean costs of the "Aspirin" strategy  
+inc_q # incremental QALY of the "Aspirin" strategy versus the "No aspirin" strategy
+inc_c # incremental costs of the "Aspirin" strategy versus the "No aspirin" strategy  
+ICER # ICER per QALY
+```
+
+```{r calc_out-hint}
+"The number of individuals is stored in the `n_ind` object"
+```
+
+```{r calc_out-solution}
+ly_comp <- n_t_ly_comp / n_ind # mean LY per individuals of the "No aspirin" strategy  
+ly_int <- n_t_ly_int / n_ind # mean LY per individuals of the "Aspirin" strategy  
+qaly_comp <- n_t_qaly_comp / n_ind # mean QALY of the "No aspirin" strategy  
+qaly_int <- n_t_qaly_int / n_ind # mean QALY of the "Aspirin" strategy  
+c_comp <- n_t_c_comp / n_ind # mean costs of the "No aspirin" strategy  
+c_int <- n_t_c_int / n_ind # mean costs of the "Aspirin" strategy  
+inc_q <- qaly_int - qaly_comp# incremental QALY of the "Aspirin" strategy versus the "No aspirin" strategy
+inc_c <- c_int - c_comp# incremental costs of the "Aspirin" strategy versus the "No aspirin" strategy  
+ICER <- inc_c / inc_q # ICER per QALY
+```
+
+### Undiscounted outcomes  
+The outcomes look as follows.  
+```{r calc_out_display}
+#### Calculate life years, quality-adjusted life years, and costs for both strategy ---
+
+## Determine the number of life year won by 1 individual during 1 cycle
+v_ly_comp <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+v_ly_int <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+
+## Determine the number of life year gained over the cycles (reward at the end of the cycle!)
+v_t_ly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_ly_comp
+v_t_ly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_ly_int
+
+## Determine the cumulative number of life year gained over the cycles (reward at the end of the cycle!)
+v_cum_ly_comp <- cumsum(v_t_ly_comp)
+v_cum_ly_int  <- cumsum(v_t_ly_int)
+
+## Determine the total number of life year gained (sum of all cycles; reward at the end of the cycle!)
+n_t_ly_comp <- sum(v_t_ly_comp)
+n_t_ly_int <- sum(v_t_ly_int)
+
+# QALY's
+## Determine the number of QALYs won by 1 individual during 1 cycle
+v_qaly_comp <- c("Well" = u_healthy,
+                 "Post-minor_stroke" = u_post_minor_stroke, 
+                 "Post-major_stroke" = u_post_major_stroke, 
+                 "Post-MI" = u_post_mi, 
+                 "Death_stroke" = 0, 
+                 "Death_MI" = 0, 
+                 "Death_other" = 0)
+
+v_qaly_int <- c("Well" = u_aspirin_use,
+                "Post-minor_stroke" = u_post_minor_stroke, 
+                "Post-major_stroke" = u_post_major_stroke, 
+                "Post-MI" = u_post_mi, 
+                "Death_stroke" = 0, 
+                "Death_MI" = 0, 
+                "Death_other" = 0)
+
+## Determine the number of QALYs gained over the cycles (reward at the end of the cycle!)
+v_t_qaly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_qaly_comp
+v_t_qaly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_qaly_int
+
+## Determine the cumulative number of QALYsr gained over the cycles (reward at the end of the cycle!)
+v_cum_qaly_comp <- cumsum(v_t_qaly_comp)
+v_cum_qaly_int <- cumsum(v_t_qaly_int)
+
+## Determine the total number of QALYs gained (sum of all cycles; reward at the end of the cycle!)
+n_t_qaly_comp <- sum(v_t_qaly_comp)
+n_t_qaly_int  <- sum(v_t_qaly_int)
+
+# Costs
+## Determine the costs accrued by 1 individual during 1 cycle
+v_c_comp <- c("Well" = 0,
+              "Post-minor_stroke" = c_post_minor_stroke, 
+              "Post-major_stroke" = c_post_major_stroke, 
+              "Post-MI" = c_post_mi, 
+              "Death_stroke" = 0, 
+              "Death_MI" = 0, 
+              "Death_other" = 0)
+
+v_c_int <- c("Well" = c_aspirin_use,
+             "Post-minor_stroke" = c_post_minor_stroke, 
+             "Post-major_stroke" = c_post_major_stroke, 
+             "Post-MI" = c_post_mi, 
+             "Death_stroke" = 0, 
+             "Death_MI" = 0, 
+             "Death_other" = 0)
+
+## Determine the costs accrued over the cycles (reward at the end of the cycle!)
+v_t_c_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_c_comp
+v_t_c_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_c_int
+
+## Determine the costs accrued over the cycles (reward at the end of the cycle!)
+v_cum_c_comp <- cumsum(v_t_c_comp)
+v_cum_c_int  <- cumsum(v_t_c_int)
+
+## Determine the total costs accrued (sum of all cycles; reward at the end of the cycle!)
+n_t_c_comp <- sum(v_t_c_comp)
+n_t_c_int  <- sum(v_t_c_int)
+
+data.frame(Strategy = c("No aspirin", "Aspirin"),
+      LY = round( c(n_t_ly_comp, n_t_ly_int) / n_ind, 2),
+      QALY = round( c(n_t_qaly_comp, n_t_qaly_int) / n_ind, 2),
+      COSTS = round( c(n_t_c_comp, n_t_c_int) / n_ind, 0),
+      INC_QALY = c("-", round(((n_t_qaly_int - n_t_qaly_comp) / n_ind), 2)),
+      INC_COSTS = c("-", round(((n_t_c_int - n_t_c_comp) / n_ind), 0)),
+      ICER = c("-", round( ((n_t_c_int - n_t_c_comp) / n_ind) / ((n_t_qaly_int - n_t_qaly_comp) / n_ind), 0))
+      )
+```
+
+## Calculating discounted outcomes  
+Since individuals attach more value to outcomes happening in the present than in the future, we have to discount the outcomes (LY, QALY, costs) taking place in the future. For a refresher on discounting, see the previous practical and pre-recorded videos.  
+We will now focus on calculating the discounted results. We will use the suffix `_d` to indicate that the objects contain discounted results.  
+
+### Life years
+To calculate discounted results, the following steps should be performed:
+1. Define a vector of length `n_cycles`, which contain the discount weights for each cycle. Name the discount weights vector for health effects `v_dw_e` and for costs `v_dw_c`. The yearly discount rates for health effects and costs are provided under the objects `r_d_effects` and `r_d_costs`. The discount rates are set to 1.5% (0.015) for health effects and 4% (0.04) for costs according to the Dutch guideline for economic evaluation in health care.  
+2. Use matrix multiplication of the vector of total outcomes (LY, QALYs, or costs) defined in the previous step by the vector of discount weights.  
+The calculations are performed for discounted life years in the following R code chunk.  
+
+```{r calc_ly_d_show, echo = T}
+#### Calculate discounted results ----
+
+# Life years
+## Define discount weights per cycle (years in this case)
+v_dw_e <- 1 / (1 + r_d_effects) ^ c(1:n_cycles)
+
+## Total discounted life years, using matrix multiplication
+n_t_ly_comp_d <- t(v_t_ly_comp) %*% v_dw_e
+n_t_ly_int_d  <- t(v_t_ly_int) %*% v_dw_e
+
+## Mean discounted LY per strategy
+ly_comp_d <- n_t_ly_comp_d / n_ind
+ly_int_d <- n_t_ly_int_d / n_ind
+```
+
+### QALYS, costs, and mean outcomes  
+Use the example above to calculate the total discounted QALYs and costs. Then, calculate the mean discounted QALYs and costs per individual for each strategy. Finally, calculate the incremental QALYs and costs of the "Aspirin" versus "No aspirin" group and calculate the incremental cost-effectiveness ratio, using these discounted results.  
+
+```{r calc_d_out_comp, exercise = TRUE}
+# QALYs
+## Define discount weights per cycle (years in this case)
+
+## Total discounted life years, using matrix multiplication
+
+# Costs
+## Define discount weights per cycle (years in this case)
+
+## Total discounted life years, using matrix multiplication
+
+# Calculate mean discounted QALYs and costs per individual
+
+# Calculate incrementals and ICER
+
+```
+
+
+```{r calc_d_out_comp-solution}
+# QALYs
+## Define discount weights per cycle (years in this case)
+v_dw_e <- 1 / (1 + r_d_effects) ^ c(1:n_cycles)
+
+## Total discounted life years, using matrix multiplication
+n_t_qaly_comp_d <- t(v_t_qaly_comp) %*% v_dw_e
+n_t_qaly_int_d  <- t(v_t_qaly_int) %*% v_dw_e
+
+# Costs
+## Define discount weights per cycle (years in this case)
+v_dw_c <- 1 / (1 + r_d_costs) ^ c(1:n_cycles)
+
+## Total discounted life years, using matrix multiplication
+n_t_c_comp_d <- t(v_t_c_comp) %*% v_dw_c
+n_t_c_int_d  <- t(v_t_c_int) %*% v_dw_c
+
+# Calculate mean discounted QALYs and costs per individual
+qaly_comp_d <- n_t_qaly_comp_d / n_ind
+qaly_int_d <- n_t_qaly_int_d / n_ind
+
+c_comp_d <- n_t_c_comp_d / n_ind
+c_int_d <- n_t_c_int_d / n_ind
+
+# Calculate incrementals and ICER
+inc_qaly_d <- qaly_int_d - qaly_comp_d
+inc_c_d <- c_int_d - c_comp_d
+
+ICER_d <- inc_c_d / inc_qaly_d
+```
