@@ -18,6 +18,7 @@ Imports:
     knitr,
     learnr,
     magrittr,
+    plotly,
     shiny
 Encoding: UTF-8
 LazyData: true
