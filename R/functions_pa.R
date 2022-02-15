@@ -100,19 +100,50 @@ perform_simulation <- function(l_params,
     p_post_minor_stroke	= 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
 
     ## Determine mortality rate for each age
-    r_mort_age_dependent <- r_mort_age_dependent <-  0.95^(c(115:20)-19) # mortality rate (age dependent) --> FAKE for this exercise
+    # r_mort_age_dependent <- r_mort_age_dependent <-  0.95^(c(115:20)-19) # mortality rate (age dependent) --> FAKE for this exercise
+    #
+    # ## Determine mortality probability for each age
+    # df_mort <- data.frame(cbind(age = c(20:115),
+    #                             p_mort = 1 - exp(-r_mort_age_dependent)
+    # )
+    # )
+    # df_mort[nrow(df_mort), 2] <- 1 # Assumption that everybody dies at
 
-    ## Determine mortality probability for each age
-    df_mort <- data.frame(cbind(age = c(20:115),
-                                p_mort = 1 - exp(-r_mort_age_dependent)
-    )
-    )
-    df_mort[nrow(df_mort), 2] <- 1 # Assumption that everybody dies at
 
+    if(is.null){
+      # to change! now by hand, but should be loaded!
+      df_mort <- data.frame(
+        Age = c(20:120),
+        R_mort_10000 = c(0.541445, 0.541445, 0.541445, 0.541445, 0.541445,
+                         0.6607366, 0.6607366, 0.6607366, 0.6607366, 0.6607366,
+                         0.9016048, 0.9016048, 0.9016048, 0.9016048, 0.9016048,
+                         1.3032129, 1.3032129, 1.3032129, 1.3032129, 1.3032129,
+                         1.9409494, 1.9409494, 1.9409494, 1.9409494, 1.9409494,
+                         3.3514606, 3.3514606, 3.3514606, 3.3514606, 3.3514606,
+                         5.3184832, 5.3184832, 5.3184832, 5.3184832, 5.3184832,
+                         8.1375915, 8.1375915, 8.1375915, 8.1375915, 8.1375915,
+                         14.4662578, 14.4662578, 14.4662578, 14.4662578, 14.4662578,
+                         23.4709654, 23.4709654, 23.4709654, 23.4709654, 23.4709654,
+                         37.7820953, 37.7820953, 37.7820953, 37.7820953, 37.7820953,
+                         68.3194902, 68.3194902, 68.3194902, 68.3194902, 68.3194902,
+                         121.3095346, 121.3095346, 21.3095346, 121.3095346, 121.3095346,
+                         232.4678458, 232.4678458, 232.4678458, 232.4678458, 232.4678458,
+                         449.3161783, 449.3161783, 449.3161783, 449.3161783, 449.3161783,
+                         438.9557537, 438.9557537, 438.9557537, 438.9557537, 438.9557537,
+                         438.9557537, 438.9557537, 438.9557537, 438.9557537, 438.9557537,
+                         438.9557537, 438.9557537, 438.9557537, 438.9557537, 438.9557537,
+                         438.9557537, 438.9557537, 438.9557537, 438.9557537, 438.9557537,
+                         438.9557537, 438.9557537, 438.9557537, 438.9557537, 438.9557537,
+                         438.9557537)
+      )
+    }
+
+    df_mort$R_mort <- df_mort$R_mort_10000 / 10000
     ## Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9 and call it `v_p_mort`
-    v_p_mort <- df_mort[c(which(df_mort$age == n_start_age):
-                            which(df_mort$age == n_start_age + 9)
-    ), "p_mort"]
+    v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
+                            which(df_mort$Age == n_start_age + (n_cycles - 1)
+                            )
+    ), "R_mort"]
 
 
     # Initialise array's
