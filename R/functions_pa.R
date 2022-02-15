@@ -110,7 +110,7 @@ perform_simulation <- function(l_params,
     # df_mort[nrow(df_mort), 2] <- 1 # Assumption that everybody dies at
 
 
-    if(is.null){
+    if(is.null(df_mort)){
       # to change! now by hand, but should be loaded!
       df_mort <- data.frame(
         Age = c(20:120),
