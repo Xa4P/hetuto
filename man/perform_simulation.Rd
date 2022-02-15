@@ -4,7 +4,12 @@
 \alias{perform_simulation}
 \title{Function to perform the health economic analysis.}
 \usage{
-perform_simulation(l_params, start_age = 45, verbose = FALSE)
+perform_simulation(
+  l_params,
+  start_age = 45,
+  verbose = FALSE,
+  df_mort = df_mort
+)
 }
 \arguments{
 \item{l_params}{list. List of input parameters.}
@@ -12,10 +17,15 @@ perform_simulation(l_params, start_age = 45, verbose = FALSE)
 \item{start_age}{integer. Determine the mean age of the cohort at the start of the health economic model.}
 
 \item{verbose}{logical. Default is FALSE.}
+
+\item{df_mort}{dataframe.}
 }
 \value{
 A vector.
 }
 \description{
 This function performs the analysis using the example health economic model.
+}
+\details{
+The \code{df_mort} dataframe should contain two columns: \code{Age} = the year of individuals, \code{R_mort_1000} = the mortality rate per 10,000 individuals.
 }

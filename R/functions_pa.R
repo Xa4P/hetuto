@@ -72,13 +72,17 @@ generate_pa_inputs <- function(n_sim = n_sim,
 #' @param l_params list. List of input parameters.
 #' @param start_age integer. Determine the mean age of the cohort at the start of the health economic model.
 #' @param verbose logical. Default is FALSE.
+#' @param df_mort dataframe.
+#'
+#' @details The `df_mort` dataframe should contain two columns: `Age` = the year of individuals, `R_mort_1000` = the mortality rate per 10,000 individuals.
 #'
 #' @return A vector.
 #'
 #' @export
 perform_simulation <- function(l_params,
                                start_age = 45,
-                               verbose = FALSE) {
+                               verbose = FALSE,
+                               df_mort = df_mort) {
 
   with(as.list(l_params), {
 
@@ -100,16 +104,6 @@ perform_simulation <- function(l_params,
     p_post_minor_stroke	= 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
 
     ## Determine mortality rate for each age
-    # r_mort_age_dependent <- r_mort_age_dependent <-  0.95^(c(115:20)-19) # mortality rate (age dependent) --> FAKE for this exercise
-    #
-    # ## Determine mortality probability for each age
-    # df_mort <- data.frame(cbind(age = c(20:115),
-    #                             p_mort = 1 - exp(-r_mort_age_dependent)
-    # )
-    # )
-    # df_mort[nrow(df_mort), 2] <- 1 # Assumption that everybody dies at
-
-
     if(is.null(df_mort)){
       # to change! now by hand, but should be loaded!
       df_mort <- data.frame(
