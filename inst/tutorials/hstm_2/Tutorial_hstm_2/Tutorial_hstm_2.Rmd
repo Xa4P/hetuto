@@ -411,7 +411,7 @@ Check whether all rows sum up to 100,000 to ensure you do not 'loose' or 'add' a
 round(rowSums(m_hs_comp), 5) == n_ind
 ```
 
-## Improving transition matrix and cohort simulation
+## Improving the cohort simulation
 In this part of the assignmment, we will improve the transition matrix and cohort simulation of the "No aspirin" strategy that you just have built.  
 We will now use age-dependent mortality values since we only used a mean estimate for all age in the previous assignment. However, the probability of death is increasing with age. Furthermore, you will include the "Aspirin" strategy to the model and make the comparison between the "Aspirin" and "No Aspirin" strategies.  
 To do so, you will first define the cohort simulations of both strategies (using (age-dependent) transition probabilities, a three-dimentional array, and matrix multiplication) and then calculate the outcomes (quality-adjusted life years, costs). 
@@ -1663,7 +1663,7 @@ output$tbl_res_d <- renderTable({
 
 ### Questions
 ```{r final_q}
-quiz("Have a look at the expected life-years, costs, and effects of both strategies.",
+quiz(caption = "Have a look at the expected life-years, costs, and effects of both strategies.",
      question("Which strategy is cheapest?",
               answer("Aspirin"),
               answer("No aspirin", correct = TRUE),
@@ -1675,25 +1675,35 @@ quiz("Have a look at the expected life-years, costs, and effects of both strateg
      question("Which strategy provides most most effects in terms of QALYs?",
               answer("Aspirin", correct = TRUE),
               answer("No aspirin"),
-              incorrect = "Too bad, this is incorrect. The 'Aspirin' provide most QALYs when looking at the discounted results.")
-     
+              incorrect = "Too bad, this is incorrect. The 'Aspirin' provide most QALYs when looking at the discounted results."),
+     question("Would you consider the'Aspirin' strategy to be cost effective when using a willingness-to-pay threshold of 20,000 euro per QALY?",
+              answer("Yes"),
+              answer("No", correct = TRUE),
+              incorrect = "Too bad, this is incorrect. The 'Aspirin' is not considered to be cost effective when looking at the discounted results because the ICER is above 20,000 euro per QALY."),
+     question("Would you consider the'Aspirin' strategy to be cost effective when using a willingness-to-pay threshold of 50,000 euro per QALY?",
+              answer("Yes", correct = TRUE),
+              answer("No"),
+              incorrect = "Too bad, this is incorrect. The 'Aspirin' is considered to be cost effective when looking at the discounted results because the ICER is below 50,000 euro per QALY.")
 )  
 ```
 
-c. What is your conclusion when looking at the discounted ICER?  
-d. What is the difference between the undiscounted and discounted results? Do you understand this difference?  
+2. What is the difference between the undiscounted and discounted results in terms of mean outcomes per person, mean incrental outcomes and ICER. Do you understand this difference?  
+```{r 2a}
+textInput("Answer2", "Type your answer")
+```
 
-2. Increase the discount rates of both csots and effects to 6%. What happens to the costs and effects over the time horizon when the discounting rates of both costs and effects is increased to 6%? And what if it is only 0.5%? How does this affect the ICER of aspirin?
+3. Increase the discount rates of both csots and effects to 6%. What happens to the costs and effects over the time horizon when the discounting rates of both costs and effects is increased to 6%? And what if it is only 0.5%? How does this affect the ICER of aspirin?
 
-3. Set the discounting rate back to 4% for costs and 1.5% for effects.  
-a.	Change the starting age to 65. What do you expect will happen to the costs and effects? And how does it affect the ICER?  
+Set the discount rates back to 4% for costs and 1.5% for effects.  
 
-b.	Change the starting age to 95. What do you think will now happen to the effects? How do you explain these results? How does this affect the ICER?  
+4. Change the starting age to 65. What do you expect will happen to the costs and effects? And how does it affect the ICER?  
+
+5. Change the starting age to 95. What do you think will now happen to the effects? How do you explain these results? How does this affect the ICER?  
 
 ### Answers
+2. By discounting, both mean QALYs and costs per individual decrease in both strategies. When discounting, the differences in incremental QALYs en costs also decrease between the strategies and the ICER becomes lower.  
+3. Increasing the discount rates to 6% causes the costs and effects to decrease faster over time. It gives relatively less weight to costs and effects in the future. The ICER increases in this case, because effects were only discounted by 1.5% originally and costs by 4%. Hence, the effects of increasing the discount rates is greater on the health effects. Decreasing the discount rate of the costs to 1.5% causes the value of the costs to decrease slower over time. It gives relatively more weight to costs in the future. As the costs of aspirin use occur throughout the time horizon and the benefits (MIs and strokes prevented) occur in later years increasing the discount rates will result in an ICER that is higher, that is, less favorable, compared to a lower discount rate.  
+4. At 65 the competing risk of dying from other causes is higher than at 45. Therefore the expected gain in life-years and QALYs will be probably be less. Since the costs are still similar the ICER will increase slightly. See below for the table with the mean results per individual.  
+5. At 95 the competing risk of dying from other causes is so high that (almost) no life-years or QALYs are gained with the strategy of prescribing aspirin. The (discounted) ICER has now dramatically increased above the € 50,000 per QALY gained. See below for the mean results per individual.  
 
-**2. Answer:**	Increasing the discount rates to 6% causes the costs and effects to decrease faster over time. It gives relatively less weight to costs and effects in the future. The ICER increases in this case, because effects were only discounted by 1.5% originally and costs by 4%. Hence, the effects of increasing the discount rates is greater on the health effects. Decreasing the discount rate of the costs to 1.5% causes the value of the costs to decrease slower over time. It gives relatively more weight to costs in the future. As the costs of aspirin use occur throughout the time horizon and the benefits (MIs and strokes prevented) occur in later years increasing the discount rates will result in an ICER that is higher, that is, less favorable, compared to a lower discount rate.
-
-**3.a. Answer:** At 65 the competing risk of dying from other causes is higher than at 45. Therefore the expected gain in life-years and QALYs will be probably be less. Since the costs are still similar the ICER will increase slightly. See below for the table with the mean results per individual. 
-
-**3.b. Answer:** At 95 the competing risk of dying from other causes is so high that (almost) no life-years or QALYs are gained with the strategy of prescribing aspirin. The (discounted) ICER has now dramatically increased above the € 50,000 per QALY gained. See below for the mean results per individual.
+**THE END**
