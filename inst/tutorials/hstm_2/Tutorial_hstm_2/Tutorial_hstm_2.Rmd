@@ -17,6 +17,9 @@ rm(list = ls())
 options(scipen = 999)
 require(learnr, quietly = TRUE)
 require(shiny, quietly = TRUE)
+require(hetuto, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(plotly, quietly = TRUE)
 
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -1781,9 +1784,10 @@ This part of the assignment illustrates the principle of the probabilistic analy
 Perform the probabilistic analysis by pushing the button ("Push to perform the Probabilistic Analysis!"). Once your have pushed the button, the following panels provide:  
 - the mean parameters (used for the deterministic analysis), their standard error and the distribution used for the probabilistic analysis  
 - the summary statistics of the probabilistic parameters  
-- the first 100 sets of parameters are shown, these are used in the first 100 iterations of the probabilistic analysis  
+- the first 25 sets of parameters are shown, these are used in the first 25 iterations of the probabilistic analysis  
+- the (incremental) cost-effectiveness plane and cost-effectivenss acceptability curves. You can hover your cursor on the incremental cost-effectiveness plane to see which combination of input parameters has led to a specific outcome (a dot on the plane). By selecting a surface on this incremental cost-effectiveness plane, you obtain the summary statistics of the input parameters that have led to the outcomes captured by your selection.  
 
-**To perform the probabilistic analysis:** Determine the number of simulation you want to run (at least 1,000), determine the seed number to use, and push the button to run the probabilistic analysis. You can also modify the mean and standard error of the efficacy of aspirin and starting age of the cohort.
+**To perform the probabilistic analysis:** Determine the number of simulation you want to run (at least 1,000), determine the seed number to use, and push the button to run the probabilistic analysis. You can also modify the mean and standard error of the efficacy of aspirin and starting age of the cohort. It can take some time before the results appear.  
 
 ```{r shiny_pa}
 div(style = "display:inline-block",
@@ -1835,8 +1839,9 @@ tags$hr()
 h3("Summary statistics of probabilistic inputs")
 tableOutput("inputs_pa_summary")
 tags$hr()
-h3("All probabilistic inputs")
+h3("First 25 probabilistic inputs")
 tableOutput("inputs_pa")
+tags$hr()
 h3("Cost-effectiveness plane")
 plotOutput("ce_pa")
 tags$hr()
@@ -1846,13 +1851,13 @@ tags$hr()
 h3("Incremental cost-effectiveness plane")
 plotOutput("ice_pa", hover = "plot_hover", brush = "plot_brush")
 verbatimTextOutput("hover_info")
+verbatimTextOutput("brush_info")
 tags$hr()
 h3("Incremental cost-effectiveness plane - summary statistics")
 tableOutput("tbl_ice_pa")
-verbatimTextOutput("brush_info")
 tags$hr()
 h3("Cost-effectiveness acceptability curve")
-plotOutput("ceac_pa")
+plotlyOutput("ceac_pa")
 tags$hr()
 h3("Cost-effectiveness acceptability curve - summary")
 tableOutput("tbl_ceac")
@@ -1885,7 +1890,8 @@ l_res_pa <- eventReactive(input$do_pa, {
     
     m_res_pa[i, ] <- perform_simulation(l_params = l_params_temp, 
                                         start_age = input$n_start_age_pa,
-                                        verbose = FALSE)
+                                        verbose = FALSE, 
+                                        df_mort = df_mort)
   }
   
   return(list(df_inputs_pa = df_inputs_pa,
@@ -1983,7 +1989,7 @@ digits = 3
 
 output$inputs_pa <- renderTable({
   df <- l_res_pa()$df_inputs_pa
-  head(df, 100)
+  head(df, 25)
 },
 digits = 3)
 
@@ -2098,7 +2104,7 @@ output$brush_info <- renderPrint({
 })
 
 
-output$ceac_pa <- renderPlot({
+output$ceac_pa <- renderPlotly({
   m_res <- l_res_pa()$m_res_pa
   
   m_res_ceac <- calculate_CEAC(Q.trt = m_res[, "QALY_int"],
@@ -2123,7 +2129,6 @@ output$ceac_pa <- renderPlot({
     ylab("Probability of being cost effective") +
     theme_bw()
 })
-
 
 output$tbl_ice_pa <- renderTable({
   m_res <- l_res_pa()$m_res_pa
