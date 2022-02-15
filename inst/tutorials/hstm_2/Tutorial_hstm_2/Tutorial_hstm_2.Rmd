@@ -83,12 +83,15 @@ df_mort <- data.frame(
 1. Watch the videos explaining how a Health State Transition Model (HSTM) works and can be used for a cost-effectiveness analyses (CEA), on uncertainty assessment, and on the probabilistic analysis. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
 
 ![](https://vimeo.com/453418864/050bf4acaf){width = "70%"}
+
 Link to the video: https://vimeo.com/453418864/050bf4acaf  
 
 ![](https://vimeo.com/453418898/90a5e63f1e){width = "70%"}
+
 Link to the video: https://vimeo.com/453418898/90a5e63f1e  
 
 ![](https://vimeo.com/453911471/b1c7ed9e88){width = "70%"}
+
 Link to the video: https://vimeo.com/453911471/b1c7ed9e88  
 
 ## Aim and instructions
@@ -1719,8 +1722,507 @@ The PA is performed using the following steps:
 4. Repeat steps 2 & 3 a LOT of time (at least 1,000)  
 
 ### Selecting distribution for input parameter
-Please select the most adequate distribution for these parameters: `p_post_major_stroke` and `c_post_mi`. In the plots below, you can see different distribution plotted to the mean value and standard error of these parameters.  
+Please select the most adequate distribution for the `r_inc_mi` input parameter. In the plot below, you can see different density distribution plotted to the mean value and standard error of this parameters.  
+
+```{r plots_dist}
+r_inc_mi_mean <- 400 / 100000
+r_inc_mi_se <- r_inc_mi_mean  * 0.7
+r_inc_mi_beta1 <- 400
+r_inc_mi_beta2 <- (100000 - 400)
+v_beta <- rbeta(100000, r_inc_mi_beta1, r_inc_mi_beta2)
+v_norm <- rnorm(100000, r_inc_mi_mean, r_inc_mi_se)
+v_unif <- runif(100000, r_inc_mi_mean * 0.75, r_inc_mi_mean * 1.25)
 
 
+plot(density(v_beta), col = 'red', 
+     xlim = c(-0.003, 0.006), 
+     #ylim = c(0, 0.9), 
+     main = 'Density functions') # plot the different density functions
+lines(density(v_norm), col = 'darkgray')
+lines(density(v_unif), col = 'green')
+abline(v = 0)
+legend("topleft",                    # Add legend to plot
+       legend = c("Beta", "Normal", "Uniform"),
+       col = c('red', 'darkgray', 'green'),
+       lty = 1)
+
+```
+
+### Questions
+```{r quiz_dist}
+
+quiz(caption = "Have a look at the plot above.", 
+     question("Which distribution would be the the most suitable to respresent `r_inc_mi` in the probabilistic analysis?",
+              answer("Normal"),
+              answer("Beta", correct = TRUE),
+              answer("Uniform"),
+              incorrect = "Too bad, the correct answer is the beta distribution. The beta distribution will be most appropriate as it is smooth, and its range does not include negative values, which is appropriate for probabilities. "
+     )
+)
+```
+
+1. Could we have used a Normal distribution? Explain your answer.  
+```{r}
+textInput("Answer0", "Type your answer")
+```
+
+2. Could we have used a Uniform distribution? Explain your answer.  
+```{r}
+textInput("Answer00", "Type your answer")
+```
+
+### Answers
+1. No. The normal distribution is easily interpretable, but the symmetry and infinite range are not always realistic. Here the normal distribution may result in negative values which are not valid for use as probabilities.  
+2. Yes, but a uniform distribution is useful in case you have very limited information, but only an idea of the range of values. However, as soon as you have evidence, equal probabilities will often not be a realistic scenario, that is, you know that some values are more likely than others. Also, this distribution is not continuous, and is based on minimum and maximum values which are quite unstable (they change when you would collect additional data).  
+
+### Intepreting probabilistic analysis results
+This part of the assignment illustrates the principle of the probabilistic analysis and focuses on the interpretation of the probabilistic results.
+
+Perform the probabilistic analysis by pushing the button ("Push to perform the Probabilistic Analysis!"). Once your have pushed the button, the following panels provide:  
+- the mean parameters (used for the deterministic analysis), their standard error and the distribution used for the probabilistic analysis  
+- the summary statistics of the probabilistic parameters  
+- the first 100 sets of parameters are shown, these are used in the first 100 iterations of the probabilistic analysis  
+
+**To perform the probabilistic analysis:** Determine the number of simulation you want to run (at least 1,000), determine the seed number to use, and push the button to run the probabilistic analysis. You can also modify the mean and standard error of the efficacy of aspirin and starting age of the cohort.
+
+```{r shiny_pa}
+div(style = "display:inline-block",
+numericInput(inputId = "n_sim_pa",
+             label = "Number of iteration to perform (between 1 and 10,000)",
+             value = 1000,
+             min = 1,
+             max = 10000,
+             width = "175px")
+)
+div(style = "display:inline-block",
+numericInput(inputId = "seed_num_pa",
+             label = "Seed number to use to generate probabilistic parameters",
+             value = 1,
+             min = 1,
+             max = Inf,
+             width = "175px")
+)
+div(style = "display:inline-block",
+numericInput(inputId = "mean_eff",
+             label = "Mean efficacy of apirin on the occurence of MI",
+             value = 0.60,
+             min = 0,
+             max = 1,
+             width = "175px")
+)
+div(style = "display:inline-block",
+numericInput(inputId = "se_eff",
+             label = "Standard error of the mean efficacy of apirin on the occurence of MI",
+             value = 0.15,
+             min = 0,
+             max = 0.5,
+             width = "175px")
+)
+div(style = "display:inline-block",
+numericInput(inputId = "n_start_age_pa",
+             label = "Starting age cohort for probabilistic analysis",
+             value = 45,
+             min = 20,
+             max = 95,
+             width = "175px")
+)
+actionButton(inputId = "do_pa",
+            label = "Push to perform the Probabilistic Analysis!")
+tags$hr()
+h3("Mean parameters, standard error, and associated distribution")
+tableOutput("inputs_det")
+tags$hr()
+h3("Summary statistics of probabilistic inputs")
+tableOutput("inputs_pa_summary")
+tags$hr()
+h3("All probabilistic inputs")
+tableOutput("inputs_pa")
+h3("Cost-effectiveness plane")
+plotOutput("ce_pa")
+tags$hr()
+h3("Summary statistics of the probabilistic results -  QALY and costs")
+tableOutput("tbl_res_pa")
+tags$hr()
+h3("Incremental cost-effectiveness plane")
+plotOutput("ice_pa", hover = "plot_hover", brush = "plot_brush")
+verbatimTextOutput("hover_info")
+tags$hr()
+h3("Incremental cost-effectiveness plane - summary statistics")
+tableOutput("tbl_ice_pa")
+verbatimTextOutput("brush_info")
+tags$hr()
+h3("Cost-effectiveness acceptability curve")
+plotOutput("ceac_pa")
+tags$hr()
+h3("Cost-effectiveness acceptability curve - summary")
+tableOutput("tbl_ceac")
+tags$hr()
+```
+
+
+```{r shiny_pa_serv, context = "server"}
+l_res_pa <- eventReactive(input$do_pa, {
+  
+  # Generate probabilistic inputs
+  df_inputs_pa <- generate_pa_inputs(n_sim = input$n_sim_pa, 
+                                     mean_eff_mi = input$mean_eff,
+                                     se_eff_mi = input$se_eff, # for shiny app --> variation around
+                                     seed_num = input$seed_num_pa)
+
+  # Perform PA
+  ## Initialise matrix outcomes
+  m_res_pa <- matrix(0, 
+                     ncol = 4,
+                     nrow = input$n_sim_pa,
+                     dimnames = list(c(1:input$n_sim_pa),
+                                     c("QALY_comp",
+                                       "QALY_int",
+                                       "Costs_comp",
+                                       "Costs_int")))
+  for(i in 1:input$n_sim_pa) {
+    
+    l_params_temp <- as.list(df_inputs_pa[i, ])
+    
+    m_res_pa[i, ] <- perform_simulation(l_params = l_params_temp, 
+                                        start_age = input$n_start_age_pa,
+                                        verbose = FALSE)
+  }
+  
+  return(list(df_inputs_pa = df_inputs_pa,
+              m_res_pa = m_res_pa))
+  
+}
+)
+
+
+output$inputs_det <- renderTable({
+  df <- data.frame(
+    Name = c("r_fatal_mi", 
+             "r_fatal_stroke", 
+             "r_inc_mi", 
+             "r_inc_stroke", 
+             "p_post_major_stroke",
+             "eff_mi", 
+             "eff_stroke", 
+             "u_healthy", 
+             "u_post_mi", 
+             "u_post_minor_stroke", 
+             "u_post_major_stroke", 
+             "u_aspirin_use", 
+             "c_aspirin_use", 
+             "c_post_mi", 
+             "c_post_minor_stroke", 
+             "c_post_major_stroke" 
+             ),
+    Mean = c(0.25,
+             0.3,
+             400 / 100000,
+             50 / 100000,
+             235 / 1000,
+             0.6,
+             1.2,
+             1,
+             0.85,
+             0.75,
+             0.5,
+             99,
+             100,
+             8000,
+             2000,
+             20000
+             ),
+    SE = c(round(sqrt((25 / 100 * (1 -  25 / 100)) / 100), 3),
+           round(sqrt((30 / 100 * (1 -  30 / 100)) / 100), 3),
+           round(sqrt((400 / 100000 * (1 - 400 / 100000)) / 100000), 3),
+           round(sqrt((50 / 100000 * (1 - 50 / 100000)) / 100000), 3),
+           round(sqrt((235 / 1000 * (1 -  235 / 1000)) / 1000), 3),
+           0.15,
+           0.1,
+           0,
+           0.85,
+           0.75,
+           0.5,
+           0,
+           round(100 * 0.25, 0),
+           round(8000 * 0.25, 0),
+           round(2000 * 0.25, 0),
+           round(20000 * 0.25, 0)
+           ),
+    Distribution = c(rep("Beta", 5),
+                     rep("Normal", 2),
+                     "Fixed",
+                     rep("Beta", 3),
+                     "Fixed",
+                     rep("Gamma", 4)
+                     )
+  )
+  
+  df
+  
+}, 
+digits = 3)
+
+output$inputs_pa_summary <- renderTable({
+  df <- l_res_pa()$df_inputs_pa
+  
+  df_summary <- data.frame(
+    Parameter = colnames(df),
+    Mean = apply(df, 2, mean),
+    SD = apply(df, 2, sd),
+    Percentile_2.5th = apply(df, 2, function(x) quantile(x, 0.025)),
+    Percentile_97.5th = apply(df, 2, function(x) quantile(x, 0.975)),
+    Min = apply(df, 2, min),
+    Max = apply(df, 2, max)
+  )
+  
+  df_summary
+  
+},
+digits = 3
+)
+
+output$inputs_pa <- renderTable({
+  df <- l_res_pa()$df_inputs_pa
+  head(df, 100)
+},
+digits = 3)
+
+output$tbl_res_pa <- renderTable({
+  m_res <- l_res_pa()$m_res_pa
+  df <- as.data.frame(m_res)
+  
+  df$Incremental_QALY <- df$QALY_int - df$QALY_comp
+  df$Incremental_Costs <- df$Costs_int - df$Costs_comp
+  
+  df_summary <- data.frame(
+    Outcome = colnames(df),
+    Mean = apply(df, 2, mean),
+    SD = apply(df, 2, sd),
+    Percentile_2.5th = apply(df, 2, function(x) quantile(x, 0.025)),
+    Percentile_97.5th = apply(df, 2, function(x) quantile(x, 0.975)),
+    Min = apply(df, 2, min),
+    Max = apply(df, 2, max)
+  )
+  df_summary <- data.frame(rbind(df_summary,
+        c("ICER_QALY", round(mean(df$Incremental_Costs)/ mean(df$Incremental_QALY), 0) , rep(NA, ncol(df_summary) - 2))
+  )
+  )
+  df_summary[, 2:ncol(df_summary)] <- apply(df_summary[, 2:ncol(df_summary)], 2, function (x) as.numeric(as.character(x)))
+  df_summary[, 2:ncol(df_summary)] <- apply(df_summary[, 2:ncol(df_summary)], 2, function (x) round(x, 3))
+  df_summary
+}, 
+digits = 3)
+
+
+output$ce_pa <- renderPlot({
+  m_res <- l_res_pa()$m_res_pa
+
+  df_res <- as.data.frame(m_res)
+  
+  df_res$Inc_QALY <- df_res$QALY_int - df_res$QALY_comp
+  df_res$Inc_C <- df_res$Costs_int - df_res$Costs_comp
+  
+  ggplot(df_res) + 
+    #ggtitle("Incremental cost-effectiveness plane") +
+    geom_point(aes(x = QALY_comp, y = Costs_comp, colour = "No Aspirin"), shape = 1) + 
+    geom_point(aes(x = QALY_int, y = Costs_int, colour = "Aspirin"), shape = 1) +
+    xlab ("Total QALY") + 
+    ylab("Total Costs") +
+    geom_hline(yintercept = 0,  
+               color = "black") +
+    geom_vline(xintercept = 0,  
+               color = "black") + 
+    xlim(c(min(c(df_res$QALY_int, df_res$QALY_comp)), max(c(df_res$QALY_int, df_res$QALY_comp)))) +
+    scale_colour_manual(name = "",
+                        values = c(Aspirin = "orange", 
+                                   `No Aspirin` = "grey"
+                        )) +
+    theme_bw() + 
+    theme(legend.position="bottom") 
+  
+})
+
+output$ice_pa <- renderPlot({
+  m_res <- l_res_pa()$m_res_pa
+  
+  df_res <- as.data.frame(m_res)
+  
+  df_res$Inc_QALY <- df_res$QALY_int - df_res$QALY_comp
+  df_res$Inc_C <- df_res$Costs_int - df_res$Costs_comp
+  
+  ggplot(df_res) + 
+    #ggtitle("Incremental cost-effectiveness plane") +
+    geom_point(aes(x = Inc_QALY, y = Inc_C, colour = "Incrementals"), shape = 1) + 
+    geom_point(aes(x = mean(Inc_QALY), y = mean(Inc_C), colour = "Incrementals(mean)"), size = 2) +
+    xlab ("Incremental QALY") + 
+    ylab("Incremental costs") +
+    geom_hline(yintercept = 0,  
+               color = "black") +
+    geom_vline(xintercept = 0,  
+               color = "black") + 
+    geom_abline(intercept = 0, slope = 20000, linetype= "dashed", 
+                color = "black") + # 20,000 per QALY threshold line
+    #xlim(c(0,1)) +
+    scale_colour_manual(name = "",
+                        values = c(Incrementals = "orange", 
+                                   `Incrementals(mean)` = "darkblue"
+                                   )) +
+    theme_bw() + 
+    theme(legend.position="bottom") 
+  
+})
+
+output$hover_info <- renderPrint({
+  m_res <- l_res_pa()$m_res_pa
+  df_res <- as.data.frame(m_res)
+  df_res$Inc_QALY <- df_res$QALY_int - df_res$QALY_comp
+  df_res$Inc_C <- df_res$Costs_int - df_res$Costs_comp
+  df_inputs <- l_res_pa()$df_inputs_pa
+  df_inputs_outputs <- cbind(df_inputs, df_res)
+  
+  nearPoints(df_inputs_outputs, input$plot_hover, xvar = "Inc_QALY", yvar = "Inc_C", maxpoints = 1, threshold = 10)
+  
+})
+
+output$brush_info <- renderPrint({
+  m_res <- l_res_pa()$m_res_pa
+  df_res <- as.data.frame(m_res)
+  df_res$Inc_QALY <- df_res$QALY_int - df_res$QALY_comp
+  df_res$Inc_C <- df_res$Costs_int - df_res$Costs_comp
+  df_inputs <- l_res_pa()$df_inputs_pa
+  df_inputs_outputs <- cbind(df_inputs, df_res)
+  
+  df <- brushedPoints(df_inputs_outputs, input$plot_brush, xvar = "Inc_QALY", yvar = "Inc_C")
+  summary(df)
+  
+})
+
+
+output$ceac_pa <- renderPlot({
+  m_res <- l_res_pa()$m_res_pa
+  
+  m_res_ceac <- calculate_CEAC(Q.trt = m_res[, "QALY_int"],
+                               C.trt = m_res[, "Costs_int"],
+                               Q.comp = m_res[, "QALY_comp"], 
+                               C.comp = m_res[, "Costs_comp"],
+                               v.wtp = seq(from = 0, to = 100000, by = 1000)
+                               )
+  
+  df_CEAC <- as.data.frame(m_res_ceac)
+
+  ggplot(data = df_CEAC, aes(x= WTP.threshold, y = Prob.trt)) + 
+    #ggtitle("Cost-effectiveness acceptability curve") +
+    geom_line(aes(colour = "Aspirin"), linejoin = "bevel") + ylim(c(0, 1)) +
+    geom_line(aes(colour = "No Aspirin", x = WTP.threshold, y = 1- Prob.trt)) +
+    scale_colour_manual(name = "",
+                        values = c(Aspirin = "orange", 
+                                   `No Aspirin` = "grey"
+                        )) +
+    xlab("Willingness to pay thresholds") + 
+    #scale_x_continuous(labels = dollar_format(prefix = "\u20ac ", suffix = "")) +
+    ylab("Probability of being cost effective") +
+    theme_bw()
+})
+
+
+output$tbl_ice_pa <- renderTable({
+  m_res <- l_res_pa()$m_res_pa
+  
+  df_res <- as.data.frame(m_res)
+  
+  df_res$Inc_QALY <- df_res$QALY_int - df_res$QALY_comp
+  df_res$Inc_C <- df_res$Costs_int - df_res$Costs_comp
+  
+  df <- data.frame(
+    Quadrant = c("NorthEast (more effective, more expensive)", "SouthEast (more effective, less expensive)",
+                 "NorthWest (less effective, more expensive)", "SouthWest (less effective, less expensive)"),
+    Percentage = c(paste(round(length(which(df_res$Inc_QALY > 0 & df_res$Inc_C > 0)) / nrow(df_res) * 100, 0), "%", sep = ""),
+                   paste(round(length(which(df_res$Inc_QALY > 0 & df_res$Inc_C < 0)) / nrow(df_res) * 100, 0), "%", sep = ""),
+                   paste(round(length(which(df_res$Inc_QALY < 0 & df_res$Inc_C > 0)) / nrow(df_res) * 100, 0), "%", sep = ""),
+                   paste(round(length(which(df_res$Inc_QALY < 0 & df_res$Inc_C < 0)) / nrow(df_res) * 100, 0), "%", sep = "")
+    )
+  )
+  
+  df
+})
+output$tbl_ceac <- renderTable({
+  
+  m_res <- l_res_pa()$m_res_pa
+  
+  m_res_ceac <- calculate_CEAC(Q.trt = m_res[, "QALY_int"],
+                               C.trt = m_res[, "Costs_int"],
+                               Q.comp = m_res[, "QALY_comp"], 
+                               C.comp = m_res[, "Costs_comp"],
+                               v.wtp = seq(from = 0, to = 100000, by = 1000)
+  )
+  
+  df_CEAC <- as.data.frame(m_res_ceac)
+  
+  names(df_CEAC) <- c("Willingness_to_pay", "Prob_Asp", "Prob_No_Asp")
+  
+  df_CEAC[, c(2,3)] <- apply(df_CEAC[, c(2,3)], 2, function(x) paste(round(x * 100, 0), "%", sep = ""))
+  
+  df_CEAC[which(df_CEAC[, 1] %in% seq(0, 100000, 5000)),]
+  
+},
+digits = 0)
+```
+
+
+### Questions
+
+1. Have a look at the cost-effectiveness plane. What is the range of the costs and QALYs for individuals not using aspirin? And what for those individuals using aspirin? Note that you can get the exact ranges in the summary table.  
+```{r}
+textInput("Answer01", "Type your answer")
+```
+
+2. Have a look at the incremental cost-effectiveness plane. Which quadrants are covered by the cloud of the simulations? What does this represent?  
+```{r}
+textInput("Answer02", "Type your answer")
+```
+
+3.	Looking at the incremental cost-effectiveness plane, what do you think is the probability that the aspirin treatment strategy will be effective (QALYs will be gained)? Note that this is calculated right of the plane.   
+```{r}
+textInput("Answer03", "Type your answer")
+```
+
+Above, the cost-effectiveness acceptability curves are drawn for both strategies and the probability that each strategy is cost effective is provided in the table right from the figure.  
+
+4. What would you advise in case of a willingness to pay (WTP) of €10.000? And what would you advise in case of a WTP of €100.000?
+```{r}
+textInput("Answer04", "Type your answer")
+```
+
+5. What would you advise when the WTP would be €40,000? How sure are you about this advice?  
+```{r}
+textInput("Answer05", "Type your answer")
+```
+
+We saw that for some (ranges of) values of the WTP there may not be a very clear optimal strategy. This uncertainty may come from the inaccuracy in the evidence that was used in the model, that is, one or more parameters will have very wide distribution and therefore a large range of possible values.  
+
+6.	What would you advise in such a situation?  
+```{r}
+textInput("Answer06", "Type your answer")
+```
+
+7.	Investigate what would happen if you would perform a study to be more sure about the treatment effect of aspirin on MI. In order to do this, change the standard error (in the "Assignment HSTM 2C - inputs"-tab) from 0.15 to 0.02 and rerun the probabilistic analysis by pushing the button. What has happened to the clouds in the CE and ICE plane? What would you conclude from the CEAC now?  
+```{r}
+textInput("Answer07", "Type your answer")
+```
+
+8.	Cost-effectiveness results may be very different across subgroups. We have now looked at the results for a starting age of 45. Investigate the cost-effectiveness for aspirin use for hypothetical individuals with a starting age of 75 (reset the standard error for the effectiveness of aspirin, change the starting age in the in the "Assignment HSTM 2C - inputs"-tab and re-running the analysis). What would your advice now be in case of a WTP of €10.000, €40.000, and €100.000?  
+```{r}
+textInput("Answer08", "Type your answer")
+```
+
+### Answers
+1. Your results may differ from each other if you changes the seed number and the number of iterations.  
+2. The cloud of results covers the northwest (incremental costs, but a loss of QALYs), northeast (gain in QALYs at incremental costs), and southeast quadrant (gain in QALYs while saving costs).  
+3. Approximately 90% of the iterations is located in the east quadrants, representing a gain in QALYs.  
+4. At a WTP €10,000 the strategy of "No Aspirin" has the highest probability (~79%) of being cost-effective. At a WTP €100,000 the strategy of "Aspirin" has the highest probability (~75%) of being cost-effective.  
+5. At a WTP €40,000 the "Aspirin" strategy has the highest probability of being cost-effective. However, this probability is "only" ~58%, indicating that there is a ~42% chance that it is not cost-effective.  
+6.	Gain better (more accurate) evidence for instance in literature, by synthesizing evidence, or performing a trial.  
+7.	The clouds become somewhat more dense. The probability of "Aspirin being cost-effective becomes somewhat higher, it increases from ~58% to ~60%. This is still not a very high probability, indicating that the current uncertainty in the treatment effect of aspirin on MI does not translate into large uncertainty in our results/conclusion. It is likely that there are other parameters, also with large uncertainty and a wide distribution, that cause the uncertainty in our results.  
+8.	At a WTP of €10,000 the "No aspirin" strategy has the highest probability (~85%) of being cost-effective. At a WTP €100,000 the "Aspirin" strategy has the highest probability (~72%) of being cost-effective. At a WTP €40,000 the probabilities of each of the strategies being cost-effective is approximately equal.  
 
 **THE END**
