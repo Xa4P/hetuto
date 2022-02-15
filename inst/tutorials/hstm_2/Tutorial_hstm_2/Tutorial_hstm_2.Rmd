@@ -1171,6 +1171,8 @@ ICER_d <- inc_c_d / inc_qaly_d
 In this final part of the assignment, the entire health economic model (all previous steps) has been wrapped in a function and is used to calculate final (un)discounted outcomes and plot the graphs below. This model is used to illustrate how discounting and the starting age of the cohort of a health state transition model may affect the outcomes of the model.  
 Use this model to answer the questions below. Modify the discount rates and starting age to investigate the impact it has on the results.  
 
+### Complete model
+
 ```{r shiny_mod}
 h2("Inputs")
 div(style = "display:inline-block",
@@ -1658,3 +1660,40 @@ output$tbl_res_d <- renderTable({
 })
 
 ```
+
+### Questions
+```{r final_q}
+quiz("Have a look at the expected life-years, costs, and effects of both strategies.",
+     question("Which strategy is cheapest?",
+              answer("Aspirin"),
+              answer("No aspirin", correct = TRUE),
+              incorrect = "Too bad, this is incorrect. The 'No aspirin' strategy is cheaper than the 'Aspirin' strategy when looking at the discounted costs."),
+          question("Which strategy provides most most effects in terms of life years?",
+              answer("Aspirin", correct = TRUE),
+              answer("No aspirin"),
+              incorrect = "Too bad, this is incorrect. The 'Aspirin' provide most life years when looking at the discounted results."),
+     question("Which strategy provides most most effects in terms of QALYs?",
+              answer("Aspirin", correct = TRUE),
+              answer("No aspirin"),
+              incorrect = "Too bad, this is incorrect. The 'Aspirin' provide most QALYs when looking at the discounted results.")
+     
+)  
+```
+
+c. What is your conclusion when looking at the discounted ICER?  
+d. What is the difference between the undiscounted and discounted results? Do you understand this difference?  
+
+2. Increase the discount rates of both csots and effects to 6%. What happens to the costs and effects over the time horizon when the discounting rates of both costs and effects is increased to 6%? And what if it is only 0.5%? How does this affect the ICER of aspirin?
+
+3. Set the discounting rate back to 4% for costs and 1.5% for effects.  
+a.	Change the starting age to 65. What do you expect will happen to the costs and effects? And how does it affect the ICER?  
+
+b.	Change the starting age to 95. What do you think will now happen to the effects? How do you explain these results? How does this affect the ICER?  
+
+### Answers
+
+**2. Answer:**	Increasing the discount rates to 6% causes the costs and effects to decrease faster over time. It gives relatively less weight to costs and effects in the future. The ICER increases in this case, because effects were only discounted by 1.5% originally and costs by 4%. Hence, the effects of increasing the discount rates is greater on the health effects. Decreasing the discount rate of the costs to 1.5% causes the value of the costs to decrease slower over time. It gives relatively more weight to costs in the future. As the costs of aspirin use occur throughout the time horizon and the benefits (MIs and strokes prevented) occur in later years increasing the discount rates will result in an ICER that is higher, that is, less favorable, compared to a lower discount rate.
+
+**3.a. Answer:** At 65 the competing risk of dying from other causes is higher than at 45. Therefore the expected gain in life-years and QALYs will be probably be less. Since the costs are still similar the ICER will increase slightly. See below for the table with the mean results per individual. 
+
+**3.b. Answer:** At 95 the competing risk of dying from other causes is so high that (almost) no life-years or QALYs are gained with the strategy of prescribing aspirin. The (discounted) ICER has now dramatically increased above the € 50,000 per QALY gained. See below for the mean results per individual.
