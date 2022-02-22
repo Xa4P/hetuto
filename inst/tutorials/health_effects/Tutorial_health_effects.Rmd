@@ -654,3 +654,78 @@ textInput("sf36_2", "Explain why (not)")
 ### Answers
 The first answer is your own interpretation of these results. Concerning the second, you cannot express the results of teh SF-36 in a utility value. You cannot add your results in the different domains to obtain a utility values for instance. Conversely, the results of the EQ-5D and SF-6D can be expressed in a single numeric value (also called a utility value). This is what we will do in a following assignment using the EQ-5D-5L.  
 
+## QALY calculation
+In this assignment you have to calculate the number of QALYs for a patient who is healthy for the first 10 years of her life (Utility (U) = 0.9), has moderate health (U = 0.60) in the next 5 years, and has poor health the last 10 years of her life (U = 0.30).
+Fill in the utility values for each period of time in the boxes below, calculate the total number of QALY gained. The graph can help you to do so, i.e. the total number of QALY is equal to the area under the line. and check your answer by clicking the button.  
+```{r calc_qaly_shiny}
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value first 10 years"),
+    numericInput(inputId = "util_first_10",
+             label = NULL,
+             value = 0,
+             min = 0,
+             max = 1),
+    width = "300px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value next 5 years"),
+    numericInput(inputId = "util_5",
+             label = NULL,
+             value = 0,
+             min = 0,
+             max = 1),
+    width = "300px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value last 10 years"),
+    numericInput(inputId = "util_last_10",
+             label = NULL,
+             value = 0,
+             min = 0,
+             max = 1),
+    width = "300px")
+plotOutput("QALY_calc")
+numericInput(inputId = "n_QALYs",
+             label = "How much QALY does this person accrue over the 25 years? Put your answer",
+             value = 0,
+             min = 0,
+             max = 1)
+tags$hr()
+actionButton(inputId = "check_QALY_calc",
+             label = "Click to check your answer!")
+h3(textOutput("TEXT_QALY_calc", container = span))
+```
+
+```{r calc_qaly_shiny_serv, context = "server"}
+output$QALY_calc <- renderPlot({
+  v_u <-  c(rep(as.numeric(as.character(input$util_first_10)), 11),
+            rep(as.numeric(as.character(input$util_5)), 6),
+            rep(as.numeric(as.character(input$util_last_10)), 11)
+            )# vector of utilities
+  v_time <- c(c(0:10), 
+              c(10:15),
+              c(15:25)
+              )# vector of time
+  plot(x = v_time, y = v_u, type = 'l',
+       xlab = "Time (in years)",
+       ylab = "Utility value",
+       ylim = c(0,1)
+       )
+
+}
+)
+
+text_button_QALY_calc <- eventReactive(input$check_QALY_calc, {
+  if(as.numeric(as.character(input$n_QALYs)) == 15){
+    
+    paste("Good job, this is correct! 
+          The calculation behind this answer is 10 * 0.9 + 5 * 0.6 + 10 * 0.3")
+    
+  } else {
+    paste("This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life")
+  }
+  
+})
+  
+output$TEXT_QALY_calc <- renderText({
+  text_button_QALY_calc()
+})
+```
