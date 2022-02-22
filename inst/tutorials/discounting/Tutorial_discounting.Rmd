@@ -36,7 +36,7 @@ Link to the video: https://vimeo.com/453418628/ad1222ead5
 
 ### Aims and instructions
 This assignment aims to introduce you to the concept of discounting in health economic evaluations, using a fictive example containing 3 interventions.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.    
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.    
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_discounting_files/images/Image_hint.png")
@@ -63,7 +63,7 @@ The `df_thx` object contains 7 variables:
 
 **Assume that all incremental costs and QALYs of these interventions are calculated against usual care.**
 
-The `df_thx` object is displayed herebelow. Have a look at this data.frame before starting the assignment.
+The `df_thx` object is displayed here below. Have a look at this data.frame before starting the assignment.
 ```{r show_data}
 df_thx
 ```
@@ -109,13 +109,13 @@ question("Based on these results, which intervention provides the most health be
   answer("A"),
   answer("B"),
   answer("C"),
-  answer("None", correct = TRUE)
+  answer("They all provide the same amount of health benefits", correct = TRUE)
 ),
 question("Based on these results, which intervention costs the most?",
   answer("A"),
   answer("B"),
   answer("C"),
-  answer("None", correct = TRUE)
+  answer("They all costs the same", correct = TRUE)
 )
 )
 ```
