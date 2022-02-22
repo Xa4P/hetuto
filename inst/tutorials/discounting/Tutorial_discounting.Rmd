@@ -14,6 +14,7 @@ require(learnr, quietly = TRUE)
 require(knitr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(shiny, quietly = TRUE)
+require(magrittr, quietly = TRUE)
 
 knitr::opts_chunk$set(echo = FALSE)
 
