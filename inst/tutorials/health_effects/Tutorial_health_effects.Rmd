@@ -1,0 +1,620 @@
+---
+title: "Tutorial trial-based CEA"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  Use individual data to perform a trial-based
+  health economic evaluation.
+---
+
+```{r setup, include = FALSE}
+require(learnr, quietly = TRUE)
+require(knitr, quietly = TRUE)
+require(ggplot2, quietly = TRUE)
+require(shiny, quietly = TRUE)
+require(boot, quietly = TRUE)
+require(dplyr, quietly = TRUE)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+set.seed(400)
+df <- data.frame(cbind(
+  ID         = rep(1:100, 2),
+  Procedure  = c(rep(1, 100), rep(2, 100)),
+  OR_time    = c(rnorm(100, 140, 10), rnorm(100, 120, 20)),
+  Major_compl = c(ifelse(runif(100) <= 0.25, 1, 0), ifelse(runif(100) <= 0.12, 1, 0)),
+  Minor_compl = c(ifelse(runif(100) <= 0.35, 1, 0), ifelse(runif(100) <= 0.5, 1, 0)),
+  Length_icu = c(ifelse(runif(100) <= 0.7, 0, rpois(100, 5)), ifelse(runif(100) <= 0.7, 0, rpois(100, 4))),
+  Length_mcu = c(rpois(100, 14), rpois(100, 15)),
+  Death      = c(ifelse(runif(100) <= 0.15, 1, 0), ifelse(runif(100) <= 0.10, 1, 0)),
+  Qol = c(rbeta(100, 0.5, 0.5), rbeta(100, 0.6, 0.5))
+)
+)
+df$Qol <- ifelse(df$Death == 1, 0, df$Qol)
+
+# Declare inputs of the analysis
+c_Robot <- 3000 
+c_Open <- 2000 
+c_OK_hour <- 500 
+c_Major_compl <- 10000 
+c_Minor_compl <- 1500 
+c_ICU_day <- 1250 
+c_MCU_day <- 550 
+
+# Bootstrap function
+bootstrap_effects_costs <- function(df, num_it = 5000) {
+  
+  m_result <- matrix(NA, nrow = num_it, ncol = 6, 
+                     dimnames = list(c(1:num_it),
+                                     c("Qol_Open", "Qol_Robot",
+                                       "Cost_Open", "Cost_Robot",
+                                       "Inc_Qol", "Inc_Cost")
+                     )
+  )
+  
+  progress_bar <- txtProgressBar(min = 0, max = num_it, style = 3)
+  
+  for(i in 1:num_it){
+    n_pt <- nrow(df[which(df$Procedure == 1),]) # number of patients in each group
+    v_id <- sample(x = 1:n_pt, size = n_pt, replace = TRUE)# vector of patient to select to compute
+    
+    # Select participants in each group
+    df_open <- subset(df, df$Procedure == 1)
+    df_open <- df_open[v_id,]
+    df_robot <- subset(df, df$Procedure == 2)
+    df_robot <- df_robot[v_id,]
+    
+    df_boot <- rbind(df_open, df_robot)
+    
+    df_res <- df_boot %>%
+      dplyr::group_by(Procedure) %>%
+      dplyr::summarise(Effect = mean(Qol),
+                Cost = mean(Total_costs)
+      )
+    inc_effect <- df_res$Effect[2] - df_res$Effect[1]
+    inc_cost <- df_res$Cost[2] - df_res$Cost[1]
+    
+    m_result[i,] <- c(df_res$Effect[1], df_res$Effect[2], df_res$Cost[1], df_res$Cost[2], inc_effect, inc_cost)
+    
+    # update progress bar
+    setTxtProgressBar(progress_bar, i)
+    
+  }
+  
+  close(progress_bar)
+  
+  df_result <- as.data.frame(m_result)
+  return(df_result)
+  
+}
+```
+
+## Instructions
+
+### Before starting
+1. Watch the video explaining the difference between trial-based and model-based economic cost-effectiveness analyses (CEA) and the first ten minutes of the video on uncertainty assessment in health economic evaluations (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+![](https://vimeo.com/453418735/b3dfb1f3e4){width="70%"}
+Link to the video: https://vimeo.com/453418735/b3dfb1f3e4.  
+
+![](https://vimeo.com/453418898/90a5e63f1e){width="70%"}
+Link to the video: https://vimeo.com/453418898/90a5e63f1e.
+
+### Aims and instructions
+The aim of this practical assignment is to perform a health economic analysis using data collected during a clinical trials. The data used in this assignment was obtained during a randomised controlled trial (RCT) comparing two interventions for treating esophageal cancer. In total, 200 patients were randomized between usual care (open transthoracic esophagectomy) and the new intervention (robot-assisted thoraco-laparoscopic esophagectomy). For each patient, data was collected on the time required for the procedure in the operating room, the occurrence of complications, the length of stay in the hospital, and the quality of life after the procedure. In addition, data on the cost of resources was collected from the literature.  
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
+
+
+```{r, fig.align = 'center', out.width = "70%", echo = F}
+knitr::include_graphics("Tutorial_trial_based_cea_files/images/Image_hint.png")
+```
+
+```{r, fig.align = 'center', out.width = "70%", echo = F}
+knitr::include_graphics("Tutorial_trial_based_cea_files/images/Image_solution.png")
+```
+
+[Link to figures](https://education.rstudio.com/blog/2020/05/learnr-for-remote/)
+
+### Required knowledge
+To perform this assignment, you should be able to:  
+
+- create new variables in a dataframe  
+- use piping (`%>%`) and the functions `group_by` and `summarise` (`dyplr` package)   
+- use functions: `mean()`, `sum()`, `ifelse()`, `which()` (base R)  
+
+
+## Objects of this practical
+Different objects have already been loaded in R's memory to perform this practical assignment.  
+
+A dataframe `df`. This dataframe contains 9 variables, each row of the dataframe contains the outcomes from one participant:  
+
+- `ID` = Participant ID  
+- `Procedure`  = Group to which the participant belongs; 1 = usual care (open transthoracic esophagectomy), 2 = the new intervention (robot-assisted thoraco-laparoscopic esophagectomy)  
+- `OR_time` = Operating time, in minutes  
+- `Major_compl` = 'Did the participant experience a major complication?'; 1 = yes, 0 = no  
+- `Minor_compl` = 'Did the participant experience a minor complication?'; 1 = yes, 0 = no  
+- `Length_icu` = Length of stay at the intensive care unit (ICU) in days  
+- `Length_mcu` = Length of stay at the intensive care unit (MCU) in days  
+- `Death`      = 'Did the participant experience die at the hospital?'; 1 = yes, 0 = no   
+- `Qol` = Quality of life of the participant after the procedure  
+
+The following tables show the dataframe `df`. Familiarise yourself with it.  
+
+```{r show_df}
+df
+```
+
+
+Other objects, which represent the costs of the surgeries, hospital days, adverse events, and hourly costs of using the operating room:  
+
+- `c_Open` =  costs of the open transthoracic esophagectomy (usual care)  
+- `c_Robot` = costs of the robot-assisted thoraco-laparoscopic esophagesctomy (new intervention)  
+- `c_ICU_day` = costs of one day at the ICU  
+- `c_MCU_day` = costs of one day at the MCU  
+- `c_Major_compl` = costs of a major complication  
+- `c_Minor_compl` = costs of a minor complication  
+- `c_OK_hour` = costs of operating in the OK, per hour
+
+```{r show_c_inputs, echo = TRUE}
+# Declare costs inputs for the analysis
+c_Robot <- 3000 
+c_Open <- 2000 
+c_OK_hour <- 500 
+c_Major_compl <- 10000 
+c_Minor_compl <- 1500 
+c_ICU_day <- 1250 
+c_MCU_day <- 550 
+```
+
+## Assignment 1
+
+### Effects calculations
+Calculate the mean operating time (`OR_time`), risk of complications (`Major_compl` & `Minor_compl`), length of stay at ICU (`Length_icu`) and MCU (`Length_mcu`), risk of death (`Death`), and quality of life (`Qol`) after procedure, for both trial arms using the `df` dataframe described in the previous tab.  
+
+```{r mean_eff, exercise = TRUE}
+
+```
+
+```{r mean_eff-hint}
+"Use the combination of functions `group_by()` (dplyr package), `summarise()` (dplyr package), `mean()` (base R) to do so."
+```
+
+```{r mean_eff-solution}
+df %>%
+  group_by(Procedure) %>% # grouping per Procedure
+  summarise(mean_OR_time = mean(OR_time),
+            mean_Major_compl = mean(Major_compl),
+            mean_Minor_compl = mean(Minor_compl),
+            mean_Length_icu  = mean(Length_icu),
+            mean_Length_mcu  = mean(Length_mcu),
+            mean_p_death = mean(Death),
+            mean_Qol = mean(Qol)) # Mean calculations
+```
+
+### Questions
+The correct answer are provided below. Use these results to check your answers and answer the questions below.  
+
+```{r}
+round(df %>%
+  group_by(Procedure) %>% # grouping per Procedure
+  summarise(mean_OR_time = mean(OR_time),
+            mean_Major_compl = mean(Major_compl),
+            mean_Minor_compl = mean(Minor_compl),
+            mean_Length_icu  = mean(Length_icu),
+            mean_Length_mcu  = mean(Length_mcu),
+            mean_p_death = mean(Death),
+            mean_Qol = mean(Qol)
+            ), # Mean calculations
+  2)
+
+```
+
+```{r quiz_mean_eff}
+quiz(
+  question("Which treatment provides the best health outcomes (in terms of quality of life)?", 
+           answer("Open transthoracic esophagectomy (usual care)"),
+           answer("Robot-assisted surgery (new intervention)", correct = TRUE)),
+  question("Is robot-assisted surgery an improvement upon usual care with respect to all outcomes displayed above? Select the outcomes for which open transthoracic esophagectomy (usual care) provides better results.",
+           answer("OR time"),
+           answer("Occurence of major complications"),
+           answer("Occurence of minor complications", correct = TRUE),
+           answer("Length of stay at the ICU"),
+           answer("Length of stay at the MCU", correct = TRUE),
+           answer("Occurence of death"),
+           answer("Quality of life"),
+           answer("None"),
+           incorrect = "Too bad, this is not correct. The correct answers were: 'Occurence of minor complications' and Length of stay at the MCU', since robot-assisted surgery leads to more minor complications and longer length of stay at the MCU"
+           )
+)
+```
+
+## Assignment 2
+
+### Costs calculations
+Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group. As a reminder, these are the costs.  
+
+```{r show_c_inputs2, echo = TRUE}
+# Declare costs inputs for the analysis
+c_Robot <- 3000 
+c_Open <- 2000 
+c_OK_hour <- 500 
+c_Major_compl <- 10000 
+c_Minor_compl <- 1500 
+c_ICU_day <- 1250 
+c_MCU_day <- 550 
+```
+
+```{r calc_t_costs, exercise = TRUE}
+
+
+```
+
+```{r calc_t_costs-hint-1}
+"To fill in the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, multiply the column of the dataframe `df` by the corresponding objects. For `Cost_procedure`, the ifelse() function should be used to make a difference between the costs of open transthoracic esophagectomy and robot-assisted thoraco-laparoscopic esophagesctomy. For the `Total_costs`, the sum of the other columns should be calculated.  "
+```
+
+```{r calc_t_costs-hint-2}
+# Example for calculating the new variable `Cost_procedure`
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour)
+```
+
+```{r calc_t_costs-solution}
+# Creating new columns
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+df %>% 
+  group_by(Procedure) %>%
+  summarise(Tot_costs = mean(Total_costs))
+
+
+# Alternative tidyverse-style
+# df %>%
+#   summarise(Procedure = Procedure,
+#             Cost_procedure = ifelse(Procedure == 1, c_Open + OR_time / 60 * c_OK_hour, c_Robot + OR_time / 60 * c_OK_hour),
+#             Cost_compl = Major_compl * c_Major_compl + Minor_compl * c_Minor_compl,
+#             Cost_hosp = Length_icu * c_ICU_day + Length_mcu * c_MCU_day,
+#             Total_costs = Cost_procedure + Cost_compl + Cost_hosp) %>%
+#   group_by(Procedure) %>%
+#   summarise(Mean_total_costs = mean(Total_costs))
+```
+
+### Questions
+The correct results are displayed here below. You can check your answer based in these results and answer the questions of the quizz.
+
+```{r calc_to_c_good}
+df %>%
+  summarise(Procedure = Procedure,
+            Cost_procedure = ifelse(Procedure == 1, c_Open + OR_time / 60 * c_OK_hour, c_Robot + OR_time / 60 * c_OK_hour),
+            Cost_compl = Major_compl * c_Major_compl + Minor_compl * c_Minor_compl,
+            Cost_hosp = Length_icu * c_ICU_day + Length_mcu * c_MCU_day,
+            Total_costs = Cost_procedure + Cost_compl + Cost_hosp) %>%
+  group_by(Procedure) %>%
+  summarise(Mean_cost_procedure = mean(Cost_procedure),
+            Mean_cost_compl = mean(Cost_compl),
+            Mean_cost_hosp = mean(Cost_hosp),
+            Mean_total_costs = mean(Total_costs))
+```
+
+```{r quiz_tot_costs}
+quiz(
+  question("Which treatment is cheaper on average, given the observed trial data?", 
+           answer("Open transthoracic esophagectomy (usual care)", correct = TRUE),
+           answer("Robot-assisted surgery (new intervention)"),
+           incorrect = "Too bad, this is incorrect. Open transthoracic esophagectomy is cheaper sinds the mean total costs of this procedure are lower than the mean total costs of the robot-assisted surgery procedure")
+)
+```
+
+ 
+```{r quiz_probs}
+quiz(
+  question("To your opinion, what is the probability that the new intervention is cheaper than usual care?", 
+           answer("0%", correct = TRUE),
+           answer("Lower than 25%", correct = TRUE),
+           answer("25%", correct = TRUE),
+           answer("Lower than 50%", correct = TRUE),
+           answer("50%", correct = TRUE),
+           answer("Higher than 50%", correct = TRUE),
+           answer("Lower than 75%", correct = TRUE),
+           answer("75%", correct = TRUE),
+           answer("Higher than 75%", correct = TRUE),
+           answer("100%", correct = TRUE),
+           correct = "We'll come back to this at the end!"
+           )
+)
+```
+
+```{r open_q_1}
+textInput("Answer_1", "Explain your answer")
+```
+ 
+```{r quiz_probs2}
+quiz(
+  question("To your opinion, what is the probability that the new intervention leads to health gain compared with usual care?", 
+           answer("0%", correct = TRUE),
+           answer("Lower than 25%", correct = TRUE),
+           answer("25%", correct = TRUE),
+           answer("Lower than 50%", correct = TRUE),
+           answer("50%", correct = TRUE),
+           answer("Higher than 50%", correct = TRUE),
+           answer("Lower than 75%", correct = TRUE),
+           answer("75%", correct = TRUE),
+           answer("Higher than 75%", correct = TRUE),
+           answer("100%", correct = TRUE),
+           correct = "We'll come back to this at the end!"
+           )
+)
+```
+
+```{r open_q_2}
+textInput("Answer_2", "Explain your answer")
+```
+
+### Discussion questions
+What do you think is the probability that the new intervention is cheaper?  
+**Discussion:** This question is hard to answer, all we know is that some patients in the intervention strategy (robot-assisted) have lower cost than some patients in the usual care arm. On average the intervention is more expensive so we would guess that this probability is less than 50% but we don’t know yet.  
+
+What do you think is the probability that the new intervention leads to health gain?  
+**Discussion:** This question is also hard to answer. On average the intervention leads to a substantially higher utility than usual care, so we would guess that this probability is greater than 50% but we don’t know yet.  
+
+## Assignment 3  
+
+### Calculation of incremental results  
+Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
+
+```{r setup_calc_icer}
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+```
+
+```{r calc_icer, exercise = TRUE, exercise.setup = "setup_calc_icer"}
+
+```
+
+```{r calc_icer-hint-1}
+"Calculate first the mean outcomes per patient for each strategy and then calculate the difference. To calculate the ICER, divide the difference in costs by the difference in effects between the two strategies."
+```
+
+```{r calc_icer-hint-2}
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
+```
+
+```{r calc_icer-solution}
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean costs per patient in the open surgery strategy
+t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
+t_costs_open  <- mean(df[which(df$Procedure == 1), "Total_costs"]) # mean costs per patient in the open surgery strategy
+diff_qol   <- t_qol_robot - t_qol_open # difference in qol
+diff_costs <- t_costs_robot - t_costs_open # difference in costs
+ICER <- diff_costs / diff_qol # difference in ICER
+diff_qol
+diff_costs
+ICER
+```
+
+### Question
+The correct results are provided here below.
+
+```{r}
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean costs per patient in the open surgery strategy
+t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
+t_costs_open  <- mean(df[which(df$Procedure == 1), "Total_costs"]) # mean costs per patient in the open surgery strategy
+
+diff_qol   <- t_qol_robot - t_qol_open
+diff_costs <- t_costs_robot - t_costs_open
+
+ICER <- diff_costs / diff_qol
+data.frame(
+  Difference_qol = diff_qol,
+  Difference_costs = diff_costs,
+  ICER = ICER
+)
+```
+
+```{r icer_question}
+quiz(
+  question(
+    "Considering this ICER, would you say that the robot-assisted surgery is cost effective compared to the open surgery at a 20,000 euro per QALY willingness to pay threshold?",
+    answer("Yes", correct = TRUE),
+    answer("No"),
+    incorrect = "The answer is yes because the ICER is below the willingness-to-pay threshold."
+  )
+)
+```
+
+## Assignment 4
+
+### Bootstrapping
+The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments. For an explanation of bootstrapping, have a look at [this video](https://www.youtube.com/watch?v=Xz0x-8-cgaQ). In this case, we bootstrap to calculate the mean effects and costs of each strategy.    
+To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several seconds to minutes). The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided. Answer the questions below based on your observations.  
+
+```{r bootstrap}
+numericInput(inputId = "num_it",
+             label = "Number of bootstrap samples",
+             value = 1000,
+             min = 1000,
+             max = 20000)
+numericInput(inputId = "seed_num",
+             label = "Seed number to use",
+             value = 1,
+             min = 0,
+             max = Inf)
+actionButton(inputId = "run_boot",
+             label = "Run bootstrap analysis")
+
+h3("Mean outcomes of the sample")
+tableOutput("det_tbl")
+tags$hr()
+h3("Incremental cost-effectiveness plane")
+plotOutput("boot_ice")
+tags$hr()
+h3("Mean outcomes of the bootstrap and 95% CI")
+tableOutput("boot_tbl")
+tags$hr()
+h3("Percentage iterations in each quadrant")
+tableOutput("perc_tbl")
+```
+
+```{r bootstrap_serv, context = "server"}
+bootstrap <- eventReactive(input$run_boot, {
+    
+  set.seed(as.numeric(as.character(input$seed_num)))
+  
+  df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+  df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+  df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+  df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+  
+  df_res <- bootstrap_effects_costs(df, num_it = as.numeric(as.character(input$num_it)))
+    
+   return(df_res)
+      
+  }
+  )
+ 
+output$boot_ice <- renderPlot({
+    df_res <- bootstrap()
+    
+    ggplot(df_res) + 
+      #ggtitle("Incremental cost-effectiveness plane") +
+      geom_point(aes(x = Inc_Qol, y = Inc_Cost, colour = "Incrementals"), shape = 1) + 
+      geom_point(aes(x = mean(Inc_Qol), y = mean(Inc_Cost), colour = "Mean"), size = 2) +
+      xlab ("Incremental effects") + 
+      ylab("Incremental costs") +
+      geom_hline(yintercept = 0,  
+                 color = "black") +
+      geom_vline(xintercept = 0,  
+                 color = "black") + 
+      geom_abline(intercept = 0, slope = 20000, linetype= "dashed", 
+                  color = "black") + # 20,000 per QALY threshold line
+      #xlim(c(0,1)) +
+      #scale_y_continuous(labels = dollar_format(prefix = "\u20ac ", suffix = "")) +
+      scale_colour_manual(name = "",
+                          values = c(Incrementals = "grey", 
+                                     Mean = "darkblue"
+                          )) +
+      theme_bw() + 
+      theme(legend.position="bottom") 
+    
+    
+  })
+  
+  output$boot_tbl<- renderTable({
+    
+    df_res <- bootstrap()
+    
+    # Compute summary statistics
+    df <- data.frame(cbind(
+      Estimate = c(names(df_res), "ICER"),
+      Mean = round(c(unname(colSums(df_res)/nrow(df_res)), mean(df_res$Inc_Cost) / mean(df_res$Inc_Qol)), 2),
+      `Lower bound 95%CI` = c(round(apply(df_res, 2, function (x) quantile(x, 0.025)), 2), "-"),
+      `Higher bound 95%CI` = c(round(apply(df_res, 2, function (x) quantile(x, 0.975)), 2), "-")
+    )
+    )
+    
+    df
+  })
+  
+output$perc_tbl<- renderTable({
+    
+    df_res <- bootstrap()
+    
+    # Compute percentage in each quadrant statistics
+    df_perc <- data.frame(cbind(
+      Quandrant = c("NorthEast (more effective, more expensive)", "SouthEast (more effective, less expensive)",
+                    "SouthWest (less effective, less expensive)", "NorthWest (less effective, more expensive)"),
+      `Percentage iterations` = c(paste0(round(length(which(df_res$Inc_Qol > 0 &
+                                                              df_res$Inc_Cost > 0)) / nrow(df_res),2)*100, "%"),
+                                  paste0(round(length(which(df_res$Inc_Qol > 0 &
+                                                              df_res$Inc_Cost < 0)) / nrow(df_res),2)*100, "%"),
+                                  paste0(round(length(which(df_res$Inc_Qol < 0 &
+                                                              df_res$Inc_Cost < 0)) / nrow(df_res),2)*100, "%"),
+                                  paste0(round(length(which(df_res$Inc_Qol < 0 &
+                                                              df_res$Inc_Cost > 0)) / nrow(df_res),2)*100, "%")
+      )
+    ))
+    df_perc
+ 
+  }
+)
+
+output$det_tbl<- renderTable({
+  
+  df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+  df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+  df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+  df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+  
+  # Compute summary statistics - sample
+  res_tbl <- df %>%
+    group_by(Procedure) %>%
+    summarise(Mean_Qol = round(mean(Qol), 2),
+              Mean_Total_Cost = round(mean(Total_costs), 0),
+    )
+  res_tbl <- cbind(res_tbl,
+                   Inc_Qol = c("", round(as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1])), 2)),
+                   Inc_Cost = c("", round(as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1])), 0)),
+                   ICER = c("", round((as.numeric(as.character(res_tbl$Mean_Total_Cost[2])) - as.numeric(as.character(res_tbl$Mean_Total_Cost[1]))) / (as.numeric(as.character(res_tbl$Mean_Qol[2])) - as.numeric(as.character(res_tbl$Mean_Qol[1]))), 0)
+  )
+  )
+  res_tbl
+  })
+```
+
+### Questions
+Answer the following questions using the results displayed above. The discussion of these answers are provided below.  
+
+a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data? Why (not)?  
+```{r open_q4a}
+textInput("Answer_4a", "Type your answer")
+```  
+
+b. Check the confidence intervals for the additional health effects and for the additional costs of the intervention. Can you explain why they are so wide?  
+```{r open_q4b}
+textInput("Answer_4b", "Type your answer")
+```  
+
+c. Check the probabilities of a cost-effectiveness outcome in each one of the four quadrants. How well did you guess the probability that the new intervention is cheaper, or improves health (compare with your answers to the questions in Assignment 2)?  
+```{r open_q4c}
+textInput("Answer_4c", "Type your answer")
+```  
+
+d. No confidence interval is given for the ICER, can you explain why such a confidence interval is not informative by looking at the incremental cost-effectiveness plane ?  
+```{r open_q4d}
+textInput("Answer_4d", "Type your answer")
+```  
+
+e. Rerun the bootstrap procedure 3 times using different seed numbers. Do the results of the bootstrap analysis change substantially? What would we need to do to reduce this variation in outcomes?  
+```{r open_q4e}
+textInput("Answer_4e", "Type your answer")
+```  
+
+### Discussion questions
+```{r prep_answers, eval = TRUE}
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
+```
+
+**Discussion 4.a.**: The results of the bootstrapping match the original point estimates rather well. However, the additional cost may deviate a bit and therefore the ICER from bootstrapping can be a few (hundred) euros/QALY more or less than the ICER from the original data. Differences may arise because the costs and effects are calculated based on bootstrapped samples, which are obtained by re-sampling the original data with replacement. This means that the composition of each bootstrap sample is different than the original data, and therefore leads to different results.  
+
+**Discussion 4.b.**: The CIs are very wide because the utility and total cost vary substantially between patients: utilities range from 0 to `r round(max(df$Qol), 2)` and costs range from `r format(round(min(df$Total_costs), 0), big.mark = ",", scientific = FALSE)` euros to `r format(round(max(df$Total_costs), 0), big.mark = ",", scientific = FALSE)` euros.  
+
+**Discussion 4.c.**: Own reflection.  
+
+**Discussion 4.d.**: The incremental CE plane contains points (results) in all four quadrants of the plane. This means that the ICER can be both positive (in which case we are not sure if the intervention is better and more expensive or worse and cheaper) and negative (in which case we are not sure if the intervention is better and cheaper or worse and more expensive). In this situation, any confidence interval for the ICER would be ambiguous and the incremental CE plane itself is more informative, along with the probabilities of results falling into each of the four quadrants.  
+
+**Discussion 4.e.**: The ICER, and the 95%CI for the cost difference may change more than we would like to see. This variation could be reduced by increasing the number of bootstrap samples, for example, from 5,000 to 20,000.
