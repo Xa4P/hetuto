@@ -15,6 +15,7 @@ require(knitr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(shiny, quietly = TRUE)
 require(magrittr, quietly = TRUE)
+require(tidyr, quietly = TRUE)
 
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -403,7 +404,7 @@ m_res_total <- rbind(v_icer_undisc,
 df_res <- data.frame(cbind(Analysis = c("Undiscounted", "Discounted")),
                      m_res_total)
 df_plot <- df_res %>% 
-    pivot_longer(c(ICER_A, ICER_B, ICER_C), names_to = "Intervention", values_to = "ICER")
+    tidyr::pivot_longer(c(ICER_A, ICER_B, ICER_C), names_to = "Intervention", values_to = "ICER")
 
 # Plot
  plot_res <- ggplot(data = df_plot, aes(x = Intervention, y = ICER, fill = Analysis)) +
