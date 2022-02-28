@@ -1218,11 +1218,11 @@ output$plot_sg_hs1 <- renderPlot({
            )
    
  })
- output$res_sg_hs1 <- renderText({
+
+output$res_sg_hs1 <- renderText({
    paste0("You are considering a gamble with a ", round(input$sg_hs1*100,0), "% probability of immediate death. Your utility value for this health state is ",  1-input$sg_hs1, ".")
  })
- 
- 
+
  output$plot_tto_hs1 <- renderPlot({
    
    trade_off <- input$tto_hs1
@@ -1238,11 +1238,230 @@ output$plot_sg_hs1 <- renderPlot({
    
  })
  
- output$res_tto_hs1 <- renderText({
+output$res_tto_hs1 <- renderText({
    paste0("You are indifferent between a) trading ", round(input$tto_hs1, 1), " years of life and living ", 10 - round(input$tto_hs1, 1),  " years of life in perfect health and b) living in this health state for 10 years. Your utility value for this health state is ",  (10 - input$tto_hs1)/10, ".")
  })
  
- output$res_vas_hs1 <- renderText({
+output$res_vas_hs1 <- renderText({
    paste0("The quality of life (utility) you assign to this health state is ", as.numeric(as.character(input$vas_hs1))/100, ".")
  })
+```
+
+
+## Vignettes
+In this assignment, you will value the two health states that are described as vignettes using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. A vignette is a narrative description of a certain health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
+Instructions: read the vignettes and fill in the Standard Gamble, Time-trade-off, and Visual analog scale.  
+
+### Vignette 1: Reumatoid arthritis (mild variant)  
+Your mobility is limited by pain. Walking long distances and standing still increase these complaints/ When you exercise, you experience increased joint complaints the day after. You are fully capable of bathing and clothing yourself. However, putting on shoes with laces is not an option. Activities that require lots of movement or physical strength cannot be performed. You require some help with usual activities such as doing groceries. It is important to take things slowly! You experience a constant mild pain in the joints and there is always a chance a relapse occurs. During a relapse, you are often feeling depressed, but you experience no cognitive symptoms. Your vision is normal for your age and you have no hearing problems. Your speech is normal but you experience mild to severe problems using your hands. Typing and other light activities are still possible, but every exercise that requires strength from your fingers is painful. The coordination of your fingers is also poor. Since other people do not directly observe where your pain is located, you experience some misunderstanding and miscomprehension. You are capable of maintaining normal social contacts, although the duration and frequency of such contacts are somewhat limited.
+
+```{r vignettes_shiny_1}
+h3("Standard Gamble")
+h4("At which probability of immediate death would you be indifferent between the Gamble and remaining in the above-described health state for 30 years?")
+helpText("Please indicate this probability using the slider")
+div(style = "display:inline-block",
+  sliderInput("sg_v1", "Probability of death in the gamble", 
+            min = 0, max = 1, value = 0.5, step = 0.01),
+  width = "400px")
+plotOutput("plot_sg_v1")
+h4(textOutput("res_sg_v1"))
+tags$hr()
+h3("Time trade off")
+h4("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
+helpText("Please indicate this number of years using the slider")
+div(style = "display:inline-block",
+    sliderInput("tto_v1", "Number of traded years", 
+            min = 0, max = 30, value = 15, step = 0.1),
+    width = "400px")
+plotOutput("plot_tto_v1")
+h4(textOutput("res_tto_v1"))
+tags$hr()
+h3("Visual analog scale")
+h4("How do you rate the quality of life in the above-described health state?")
+helpText("Please indicate this on the visual analog scale using the slider")
+div(style = "display:inline-block",
+	HTML("The best health you can imagine"),
+	shinyWidgets::noUiSliderInput(
+		inputId = "vas_v1",
+		label = "",
+		tooltips = T,
+    min = 0, max = 100,
+    # color = "#EC008C",
+    step = NULL,
+    direction = "rtl",
+    pips = list(
+    	mode = "positions",
+      values = seq(0, 100, by = 5),
+      density = 1
+      ),
+		format = wNumbFormat(
+			decimals = 0
+		),
+		value = 0,
+    orientation = "vertical",
+    width = 300,
+    height = 300
+    ),
+   div(
+	 	style = "margin-top:-20px", HTML("The worst health you can imagine")
+	 )
+	)
+div(style = "display:inline-block; margin-top: -1px",
+    textOutput("res_vas_v1"),
+    width = "300px"
+)
+```
+
+### Vignette 2: Neurological disorder - Cerebral Vascular Accident (serious case)
+Your mobility is severely limited. You are in a wheelchair during the day. Getting in and out of bed is only possible with (professional) help. You have to be straightened in your wheelchair several times per day and you are incapable of bathing and clothing yourself. You are incontinent and you are severely limited in the amount of daily activities that you can perform. You are still able to read a newspaper, listen to music, and watch television. You experience no pain but you experience some discomfort from sitting the whole day in your wheelchair. You are unable to swallow and are therefore fed intravenously. You experience emotional swings at least twice per day (spontaneous crying) and you are restless in the dark. You are able to see, but you are not able to recognize anything in your left visual space. You have severe aphasia (you cannot form sentences and have trouble finding the correct words). Only your partner and the nurses understand some of what you are trying to communicate. You are fully paralyzed on the right side of your body and you experience severe problems with coordination on the left side. There is only a limited form of social contact possible with the nursing staff and even with people who experience the same type of disorder.
+             
+```{r vignettes_shiny_2}
+h3("Standard Gamble")
+h4("At which probability of immediate death would you be indifferent between the Gamble and remaining in the above-described health state for 30 years?")
+helpText("Please indicate this probability using the slider")
+div(style = "display:inline-block",
+    sliderInput("sg_v2", "Probability of death in the gamble",
+            min = 0, max = 1, value = 0.5, step = 0.01),
+    width = "400px")
+plotOutput("plot_sg_v2")
+h4(textOutput("res_sg_v2"))
+tags$hr()
+h3("Time trade off")
+h4("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
+helpText("Please indicate this number of years using the slider")
+div(style = "display:inline-block",
+    sliderInput("tto_v2", "Number of traded years", 
+            min = 0, max = 30, value = 15, step = 0.1),
+    width = "400px")
+plotOutput("plot_tto_v2")
+h4(textOutput("res_tto_v2"))
+tags$hr()
+h3("Visual analog scale")
+h4("How do you rate the quality of life in the above-described health state?")
+helpText("Please indicate this on the visual analog scale using the slider")
+div(style = "display:inline-block",
+	HTML("The best health you can imagine"),
+	shinyWidgets::noUiSliderInput(
+		inputId = "vas_v2",
+		label = "",
+		tooltips = T,
+    min = 0, max = 100,
+    # color = "#EC008C",
+    step = NULL,
+    direction = "rtl",
+    pips = list(
+    	mode = "positions",
+      values = seq(0, 100, by = 5),
+      density = 1
+      ),
+		format = wNumbFormat(
+			decimals = 0
+		),
+		value = 0,
+    orientation = "vertical",
+    width = 300,
+    height = 300
+    ),
+   div(
+	 	style = "margin-top:-20px", HTML("The worst health you can imagine")
+	 )
+	)
+div(style = "display:inline-block; margin-top: -1px",
+    textOutput("res_vas_v2"),
+    width = "300px")
+```                    
+                    
+```{r vignettes_shiny_serv, context = "server"}
+shinyjs::runjs("$( '.noUi-base').click(
+  function(){
+      $('.noUi-handle').css('visibility','visible')})")
+# Vignette 1
+output$plot_sg_v1 <- renderPlot({
+ p <- input$sg_v1
+ 
+ v_names <- c("Current state", "Gamble", "Death", "Perfect health", "Remain in state")
+ M <- matrix(nrow = 5, ncol = 5, byrow = TRUE, data = 0)
+ M[5, 1] <- ""
+ M[2, 1] <- ""
+ M[3, 2] <- p
+ M[4, 2] <- 1-p
+ plotmat(M, pos = c(1, 1, 3), name = v_names, lwd = 1,
+         curve = 0,
+         box.lwd = 2, cex.txt = 1.2, box.size = 0.05,
+         box.type = "square", box.prop = 0.5
+ )
+ 
+})
+output$res_sg_v1 <- renderText({
+ paste0("You are considering a gamble with a ", round(input$sg_v1*100,0), "% probability of immediate death. Your utility value for this health state is ",  1-input$sg_v1, ".")
+})
+
+
+output$plot_tto_v1 <- renderPlot({
+ 
+ trade_off <- input$tto_v1
+ data <- data.frame(TTO = c(0, 30-trade_off, trade_off),
+                    No_TTO = c(30, 0, 0)
+ )
+ 
+ barplot(as.matrix(data), col = c(4, 3, 2),
+         legend.text = c("Current Health state",
+                         "Healthy life years",
+                         "Traded life years"),
+         horiz = TRUE)
+ 
+})
+
+output$res_tto_v1 <- renderText({
+ paste0("You are indifferent between a) trading ", round(input$tto_v1, 1), " years of life and living ", 30 - round(input$tto_v1, 1),  " years of life in perfect health and b) living in this health state for 30 years. Your utility value for this health state is ",  round((30 - input$tto_v1)/30, 2), ".")
+})
+
+output$res_vas_v1 <- renderText({
+ paste0("The quality of life (utility) you assign to this health state is ", as.numeric(as.character(input$vas_v1)) / 100, ".")
+})
+
+# Vignette 2
+output$plot_sg_v2 <- renderPlot({
+ p <- input$sg_v2
+ 
+ v_names <- c("Current state", "Gamble", "Death", "Perfect health", "Remain in state")
+ M <- matrix(nrow = 5, ncol = 5, byrow = TRUE, data = 0)
+ M[5, 1] <- ""
+ M[2, 1] <- ""
+ M[3, 2] <- p
+ M[4, 2] <- 1-p
+ plotmat(M, pos = c(1, 1, 3), name = v_names, lwd = 1,
+         curve = 0,
+         box.lwd = 2, cex.txt = 1.2, box.size = 0.05,
+         box.type = "square", box.prop = 0.5
+ )
+ 
+})
+output$res_sg_v2 <- renderText({
+ paste0("You are considering a gamble with a ", round(input$sg_v2*100,0), "% probability of immediate death. Your utility value for this health state is ",  1-input$sg_v2, ".")
+})
+
+
+output$plot_tto_v2 <- renderPlot({
+ 
+ trade_off <- input$tto_v2
+ data <- data.frame(TTO = c(0, 30-trade_off, trade_off),
+                    No_TTO = c(30, 0, 0)
+ )
+ 
+ barplot(as.matrix(data), col = c(4, 3, 2),
+         legend.text = c("Current Health state",
+                         "Healthy life years",
+                         "Traded life years"),
+         horiz = TRUE)
+ 
+})
+
+output$res_tto_v2 <- renderText({
+ paste0("You are indifferent between a) trading ", round(input$tto_v2, 1), " years of life and living ", 30 - round(input$tto_v2, 1),  " years of life in perfect health and b) living in this health state for 30 years. Your utility value for this health state is ",  round((30 - input$tto_v2)/30, 2), ".")
+})
+
+output$res_vas_v2 <- renderText({
+ paste0("The quality of life (utility) you assign to this health state is ", as.numeric(as.character(input$vas_v2)) / 100, ".")
+})
 ```
