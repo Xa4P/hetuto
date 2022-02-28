@@ -729,3 +729,246 @@ output$TEXT_QALY_calc <- renderText({
   text_button_QALY_calc()
 })
 ```
+
+## QALYs comparison
+The aim of this assignment is to compare the number of QALY gained by two interventions. Intervention A has a survival of 10 years after the intervention with a utility of 0.7. Intervention B has a survival of 5 years after the intervention with a utility of 0.9 followed by 5 years in a health state with a utility of 0.5. Use the fields to fill in the graph and answer the questions.  
+```{r QALY_comp_shiny}
+h3("Intervention A")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 1st year - Intervention A"),
+    numericInput(inputId = "u_A_1",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 2nd year - Intervention A"),
+    numericInput(inputId = "u_A_2",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 3rd year - Intervention A"),
+    numericInput(inputId = "u_A_3",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 4th year - Intervention A"),
+    numericInput(inputId = "u_A_4",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 5th year - Intervention A"),
+    numericInput(inputId = "u_A_5",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 6th year - Intervention A"),
+    numericInput(inputId = "u_A_6",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 7th year - Intervention A"),
+    numericInput(inputId = "u_A_7",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 8th year - Intervention A"),
+    numericInput(inputId = "u_A_8",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 9th year - Intervention A"),
+    numericInput(inputId = "u_A_9",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 10th year - Intervention A"),
+    numericInput(inputId = "u_A_10",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+tags$hr()
+h3("Intervention B")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 1st year - Intervention B"),
+    numericInput(inputId = "u_B_1",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 2nd year - Intervention B"),
+    numericInput(inputId = "u_B_2",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 3rd year - Intervention B"),
+    numericInput(inputId = "u_B_3",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 4th year - Intervention B"),
+    numericInput(inputId = "u_B_4",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 5th year - Intervention B"),
+    numericInput(inputId = "u_B_5",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 6th year - Intervention B"),
+    numericInput(inputId = "u_B_6",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 7th year - Intervention B"),
+numericInput(inputId = "u_B_7",
+             label = NULL,
+             value = 0,
+             min = 0,
+             max = 1),
+width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 8th year - Intervention B"),
+    numericInput(inputId = "u_B_8",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 9th year - Intervention B"),
+    numericInput(inputId = "u_B_9",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+div(style = "display:inline-block",
+    tags$div(class = "panel-heading", "Utility value 10th year - Intervention B"),
+    numericInput(inputId = "u_B_10",
+                 label = NULL,
+                 value = 0,
+                 min = 0,
+                 max = 1),
+    width = "250px")
+tags$hr()
+h3("Graphs displaying utility values of each intervention over time")
+plotOutput("QALY_comp")
+```
+
+```{r QALY_comp_shiny_serv, context = "server"}
+output$QALY_comp <- renderPlot({
+  
+  v_u_A <-  c(as.numeric(as.character(input$u_A_1)),
+              as.numeric(as.character(input$u_A_1)),
+              as.numeric(as.character(input$u_A_2)),
+              as.numeric(as.character(input$u_A_3)),
+              as.numeric(as.character(input$u_A_4)),
+              as.numeric(as.character(input$u_A_5)),
+              as.numeric(as.character(input$u_A_6)),
+              as.numeric(as.character(input$u_A_7)),
+              as.numeric(as.character(input$u_A_8)),
+              as.numeric(as.character(input$u_A_9)),
+              as.numeric(as.character(input$u_A_10))) # vector of utilities - intervention A
+  
+  v_u_B <-  c(as.numeric(as.character(input$u_B_1)),
+              as.numeric(as.character(input$u_B_1)),
+              as.numeric(as.character(input$u_B_2)),
+              as.numeric(as.character(input$u_B_3)),
+              as.numeric(as.character(input$u_B_4)),
+              as.numeric(as.character(input$u_B_5)),
+              as.numeric(as.character(input$u_B_6)),
+              as.numeric(as.character(input$u_B_7)),
+              as.numeric(as.character(input$u_B_8)),
+              as.numeric(as.character(input$u_B_9)),
+              as.numeric(as.character(input$u_B_10))) # vector of utilities - intervention B
+  
+  v_time_2 <- c(0:10) # vector of time
+  
+  plot(x = v_time_2, y = v_u_A, type = 'l',
+       xlab = "Time (in years)",
+       ylab = "Utility value",
+       ylim = c(0, 1),
+       xlim = c(0, 10),
+       col = 1
+  )
+  lines(x = v_time_2, y = v_u_B, col = 2)
+  legend(x = "topright",          # Position
+         legend = c("Intervention A", "Intervention B"),  # Legend texts
+         lty = c(1, 1),           # Line types
+         col = c(1, 2)           # Line colors
+         )             
+  
+  
+}
+)
+```
+
+### Questions
+```{r QALY_comp_quiz}
+quiz(
+  question("Which intervention provides the most QALYs?",
+           answer("Intervention A"),
+           answer("Intervention B"), 
+           answer("They provide the same number of QALYs", correct = TRUE),
+  correct = "Good job, this is correct (because the interventions provide the same number of QALYs)!",
+  incorrect = "This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life",
+  allow_retry = TRUE
+  )
+)
+textInput("Answer_Q_comp1", "1. Based on the total number of QALYs gained, which intervention would you prefer?")
+textInput("Answer_Q_comp2", "2. What if the quality of life with intervention A was 0.8, which one would you then prefer?")
+```
+
+### Answers/discussion  
+
+1. In theory, you should not prefer the one over the other because they provide the same number of QALYs. None of these strategies is thus more effective than the other.  
+2. In that case, intervention A would be preferred because it would provide more QALYs.  
+
+
+
