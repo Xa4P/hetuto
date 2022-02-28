@@ -1035,7 +1035,7 @@ div(style = "display:inline-block",
     width = "300px")
 tags$hr()
 h3("Visual analog scale")
-h4("We would like to know how good or bad your health is TODAY. This scale is numbered from 0 to 100. 100 means the best health you can imagine. 0 means the worst health you can imagine. Please slide the button to indicate how your health is TODAY. Now, look at the number you marked on the scale on the right. (In the real EQ-5D questionnaire, the slide bar is vertical, not horizontal)")
+h4("We would like to know how good or bad your health is TODAY. This scale is numbered from 0 to 100. 100 means the best health you can imagine. 0 means the worst health you can imagine. Please slide the button to indicate how your health is TODAY.")
 div(
 	HTML("The best health you can imagine"),
 	shinyWidgets::noUiSliderInput(
@@ -1139,3 +1139,110 @@ quiz(
 )
 ```
 
+## Valuing health states
+In this assignment, you will value the first health state which is described in the previous assignment using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. These methods are originally used to determine the decrements associated with each level of the EQ-5D-5L (for instance).  
+EQ-5D description first health state (12423): I have no problems in walking about, I have slight problems washing or dressing myself, I have severe problems doing my usual activities,I have slight pain or discomfort, and I am moderately anxious or depressed
+
+```{r hs_value_shiny}
+h3("Standard Gamble")
+h4("At which probability of immediate death would you be indifferent between the Gamble and remaining in health state 12423 for 10 years?")
+helpText("Please indicate this probability using the slider")
+sliderInput("sg_hs1", "Probability of death in the gamble",
+            min = 0, max = 1, value = 0.5, step = 0.01)
+h3("Standard Gamble health state 12423")
+plotOutput("plot_sg_hs1")
+h4(textOutput("res_sg_hs1"))
+tags$hr()
+h3("Time trade off")
+h4("How much years of life in this health state (12423) would you trade to become indifferent between a) remaining in this health state for 10 years and b) living for 10 life years minus - the amount of traded life years in perfect health?")
+helpText("Please indicate this number of years using the slider")
+sliderInput("tto_hs1", "Number of traded years", 
+            min = 0, max = 10, value = 5, step = 0.1)
+h3("Time trade off health state 12423")
+plotOutput("plot_tto_hs1")
+h4(textOutput("res_tto_hs1"))
+tags$hr()
+h3("Visual analog scale")
+h4("How do you rate the quality of life in this health state (12423)?")
+helpText("Please indicate this on the visual analog scale using the slider")
+div(
+	HTML("The best health you can imagine"),
+	shinyWidgets::noUiSliderInput(
+		inputId = "vas_hs1",
+		label = "",
+		tooltips = T,
+    min = 0, max = 100,
+    # color = "#EC008C",
+    step = NULL,
+    direction = "rtl",
+    pips = list(
+    	mode = "positions",
+      values = seq(0, 100, by = 5),
+      density = 1
+      ),
+		format = wNumbFormat(
+			decimals = 0
+		),
+		value = 0,
+    orientation = "vertical",
+    width = 300,
+    height = 400
+    ),
+   div(
+	 	style = "margin-top:-20px", HTML("The worst health you can imagine")
+	 )
+	)
+h3("Visual analog scale health state 12423")
+h4(textOutput("res_vas_hs1"))
+```
+
+```{r hs_value_shiny_serv, context = "server"}
+shinyjs::runjs("$( '.noUi-base').click(
+  function(){
+      $('.noUi-handle').css('visibility','visible')})")
+
+output$plot_sg_hs1 <- renderPlot({
+   p <- input$sg_hs1
+   
+   v_names <- c("Current state", "Gamble", "Death", "Perfect health", "Remain in state")
+   M <- matrix(nrow = 5, ncol = 5, byrow = TRUE, data = 0)
+   M[5, 1] <- ""
+   M[2, 1] <- ""
+   M[3, 2] <- p
+   M[4, 2] <- 1-p
+   plotmat(M, pos = c(1, 1, 3), name = v_names, lwd = 1,
+           curve = 0,
+           box.lwd = 2, cex.txt = 1.2, box.size = 0.05,
+           box.type = "square", box.prop = 0.5,
+           shadow.size = 0
+           )
+   
+ })
+ output$res_sg_hs1 <- renderText({
+   paste0("You are considering a gamble with a ", round(input$sg_hs1*100,0), "% probability of immediate death. Your utility value for this health state is ",  1-input$sg_hs1, ".")
+ })
+ 
+ 
+ output$plot_tto_hs1 <- renderPlot({
+   
+   trade_off <- input$tto_hs1
+   data <- data.frame(TTO = c(0, 10-trade_off, trade_off),
+                      No_TTO = c(10, 0, 0)
+   )
+   
+   barplot(as.matrix(data), col = c(4, 3, 2),
+           legend.text = c("Current Health state",
+                           "Healthy life years",
+                           "Traded life years"),
+           horiz = TRUE)
+   
+ })
+ 
+ output$res_tto_hs1 <- renderText({
+   paste0("You are indifferent between a) trading ", round(input$tto_hs1, 1), " years of life and living ", 10 - round(input$tto_hs1, 1),  " years of life in perfect health and b) living in this health state for 10 years. Your utility value for this health state is ",  (10 - input$tto_hs1)/10, ".")
+ })
+ 
+ output$res_vas_hs1 <- renderText({
+   paste0("The quality of life (utility) you assign to this health state is ", as.numeric(as.character(input$vas_hs1))/100, ".")
+ })
+```
