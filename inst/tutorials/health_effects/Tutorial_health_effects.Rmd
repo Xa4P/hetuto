@@ -25,7 +25,6 @@ require(shinyjs, quietly = TRUE)
 knitr::opts_chunk$set(echo = FALSE)
 dir.create("data",  showWarnings = FALSE)
 NL_tariff <- read.csv2("data/EQ5D5L_NLtariff.csv")
-### TO FILL IN!
 
 #### Function SF-36 ----
 calculate_sf_36 <- function(v_sf_36) {
@@ -1097,3 +1096,46 @@ output$VAS <- renderText({
  paste("Your health today is", as.numeric(as.character(input$vas))/100)
 })
 ```
+
+## Determining utility values
+This assignment aims to teach you how to use the Dutch EQ-5D-5L tarriff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
+Instructions: For each health state description, calculate the utility value using the tarriff provided in the table. The EQ-5D codes are organised as follows: mobility, self-care , usual activities, pain/ discomfort level, anxiety/ discomfort level. Provide your answer until 3 decimals".  
+Hint: Level 1 means that someone has no impairment in a dimension. For each dimension with a Level different than 1, a disutility is applied to the constant.  
+Example: the code 12345 is interpreted as: I have no problems in walking about, I have slight problems washing or dressing myself, I have moderate problems doing my usual activities, I have severe pain or discomfort, I am extremely anxious or depressed.  
+Reference: Matthijs M. Versteegh, Karin M. Vermeulen, Silvia M. A. A. Evers, G. Ardine de Wit, Rilana Prenger, Elly A. Stolk, Dutch Tariff for the Five-Level Version of EQ-5D, Value in Health, Volume 19, Issue 4, 2016, Pages 343-352, https://doi.org/10.1016/j.jval.2016.01.003").  
+The table below shows the decrements associated with each level of each dimension.  
+
+```{r eq5d_calc}
+NL_tariff
+```
+*Abbreviations table: mo = mobility, sc = self-care , ua = usual activities, pd = pain/ discomfort level, ad = anxiety/ discomfort level*
+
+```{r eq5d_calc_quiz}
+quiz(
+  question("What is the utility value associated with the following EQ-5D-5L description: 12423?",
+           answer("0.512", correct = TRUE),
+           answer("0.432"),
+           answer("0.662"),
+           answer("0.842"),
+           allow_retry = TRUE,
+           random_answer_order = TRUE
+           ),
+  question("What is the utility value associated with the following EQ-5D-5L description: 25431?",
+           answer("0.223"),
+           answer("0.368"),
+           answer("0.587"),
+           answer("0.466", correct = TRUE),
+           allow_retry = TRUE,
+           random_answer_order = TRUE
+           ),
+  question("What is the utility value associated with the following EQ-5D-5L description: 11122?",
+           answer("0.985"),
+           answer("0.817", correct = TRUE),
+           answer("0.754"),
+           answer("0.647"),
+           allow_retry = TRUE,
+           random_answer_order = TRUE
+           )
+)
+```
+
