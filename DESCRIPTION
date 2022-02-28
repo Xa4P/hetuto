@@ -21,6 +21,8 @@ Imports:
     magrittr,
     plotly,
     shiny,
+    shinyjs,
+    shinyWidgets,
     tidyr
 Encoding: UTF-8
 LazyData: true
