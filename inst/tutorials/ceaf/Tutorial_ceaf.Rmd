@@ -50,7 +50,7 @@ Link to the video: https://vimeo.com/453418692/629173c450.
 
 ### Aims and instructions
 This assignment aims to familiarise you with the concept of the cost-effectiveness acceptability frontier (CEAF), by constructing one yourself, based on a fictive example. The aim of this assignment is to identify which of the following screening strategy is the most cost effective.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.    
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk.    
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_ceaf_files/images/Image_hint.png")
@@ -88,32 +88,34 @@ ggplot(data = df_thx, aes(x = QALYs, Costs, colour = Strategy)) +
 
 ```{r quiz_start}
 quiz(
-question("Based on this graph, can you already guess which strategy is dominated?",
-  answer("Strategy 1", correct = TRUE),
-  answer("Strategy 2", correct = TRUE),
-  answer("Strategy 3", correct = TRUE),
-  answer("Strategy 4", correct = TRUE),
-  answer("Strategy 5", correct = TRUE),
-  answer("Strategy 6", correct = TRUE),
-  answer("Strategy 7", correct = TRUE),
-  answer("Strategy 8", correct = TRUE),
-  answer("Strategy 9", correct = TRUE),
-  answer("None", correct = TRUE),
-  correct = "Let's have a look whether you guessed it right by performing the assignment!"
-),
-question("Based on this graph, can you already guess which strategy is extendedly dominated?",
-  answer("Strategy 1", correct = TRUE),
-  answer("Strategy 2", correct = TRUE),
-  answer("Strategy 3", correct = TRUE),
-  answer("Strategy 4", correct = TRUE),
-  answer("Strategy 5", correct = TRUE),
-  answer("Strategy 6", correct = TRUE),
-  answer("Strategy 7", correct = TRUE),
-  answer("Strategy 8", correct = TRUE),
-  answer("Strategy 9", correct = TRUE),
-  answer("None", correct = TRUE),
-  correct = "Let's have a look whether you guessed it right by performing the assignment!"
-)
+  question("Based on this graph, can you already guess which strategy is dominated?",
+    answer("Strategy 1", correct = TRUE),
+    answer("Strategy 2", correct = TRUE),
+    answer("Strategy 3", correct = TRUE),
+    answer("Strategy 4", correct = TRUE),
+    answer("Strategy 5", correct = TRUE),
+    answer("Strategy 6", correct = TRUE),
+    answer("Strategy 7", correct = TRUE),
+    answer("Strategy 8", correct = TRUE),
+    answer("Strategy 9", correct = TRUE),
+    answer("None", correct = TRUE),
+    correct = "Let's have a look whether you guessed it right by performing the assignment!",
+    incorrect = "Let's have a look whether you guessed it right by performing the assignment!"
+    ),
+  question("Based on this graph, can you already guess which strategy is extendedly dominated?",
+    answer("Strategy 1", correct = TRUE),
+    answer("Strategy 2", correct = TRUE),
+    answer("Strategy 3", correct = TRUE),
+    answer("Strategy 4", correct = TRUE),
+    answer("Strategy 5", correct = TRUE),
+    answer("Strategy 6", correct = TRUE),
+    answer("Strategy 7", correct = TRUE),
+    answer("Strategy 8", correct = TRUE),
+    answer("Strategy 9", correct = TRUE),
+    answer("None", correct = TRUE),
+    correct = "Let's have a look whether you guessed it right by performing the assignment!",
+    incorrect = "Let's have a look whether you guessed it right by performing the assignment!"
+    )
 )
 ```
 
@@ -138,7 +140,7 @@ df_thx
 
 ### Step 2: identify the dominated strategies
 ```{r quiz_dominated}
-question("Based on the table where strategies are ordered by incresing total number of QALYs, which strategy is dominated?",
+question("Based on the table where strategies are ordered by increasing total number of QALYs, which strategy is dominated?",
   answer("Strategy 1"),
   answer("Strategy 2"),
   answer("Strategy 3"),
@@ -368,7 +370,7 @@ question("Based on the table above, which strategy(ies) is(are) extendedly domin
 
 ### Quiz
 The table and plot below provide the final results. Using these, please answer the questions below.
-```{r final_res}
+```{r final_res, warning = FALSE, message = FALSE}
 df_thx <- df_thx[order(df_thx$QALYs),]
 rownames(df_thx) <- NULL
 ICER <- format(round(c(0, diff(df_thx$Costs)) / c(0, diff(df_thx$QALYs))), big.mark = ",", scientific = FALSE)
@@ -385,7 +387,7 @@ ggplot(data = df_thx, aes(x = QALYs, Costs, colour = Strategy)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
   geom_vline(xintercept = 0, linetype = "dashed", color = "grey") +
-  geom_line(data = df_thx[which(df_thx$ICER != "Ext. dominated" & df_thx$ICER != "Dominated"), ], aes(x = QALYs, Costs)) +
+  geom_line(data = df_thx[which(df_thx$ICER != "Ext. dominated" & df_thx$ICER != "Dominated"), ], aes(x = QALYs, y = Costs), col = "lightgrey") +
   ggtitle("Cost-effectiveness plane with CEAF") +
   theme_bw()
 ```
@@ -500,7 +502,7 @@ quiz(
 ```
 
 ### Try again!
-Determine which strategies are on the CEAF and calculate the ICERs for the strategies in the following table. Use a pen, paper, and calculator or the R code chunck belo to perform the calculations.  
+Determine which strategies are on the CEAF and calculate the ICERs for the strategies in the following table. Use a pen, paper, and calculator or the R code chunck below to perform the calculations.  
 
 ```{r extra}
 df_thx_extra <- data.frame(
