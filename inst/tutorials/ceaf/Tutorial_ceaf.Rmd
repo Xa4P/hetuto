@@ -373,9 +373,19 @@ The table and plot below provide the final results. Using these, please answer t
 ```{r final_res, warning = FALSE, message = FALSE}
 df_thx <- df_thx[order(df_thx$QALYs),]
 rownames(df_thx) <- NULL
-ICER <- format(round(c(0, diff(df_thx$Costs)) / c(0, diff(df_thx$QALYs))), big.mark = ",", scientific = FALSE)
+df_thx3 <- df_thx[which(df_thx$Strategy != 4 &
+               df_thx$Strategy != 2 &
+               df_thx$Strategy != 6 &
+                 df_thx$Strategy != 5), ]
+ICER <- format(round(c(0, diff(df_thx3$Costs)) / c(0, diff(df_thx3$QALYs))), big.mark = ",", scientific = FALSE)
+
+df_thx$ICER <- NA 
+df_thx[which(df_thx$Strategy == 1 |
+               df_thx$Strategy ==3 |
+               df_thx$Strategy == 7|
+               df_thx$Strategy == 9 | 
+               df_thx$Strategy == 8),] <- ICER
 ICER[1] <- "-"
-df_thx <- cbind(df_thx, ICER)
 
 df_thx[which(df_thx$Strategy == 5 |
                df_thx$Strategy == 2 |
