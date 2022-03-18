@@ -384,8 +384,8 @@ df_thx[which(df_thx$Strategy == 1 |
                df_thx$Strategy ==3 |
                df_thx$Strategy == 7|
                df_thx$Strategy == 9 | 
-               df_thx$Strategy == 8),] <- ICER
-ICER[1] <- "-"
+               df_thx$Strategy == 8), "ICER"] <- ICER
+df_thx[which(df_thx$Strategy == 1), "ICER"] <- "-"
 
 df_thx[which(df_thx$Strategy == 5 |
                df_thx$Strategy == 2 |
@@ -487,7 +487,7 @@ df_thx # shows results
 The table below shows the correct results. You can use it to check your answer.  
 
 ```{r nmb}
-df_thx$NMB <- df_thx$QALYs * 20000 - df_thx$Costs
+df_thx$NMB <- as.numeric(as.character(df_thx$QALYs)) * 20000 - as.numeric(as.character(df_thx$Costs))
 df_thx <- df_thx[order(df_thx$Strategy),]
 df_thx # shows results
 ```
