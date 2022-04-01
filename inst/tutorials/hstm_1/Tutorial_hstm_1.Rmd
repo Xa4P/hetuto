@@ -602,13 +602,13 @@ To evaluate the progression of individuals over multiple cycles, define the foll
 Once you have determined these parameters, use `v_start_hs` to determine the starting position of the individuals in the simulation.  
 
 ```{r start_m_hs, exercise = TRUE}
-n_cycles # the number of cycles to simulate, assume 3 years
-n_pt # the size of the cohort, assume 10,000 persons
-m_hs # a cohort state matrix, containing [n_cycles + 1] rows (because the first row is the start position), and as much column as the number of health states.
+#n_cycles # the number of cycles to simulate, assume 3 years
+#n_pt # the size of the cohort, assume 10,000 persons
+#m_hs # a cohort state matrix, containing [n_cycles + 1] rows (because the first row is the start position), and as much column as the number of health states.
 
 
-v_start_hs # start distribution ("Healthy" is the first health state)
-m_hs[1, ] # assign start distribution to cycle 0
+#v_start_hs # start distribution ("Healthy" is the first health state)
+#m_hs[1, ] # assign start distribution to cycle 0
 ```
 
 ```{r start_m_hs-solution}
