@@ -370,23 +370,23 @@ Assume all 100,000 individuals (`n_ind` object) start in the "Well" health state
 
 ```{r cohort_comp-hint}
 # Define cohort simulation matrix
-m_hs_comp <- matrix(0,
-                    ncol = '__',
-                    nrow = '__',
-                    dimnames = list(cycle = '__',
-                                    health_state = '__'
-                    )
-)
-
-# Define the starting position of the individuals in each health state
-m_hs_comp[1, ] <- '__'
-
-# Perform the matrix multiplication (for loop) to fill in the cohort simulation
-for(cycle in 1:n_cycles){
-  
-  m_hs_comp[cycle + 1, ] <- '__' # perform matrix multiplication here
-  
-}
+# m_hs_comp <- matrix(0,
+#                     ncol = '__',
+#                     nrow = '__',
+#                     dimnames = list(cycle = '__',
+#                                     health_state = '__'
+#                     )
+# )
+# 
+# # Define the starting position of the individuals in each health state
+# m_hs_comp[1, ] <- '__'
+# 
+# # Perform the matrix multiplication (for loop) to fill in the cohort simulation
+# for(cycle in 1:n_cycles){
+#   
+#   m_hs_comp[cycle + 1, ] <- '__' # perform matrix multiplication here
+#   
+# }
 ```
 
 ```{r cohort_comp-solution}
