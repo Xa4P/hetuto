@@ -41,13 +41,6 @@ df_thx[, "Strategy"] <- as.factor(as.character(df_thx[, "Strategy"]))
 
 ## Cost-effectiveness acceptability frontier (CEAF)
 
-### Before starting
-1. Watch the video explaining the cost-effectiveness acceptability frontier (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
-![](https://vimeo.com/453418692/629173c450){width="70%"}
-Link to the video: https://vimeo.com/453418692/629173c450.  
-
-2. Read the article by M. Paulden: "Calculating and Interpreting ICERs and Net Benefits. Pharmacoeconomics 2020 Aug;38(8):785-807. Link: https://doi.org/10.1007/s40273-020-00914-6
-
 ### Aims and instructions
 This assignment aims to familiarise you with the concept of the cost-effectiveness acceptability frontier (CEAF), by constructing one yourself, based on a fictive example. The aim of this assignment is to identify which of the following screening strategy is the most cost effective.  
 **OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk.    

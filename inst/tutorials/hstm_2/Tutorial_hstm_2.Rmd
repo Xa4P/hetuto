@@ -82,22 +82,9 @@ df_mort <- data.frame(
 )
 ```
 
-## Before starting
-1. Watch the videos explaining how a Health State Transition Model (HSTM) works and can be used for a cost-effectiveness analyses (CEA), on uncertainty assessment, and on the probabilistic analysis. To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
+## Health state transition model - 2
 
-![](https://vimeo.com/453418864/050bf4acaf){width = "70%"}
-
-Link to the video: https://vimeo.com/453418864/050bf4acaf  
-
-![](https://vimeo.com/453418898/90a5e63f1e){width = "70%"}
-
-Link to the video: https://vimeo.com/453418898/90a5e63f1e  
-
-![](https://vimeo.com/453911471/b1c7ed9e88){width = "70%"}
-
-Link to the video: https://vimeo.com/453911471/b1c7ed9e88  
-
-## Aim and instructions
+### Aim and instructions
 The aim of this practical assignment is to get you acquainted with the principle of HSTM. This assignmment focuses on evaluating the cost-effectiveness of aspirin treatment versus no aspirin treatment for the primary prevention of cardiovascular disease events using a HSTM, also called Markov model. During this assignment, you will first define the cohort simulation of both strategies (using transition probabilities, and matrix multiplication) and then calculate the outcomes (quality-adjusted life years, costs). First, familiarise yourself with the model structure.  
 The method described in this practical is more extensively described in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824).  
 

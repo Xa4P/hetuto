@@ -30,10 +30,7 @@ df_thx <- as.data.frame(cbind(
 ))
 ```
 
-## Before starting
-Watch the video explaining discounting and why we discount in health economic evaluations (to do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
-![](https://vimeo.com/453418628/ad1222ead5){width="70%"}
-Link to the video: https://vimeo.com/453418628/ad1222ead5
+## Discounting
 
 ### Aims and instructions
 This assignment aims to introduce you to the concept of discounting in health economic evaluations, using a fictive example containing 3 interventions.  

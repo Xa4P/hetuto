@@ -252,15 +252,9 @@ c_Disabled  <- 5000  # Cost of disabled patient
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+## Decision tree
 
-## Instructions
-
-### Before starting
-1. Watch the video explaining how a decision tree works and can be used for a cost-effectiveness analyses (CEA). To do so, you probably need to open open the tutorial in your browser using the 'Open in Browser' button on the upper left side of the screen.  
-![](https://vimeo.com/453418819/6c13bffaf4){width="70%"}
-Link to the video: https://vimeo.com/453418819/6c13bffaf4. 
-
-## Aim and instructions
+### Aim and instructions
 The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a treatment strategy for patients with unruptured intracranial aneurysms versus watchful waiting.  
 
 **NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
