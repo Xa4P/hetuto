@@ -113,7 +113,7 @@ question("Based on these results, which intervention costs the most?",
   answer("A"),
   answer("B"),
   answer("C"),
-  answer("They all costs the same", correct = TRUE)
+  answer("They all cost the same", correct = TRUE)
 )
 )
 ```
