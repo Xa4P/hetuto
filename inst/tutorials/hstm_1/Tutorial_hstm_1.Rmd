@@ -99,7 +99,7 @@ p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to a
 ### Questions
 Use these transition probabilities and the model structure to calculate the following probabilities/quantities (subquestions a to j). For your convenience, the probabilities have been loaded.    
 
-a. The probability than an individual dies from aneurysm treatment in month 2  
+a. The probability that an individual dies from aneurysm treatment in month 2  
 
 ```{r 1a, exercise = TRUE}
  
