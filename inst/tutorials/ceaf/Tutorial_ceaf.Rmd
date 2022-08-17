@@ -156,14 +156,15 @@ textInput("Answer_1", "Enter your answer")
 Strategy 4 is dominated by Strategy 1 because Strategy 1 provides more health benefits (QALYs) at a lower costs.  
 
 ### Step 3: Calculate ICERs
-Since strategy 4 is dominated, it will not be used further in the comparison of the strategies. It is now time to calculate the different ICERs.
+Since strategy 4 is dominated, it will not be used further in the comparison of the strategies. It is now time to calculate the different ICERs.  
 ```{r}
 df_thx <- df_thx[order(df_thx$QALYs),]
 rownames(df_thx) <- NULL
 df_thx[which(df_thx$Strategy !=4), ]
 ```
 
-Calculate the ICERs of strategies 3, 2, 5, 7, 6, 9, 8. You can use a calculator or the R code chunk below to calculate them. Round your results to the closest euro and write your answers. Check your answers by clicking on 'Continue'!
+Calculate the ICERs of strategies 3, 2, 5, 7, 6, 9, 8. You can use a calculator or the R code chunk below to calculate them. Round your results to the closest euro and write your answers. **DO NOT FORGET THAT THE ICER OF A SPECIFIC STRATEGY HAS TO BE CALCULATED AGAINST THE NEXT BEST STRATEGY!**  
+Check your answers by clicking on 'Continue'!
 
 ```{r calc_icers_1, exercise = TRUE}
 
