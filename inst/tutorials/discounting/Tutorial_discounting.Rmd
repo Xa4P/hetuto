@@ -336,19 +336,25 @@ quiz(
   answer("A", correct = TRUE),
   answer("B"),
   answer("C"),
-  answer("None")
+  answer("None"),
+  allow_retry = TRUE,
+  try_again = "Unfortunately, this was not correct. Please try again!"
 ),
 question("Based on these results, which intervention costs the most?",
   answer("A", correct = TRUE),
   answer("B", correct = TRUE),
   answer("C"),
-  answer("None")
+  answer("None"),
+  allow_retry = TRUE,
+  try_again = "Unfortunately, this was not correct. Please try again (multiple answers may be correct...)!"
 ),
   question("Which intervention provides the best value for money (most favourable ICER) based on these **undiscounted** incremental costs and effects?",
   answer("A", correct = TRUE),
   answer("B"),
   answer("C"),
-  answer("None")
+  answer("None"),
+  allow_retry = TRUE,
+  try_again = "Unfortunately, this was not correct. Please try again!"
 )
 )
 ```
