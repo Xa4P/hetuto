@@ -303,6 +303,7 @@ quiz(
 ```{r quiz_probs}
 quiz(
   question("To your opinion, what is the probability that the new intervention is cheaper than usual care?", 
+           type = "radio",
            answer("0%", correct = TRUE),
            answer("Lower than 25%", correct = TRUE),
            answer("25%", correct = TRUE),
