@@ -590,7 +590,7 @@ data.frame(m_tp)
 To evaluate the progression of individuals over multiple cycles, define the following objects:  
 - `n_cycles`: the number of cycles to simulate, assume 3 years (36 monthly cycles)  
 - `n_pt`: the number of individuals to simulate, assume 10,000  
-- `m_hs`: a matrix to store the number of individuals in each health state during each cycle. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states (5). Numerate the rows from 0 to `n_cycles` and name the column with the names of the health states ("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment"). Fill this matrix with 0's.    
+- `m_hs`: a matrix to store the number of individuals in each health state during each cycle. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states (5). Numerate the rows from 0 to `n_cycles` and name the column with the names of the health states ("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment"). Fill this matrix with 0's. To facilitate creating the matrix, you can also store the names "Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment" in a vector called `v_names_hs` using the `c()` command.  
 - `v_start_hs`: a vector determining the starting position of the individuals over the different cycles (assume all individuals start in the "Healthy" health state)  
 
 Once you have determined these parameters, use `v_start_hs` to determine the starting position of the individuals in the simulation.  
@@ -608,6 +608,8 @@ Once you have determined these parameters, use `v_start_hs` to determine the sta
 ```{r start_m_hs-solution}
 n_cycles <- 36 
 n_pt <- 10000  
+v_names_hs <- c("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment")
+
 m_hs <- matrix(0, 
                nrow = n_cycles + 1,
                ncol = length(v_names_hs),
@@ -617,7 +619,7 @@ m_hs <- matrix(0,
 v_start_hs <- c(n_pt, 0, 0, 0, 0) 
 m_hs[1, ] <- v_start_hs 
 
-#head(m_hs) # show first 6 rows/ cycles
+head(m_hs) # show first 6 rows/ cycles
 ```
 
 ### Fill in cohort simulation
@@ -630,6 +632,8 @@ m_tp <- determine_m_tp()
 
 n_cycles <- 36 
 n_pt <- 10000  
+v_names_hs <- c("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment")
+
 m_hs <- matrix(0, 
                nrow = n_cycles + 1,
                ncol = length(v_names_hs),
