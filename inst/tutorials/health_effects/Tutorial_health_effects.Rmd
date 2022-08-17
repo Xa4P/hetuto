@@ -648,7 +648,7 @@ textInput("sf36_2", "Explain why (not)")
 ```
 
 ### Answers
-The first answer is your own interpretation of these results. Concerning the second, you cannot express the results of teh SF-36 in a utility value. You cannot add your results in the different domains to obtain a utility values for instance. Conversely, the results of the EQ-5D and SF-6D can be expressed in a single numeric value (also called a utility value). This is what we will do in a following assignment using the EQ-5D-5L.  
+The first answer is your own interpretation of these results. Concerning the second, you cannot express the results of the SF-36 in a utility value. You cannot add your results in the different domains to obtain a utility values for instance. Conversely, the results of the EQ-5D and SF-6D can be expressed in a single numeric value (also called a utility value). This is what we will do in a following assignment using the EQ-5D-5L.  
 
 ## QALY calculation
 In this assignment you have to calculate the number of QALYs for a patient who is healthy for the first 10 years of her life (Utility (U) = 0.9), has moderate health (U = 0.60) in the next 5 years, and has poor health the last 10 years of her life (U = 0.30).
