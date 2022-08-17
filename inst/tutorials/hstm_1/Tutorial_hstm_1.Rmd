@@ -683,6 +683,8 @@ m_tp <- determine_m_tp()
 
 n_cycles <- 36 
 n_pt <- 10000  
+v_names_hs <- c("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment")
+
 m_hs <- matrix(0, 
                nrow = n_cycles + 1,
                ncol = length(v_names_hs),
@@ -743,6 +745,8 @@ m_tp <- determine_m_tp()
 
 n_cycles <- 36 
 n_pt <- 10000  
+v_names_hs <- c("Healthy", "NewAneurysm", "DetectedAneurysm", "DeathOther", "DeathTreatment")
+
 m_hs <- matrix(0, 
                nrow = n_cycles + 1,
                ncol = length(v_names_hs),
