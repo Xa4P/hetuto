@@ -778,7 +778,7 @@ n_months_Healthy <- round(sum(m_hs[1:36, "Healthy"]))
 n_months_NewAneurysm <- round(sum(m_hs[1:36, "NewAneurysm"]))
 n_months_DetectedAneurysm <- round(sum(m_hs[1:36, "DetectedAneurysm"]))
 n_total <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-#data.frame(cbind(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm, n_total)) # show
+data.frame(cbind(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm, n_total)) # show
 ```
 
 Can you determine the average number of months that individuals in this model are alive, over the 3 year time horizon?
@@ -796,7 +796,7 @@ n_months_Healthy <- round(sum(m_hs[1:36, "Healthy"]))
 n_months_NewAneurysm <- round(sum(m_hs[1:36, "NewAneurysm"]))
 n_months_DetectedAneurysm <- round(sum(m_hs[1:36, "DetectedAneurysm"]))
 n_total <- sum(n_months_Healthy, n_months_NewAneurysm, n_months_DetectedAneurysm)
-#n_total/n_pt # show
+n_total/n_pt # show
 ```
 
 ### Answers
