@@ -1425,3 +1425,5 @@ textInput("Answer_7", "Explain your answer")
 **Answer:** Incorporating time explicitly in a decision tree model is hard and will make your model very complex. To allow aneurysms to remain stable and to increase in size and rupture later on chance nodes would need to be added for each separate year in the time horizon. This means the entire model (now defined for 1 year) would needs to be extended to 10 times its current size to allow a time horizon of 10 years.  
 2.b. It is known that individuals with an unruptured intracranial aneurysm are at increased risk of developing new intracranial aneurysms, regardless of whether the first aneurysm ruptures or remains stable. How would you include the aspect of new aneurysm development in the model?  
 **Answer:** Development of new aneurysm would require additional branches to be added to the tree. A new branch would need to be added for patients with 2 aneurysm, another for patients with 3 aneurysms etc. This extension would therefore only be feasible for patients with 1, 2, or 3+ aneurysms and even then the resulting decision tree would be huge.  
+
+**THE END**
