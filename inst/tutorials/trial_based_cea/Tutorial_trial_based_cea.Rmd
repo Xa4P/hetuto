@@ -609,3 +609,5 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 **Discussion 4.d.**: The incremental CE plane contains points (results) in all four quadrants of the plane. This means that the ICER can be both positive (in which case we are not sure if the intervention is better and more expensive or worse and cheaper) and negative (in which case we are not sure if the intervention is better and cheaper or worse and more expensive). In this situation, any confidence interval for the ICER would be ambiguous and the incremental CE plane itself is more informative, along with the probabilities of results falling into each of the four quadrants.  
 
 **Discussion 4.e.**: The ICER, and the 95%CI for the cost difference may change more than we would like to see. This variation could be reduced by increasing the number of bootstrap samples, for example, from 5,000 to 20,000.
+
+**THE END**
