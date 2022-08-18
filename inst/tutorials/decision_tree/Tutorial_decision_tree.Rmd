@@ -347,6 +347,10 @@ p_DisabledCoiling
 p_Stable <- 1 - p_Rupture 
 p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
 p_DisabledCoiling <- 1- p_DeathCoiling - p_SurvivalCoiling
+c(
+  `Probability stable` = p_Stable,
+  `Probability death after clipping` = p_DeathClipping,
+  `Probability disabled after Coiling` = p_DisabledCoiling) # show
 ``` 
 
 ## Step 2: Calculate probabilities of pathways
