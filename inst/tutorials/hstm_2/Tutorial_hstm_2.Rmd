@@ -650,12 +650,98 @@ a_tp_comp[, , c(1, 2, 9, 10)]
 ```
 
 ### Filling in the "Aspirin" strategy transition array  
+```{r a_tp_2_setup}
+#### 0. Define model parameters ----
+
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
+
+# Input parameters
+
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+
+#### 1. Define 3D array "No aspirin" group ----
+
+# Define start age cohort
+n_start_age <- 45
+
+# Calculate per person mortality rate
+df_mort$R_mort <- df_mort$R_mort_10000 / 10000
+
+# Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9
+v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
+                        which(df_mort$Age == n_start_age + (n_cycles - 1)
+                              )
+                      ), "R_mort"]
+
+# Initialise 3D array which will contain the transition probabilities
+a_tp_comp <- array(0, dim = c(n_hs, n_hs, n_cycles),
+                               dimnames = list(v_names_hs, v_names_hs, 1:n_cycles)
+                               )
+
+# Fill in the arrays using the background mortality for each age 
+a_tp_comp["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi - r_inc_stroke  
+##!!Notice, that only using the first 2 elements of the array will fill these transition probabilities for all 10 transition matrices used in all cycles!!
+
+a_tp_comp["Well", "Post-minor_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_comp["Well", "Post-major_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_comp["Well", "Post-MI", ] <- r_inc_mi * (1 - r_fatal_mi)
+a_tp_comp["Well", "Death_stroke", ] <- r_inc_stroke * r_fatal_stroke
+a_tp_comp["Well", "Death_MI", ] <- r_inc_mi * r_fatal_mi
+a_tp_comp["Well", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-minor_stroke", "Post-minor_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-minor_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-major_stroke", "Post-major_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-major_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-MI", "Post-MI", ] <- 1 - v_p_mort
+a_tp_comp["Post-MI", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Death_stroke", "Death_stroke",] <- 1
+a_tp_comp["Death_MI", "Death_MI",] <- 1
+a_tp_comp["Death_other", "Death_other",] <- 1
+
+a_tp_comp[, , c(1, 2, 9, 10)]
+```
 It is now time to define and fill in the transition array for the "Aspirin" strategy, the intervention which will be compared to the "No aspirin" strategy.  
 To do so, we have to perform the following:  
 1. Make a copy of `a_tp_comp` and call it `a_tp_int`. This will be the transition array we will use for the "Aspirin" strategy.  
 2. Aspirin has an effect on the probability of experiencing an MI (object `eff_mi`) and stroke (object `eff_stroke`). Use these two input parameters to adjust the probabilities to experience these cardiovascular events in the `a_tp_int` array. Again you may use the rates as probabilities when calculating the transitions. Assume that once individuals had an event they will no longer use aspirin.  
 
-```{r a_tp_2, exercise = TRUE}
+```{r a_tp_2, exercise = TRUE, exercise.setup = "a_tp_2_setup"}
 # Make a copy of `a_tp_comp` and call it `a_tp_int`
 
 # Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
@@ -686,7 +772,102 @@ a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
 #a_tp_int[,, 1] # show first transition matrix of the array
 ```
 
-### Performing the cohort simulation
+### Performing the cohort simulation  
+```{r time_dep_cohort_setup}
+#### 0. Define model parameters ----
+
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
+
+# Input parameters
+
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+
+#### 1. Define 3D array "No aspirin" group ----
+
+# Define start age cohort
+n_start_age <- 45
+
+# Calculate per person mortality rate
+df_mort$R_mort <- df_mort$R_mort_10000 / 10000
+
+# Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9
+v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
+                        which(df_mort$Age == n_start_age + (n_cycles - 1)
+                              )
+                      ), "R_mort"]
+
+# Initialise 3D array which will contain the transition probabilities
+a_tp_comp <- array(0, dim = c(n_hs, n_hs, n_cycles),
+                               dimnames = list(v_names_hs, v_names_hs, 1:n_cycles)
+                               )
+
+# Fill in the arrays using the background mortality for each age 
+a_tp_comp["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi - r_inc_stroke  
+##!!Notice, that only using the first 2 elements of the array will fill these transition probabilities for all 10 transition matrices used in all cycles!!
+
+a_tp_comp["Well", "Post-minor_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_comp["Well", "Post-major_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_comp["Well", "Post-MI", ] <- r_inc_mi * (1 - r_fatal_mi)
+a_tp_comp["Well", "Death_stroke", ] <- r_inc_stroke * r_fatal_stroke
+a_tp_comp["Well", "Death_MI", ] <- r_inc_mi * r_fatal_mi
+a_tp_comp["Well", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-minor_stroke", "Post-minor_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-minor_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-major_stroke", "Post-major_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-major_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-MI", "Post-MI", ] <- 1 - v_p_mort
+a_tp_comp["Post-MI", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Death_stroke", "Death_stroke",] <- 1
+a_tp_comp["Death_MI", "Death_MI",] <- 1
+a_tp_comp["Death_other", "Death_other",] <- 1
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+```
 Since we now have transition matrices for both strategies, we can perform the cohort simulation for both strategies. As a reminder, the steps to perform the cohort simulations are the following:  
 - Define the matrix in which the cohort simulation will be stored (`m_hs_comp` and `m_hs_int`)  
 - Determine the starting position of the cohort in the matrix of the cohort simulation, using `v_hs_start` (already defined)  
@@ -716,7 +897,7 @@ for(cycle in 1:n_cycles){
 
 Perform the matrix multiplication for the "Aspirin" strategy using the same method.  
 
-```{r time_dep_cohort_int, exercise = TRUE, exercise.setup = "a_tp_2-solution"}
+```{r time_dep_cohort_int, exercise = TRUE, exercise.setup = "time_dep_cohort_setup"}
 #### Fill the cohort simulation for the "Aspirin" strategy ----
 
 # Create a matrix to store the cohort simulation (`m_hs_int`)
@@ -745,6 +926,7 @@ m_hs_int[1,] <- v_start_hs
 for(cycle in 1:n_cycles){
   m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
 }
+m_hs_int # show
 ```
 
 ### Results
@@ -789,7 +971,150 @@ data.frame(round(m_hs_int))
 data.frame(round(m_hs_comp))
 ```
 
-## Calculating undiscounted outcomes
+## Calculating undiscounted outcomes  
+```{r calc_outcomes_setup}
+#### 0. Define model parameters ----
+
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
+
+# Input parameters
+
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+
+#### 1. Define 3D array for each group ----
+
+# Define start age cohort
+n_start_age <- 45
+
+# Calculate per person mortality rate
+df_mort$R_mort <- df_mort$R_mort_10000 / 10000
+
+# Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9
+v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
+                        which(df_mort$Age == n_start_age + (n_cycles - 1)
+                              )
+                      ), "R_mort"]
+
+# Initialise 3D array which will contain the transition probabilities
+a_tp_comp <- array(0, dim = c(n_hs, n_hs, n_cycles),
+                               dimnames = list(v_names_hs, v_names_hs, 1:n_cycles)
+                               )
+
+# Fill in the arrays using the background mortality for each age 
+a_tp_comp["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi - r_inc_stroke  
+##!!Notice, that only using the first 2 elements of the array will fill these transition probabilities for all 10 transition matrices used in all cycles!!
+
+a_tp_comp["Well", "Post-minor_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_comp["Well", "Post-major_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_comp["Well", "Post-MI", ] <- r_inc_mi * (1 - r_fatal_mi)
+a_tp_comp["Well", "Death_stroke", ] <- r_inc_stroke * r_fatal_stroke
+a_tp_comp["Well", "Death_MI", ] <- r_inc_mi * r_fatal_mi
+a_tp_comp["Well", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-minor_stroke", "Post-minor_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-minor_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-major_stroke", "Post-major_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-major_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-MI", "Post-MI", ] <- 1 - v_p_mort
+a_tp_comp["Post-MI", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Death_stroke", "Death_stroke",] <- 1
+a_tp_comp["Death_MI", "Death_MI",] <- 1
+a_tp_comp["Death_other", "Death_other",] <- 1
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+#### 2. Calculate cohort simulation for each group ----
+
+### Fill the cohort simulation for the "No aspirin" strategy
+
+# Create a matrix to store the cohort simulation (`m_hs_comp`)
+m_hs_comp <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+                    ) 
+
+# Define the start position of individuals (all in "well")
+m_hs_comp[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_comp[cycle + 1,] <- m_hs_comp[cycle,] %*% a_tp_comp[, , cycle]
+}
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+### Fill the cohort simulation for the "Aspirin" group
+# Create a matrix to store the cohort simulation (`m_hs_int`)
+m_hs_int <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+) 
+
+# Define the start position of individuals (all in "well")
+m_hs_int[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
+}
+```
 Now that we know the life course of the hypothetical individuals in both strategies, we can calculate the (un)discounted costs and effects (LYs and QALYs) over time. For convenience, account for state membership at the end of the year. Not all 100,000 individuals are considered to be "Well" at the start of year 1. You do not have to apply half-cycle correction. Practically, this means that you do not account for the state membership at cycle 0, the starting position.  
 
 ### Life years
@@ -844,13 +1169,13 @@ u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
 u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
 ``` 
 
-```{r calc_q_out, exercise = TRUE}
+```{r calc_q_out, exercise = TRUE, exercise.setup = "calc_outcomes_setup"}
 # QALY's
 ## Determine the number of QALYs won by 1 individual during 1 cycle
 
 ## Determine the number of QALYs gained over the cycles (rewards at the end of the cycle!)
 
-## Determine the cumulative number of QALYsr gained over the cycles (rewards at the end of the cycle!)
+## Determine the cumulative number of QALYs gained over the cycles (rewards at the end of the cycle!)
 
 ## Determine the total number of QALYs gained (sum of all cycles; rewards at the end of the cycle!)
 
@@ -932,7 +1257,7 @@ c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL 
 c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
 ``` 
 
-```{r calc_c_out, exercise = TRUE}
+```{r calc_c_out, exercise = TRUE, exercise.setup = "calc_outcomes_setup"}
 # Costs
 ## Determine the costs accrued by 1 individual during 1 cycle
 
@@ -979,7 +1304,149 @@ n_t_c_int  <- sum(v_t_c_int)
 Using the total undiscounted total outcomes, calculate the mean outcomes (life years, QALYs, costs) per individual for each strategy. Calculate the incremental QALYs and costs of the "Aspirin" versus "No aspirin" group and calculate the incremental cost-effectiveness ratio.  
 
 ```{r calc_out_setup}
-#### Calculate life years, quality-adjusted life years, and costs for both strategy ---
+#### 0. Define model parameters ----
+
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
+
+# Input parameters
+
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+
+#### 1. Define 3D array for each group ----
+
+# Define start age cohort
+n_start_age <- 45
+
+# Calculate per person mortality rate
+df_mort$R_mort <- df_mort$R_mort_10000 / 10000
+
+# Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9
+v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
+                        which(df_mort$Age == n_start_age + (n_cycles - 1)
+                              )
+                      ), "R_mort"]
+
+# Initialise 3D array which will contain the transition probabilities
+a_tp_comp <- array(0, dim = c(n_hs, n_hs, n_cycles),
+                               dimnames = list(v_names_hs, v_names_hs, 1:n_cycles)
+                               )
+
+# Fill in the arrays using the background mortality for each age 
+a_tp_comp["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi - r_inc_stroke  
+##!!Notice, that only using the first 2 elements of the array will fill these transition probabilities for all 10 transition matrices used in all cycles!!
+
+a_tp_comp["Well", "Post-minor_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_comp["Well", "Post-major_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_comp["Well", "Post-MI", ] <- r_inc_mi * (1 - r_fatal_mi)
+a_tp_comp["Well", "Death_stroke", ] <- r_inc_stroke * r_fatal_stroke
+a_tp_comp["Well", "Death_MI", ] <- r_inc_mi * r_fatal_mi
+a_tp_comp["Well", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-minor_stroke", "Post-minor_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-minor_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-major_stroke", "Post-major_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-major_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-MI", "Post-MI", ] <- 1 - v_p_mort
+a_tp_comp["Post-MI", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Death_stroke", "Death_stroke",] <- 1
+a_tp_comp["Death_MI", "Death_MI",] <- 1
+a_tp_comp["Death_other", "Death_other",] <- 1
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+#### 2. Calculate cohort simulation for each group ----
+
+### Fill the cohort simulation for the "No aspirin" strategy
+
+# Create a matrix to store the cohort simulation (`m_hs_comp`)
+m_hs_comp <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+                    ) 
+
+# Define the start position of individuals (all in "well")
+m_hs_comp[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_comp[cycle + 1,] <- m_hs_comp[cycle,] %*% a_tp_comp[, , cycle]
+}
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+### Fill the cohort simulation for the "Aspirin" group
+# Create a matrix to store the cohort simulation (`m_hs_int`)
+m_hs_int <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+) 
+
+# Define the start position of individuals (all in "well")
+m_hs_int[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
+}
+
+#### 3.Calculate life years, quality-adjusted life years, and costs for both strategy ---
 
 ## Determine the number of life year won by 1 individual during 1 cycle
 v_ly_comp <- c("Well" = 1,
@@ -1230,7 +1697,7 @@ ly_int_d <- n_t_ly_int_d / n_ind
 ### QALYS, costs, and mean outcomes  
 Use the example above to calculate the total discounted QALYs and costs. Then, calculate the mean discounted QALYs and costs per individual for each strategy. Finally, calculate the incremental QALYs and costs of the "Aspirin" versus "No aspirin" group and calculate the incremental cost-effectiveness ratio, using these discounted results.  
 
-```{r calc_d_out_comp, exercise = TRUE}
+```{r calc_d_out_comp, exercise = TRUE, exercise.setup = "calc_out_setup"}
 # QALYs
 ## Define discount weights per cycle (years in this case)
 
@@ -1293,6 +1760,7 @@ numericInput(inputId = "r_disc_e",
              value = 0.015,
              min = 0,
              max = 1,
+             step = 0.01,
              width = "175px")
 )
 div(style = "display:inline-block",
@@ -1301,6 +1769,7 @@ numericInput(inputId = "r_disc_c",
              value = 0.04,
              min = 0,
              max = 1,
+             step = 0.01,
              width = "175px")
 )
 div(style = "display:inline-block",
@@ -1309,6 +1778,7 @@ numericInput(inputId = "n_start_age",
              value = 45,
              min = 20,
              max = 95,
+             
              width = "175px")
 )
 tags$hr()
