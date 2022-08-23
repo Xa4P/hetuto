@@ -216,7 +216,9 @@ quiz(
            answer("Occurence of death"),
            answer("Quality of life"),
            answer("None"),
-           incorrect = "Too bad, this is not correct. The correct answers were: 'Occurence of minor complications' and Length of stay at the MCU', since robot-assisted surgery leads to more minor complications and longer length of stay at the MCU"
+           incorrect = "Too bad, this is not correct. The correct answers were: 'Occurence of minor complications' and Length of stay at the MCU', since robot-assisted surgery leads to more minor complications and longer length of stay at the MCU",
+           allow_retry = TRUE,
+           try_again = "Did you select all the correct answers?"
            )
 )
 ```
@@ -326,6 +328,7 @@ textInput("Answer_1", "Explain your answer")
 ```{r quiz_probs2}
 quiz(
   question("To your opinion, what is the probability that the new intervention leads to health gain compared with usual care?", 
+           type = "radio",
            answer("0%", correct = TRUE),
            answer("Lower than 25%", correct = TRUE),
            answer("25%", correct = TRUE),
