@@ -219,7 +219,9 @@ question("Based on the table above, which strategy(ies) is(are) extendedly domin
   answer("Strategy 7"),
   answer("Strategy 8"),
   answer("Strategy 9"),
-  answer("None")
+  answer("None"),
+  allow_retry = TRUE,
+  try_again = "Did you select all the correct answers?"
   )
 )
 ```
@@ -282,7 +284,7 @@ df_thx2
 Based on the table above, we can now identify the extendedly dominated strategies!
 ```{r quiz_ext_dom2}
 quiz(
-question("Based on the table above, which strategy(ies) is(are) extendedly dominated? ",
+question("Based on the table above, which strategy(ies) is (are) extendedly dominated?",
   answer("Strategy 1"),
   answer("Strategy 3"),
   answer("Strategy 5", correct = TRUE),
@@ -291,7 +293,8 @@ question("Based on the table above, which strategy(ies) is(are) extendedly domin
   answer("Strategy 9"),
   answer("None"),
   type = "learnr_radio",
-  incorrect = "The right answer is strategy 5, see the explanation to the previous step."
+  incorrect = "The right answer is strategy 5, see the explanation to the previous step.",
+  allow_retry = TRUE
 )
 )
 ```
@@ -356,7 +359,8 @@ question("Based on the table above, which strategy(ies) is(are) extendedly domin
   answer("None", correct = TRUE),
   type = "learnr_radio",
   incorrect = "Too bad... The right answer is that none of these strategies are extendedly dominated since all ICERs are increasing! Strategies 1, 3, 7, 8, 9 are thus all on the cost-effectiveness acceptability frontier!",
-  correct = "Good job! This means that strategies 1, 3, 7, 8, 9 are all on the cost-effectiveness acceptability frontier!"
+  correct = "Good job! This means that strategies 1, 3, 7, 8, 9 are all on the cost-effectiveness acceptability frontier!",
+  allow_retry = TRUE
 )
 )
 ```
@@ -410,7 +414,8 @@ quiz(
            answer("Strategy 9"),
            answer("None"),
            correct = "Good job, strategy 7 is the optimal at a WTP threshold of €20,000/QALY because its ICER is €19,565.",
-           incorrect = "Too bad, this is not correct. Strategy 7 is most optimal at a WTP threshold of €20,000/QALY because its ICER is €19,565."
+           incorrect = "Too bad, this is not correct. Strategy 7 is most optimal at a WTP threshold of €20,000/QALY because its ICER is €19,565.",
+           allow_retry = TRUE
            ),
     question("Which intervention is optimal if the willingness-to-pay (WTP) threshold is equal to €40,000/QALY?",
            answer("Strategy 1"),
@@ -424,7 +429,8 @@ quiz(
            answer("Strategy 9", correct = TRUE),
            answer("None"),
            correct = "Good job, strategy 9 is the most optimal at a WTP threshold of €40,000/QALY because its ICER is €38,125.",
-           incorrect = "Too bad, this is not correct. Strategy 9 is the most optimal at a WTP threshold of €40,000/QALY because its ICER is €38,125."
+           incorrect = "Too bad, this is not correct. Strategy 9 is the most optimal at a WTP threshold of €40,000/QALY because its ICER is €38,125.",
+           allow_retry = TRUE
            ),
       question("Which intervention is optimal if the willingness-to-pay (WTP) threshold is equal to €100,000/QALY?",
            answer("Strategy 1"),
@@ -438,7 +444,8 @@ quiz(
            answer("Strategy 9", correct = TRUE),
            answer("None"),
            correct = "Good job, strategy 9 is still the most optimal at a WTP threshold of €100,000/QALY because its ICER is €38,125.",
-           incorrect = "Too bad, this is not correct. Strategy 9 is the most optimal at a WTP threshold of €100,000/QALY because its ICER is €38,125."
+           incorrect = "Too bad, this is not correct. Strategy 9 is the most optimal at a WTP threshold of €100,000/QALY because its ICER is €38,125.",
+           allow_retry = TRUE
            ),
    question("At which WTP threshold would intervention 5 be the optimal intervention?",
            answer("€50,000"),
@@ -447,7 +454,8 @@ quiz(
            answer("€300,000"),
            answer("None", correct = TRUE),
            correct = "Good job, none because it is extendedly dominated.",
-           incorrect = "Too bad, this is not correct. Strategy 5 will never be the optimal intervention because it is extendedly dominated."
+           incorrect = "Too bad, this is not correct. Strategy 5 will never be the optimal intervention because it is extendedly dominated.",
+           allow_retry = TRUE
            ),
   question("At which WTP threshold would intervention 8 be the optimal intervention?",
            answer("When the WTP threshold becomes €150,000/QALY or higher"),
@@ -456,7 +464,8 @@ quiz(
            answer("When the WTP threshold becomes €300,000/QALY or higher"),
            answer("None"),
            correct = "Good job, because its ICER is €250,000",
-           incorrect = "Too bad, this is not correct. Strategy 8 will be the optimal intervention when the WTP threshold becomes €250,000/QALY or higher because its ICER is €250,000"
+           incorrect = "Too bad, this is not correct. Strategy 8 will be the optimal intervention when the WTP threshold becomes €250,000/QALY or higher because its ICER is €250,000",
+           allow_retry = TRUE
            )
 )
 ```
@@ -500,7 +509,8 @@ quiz(
            answer("Strategy 9"),
            answer("None"),
            correct = "Good job, strategy 7 is the  optimal at a WTP threshold of €20,000/QALY because its NMBs is the highest. This answer correspond to the first answer in the previous quiz!",
-           incorrect = "Too bad, this is not correct. Strategy 7 is the  optimal at a WTP threshold of €20,000/QALY because its NMBs is the highest. This answer correspond to the first answer in the previous quiz!"
+           incorrect = "Too bad, this is not correct. Strategy 7 is the  optimal at a WTP threshold of €20,000/QALY because its NMBs is the highest. This answer correspond to the first answer in the previous quiz!",
+           allow_retry = TRUE
            )
 )
 ```
@@ -530,7 +540,8 @@ quiz(
            answer("Strategy 4", correct = TRUE),
            answer("None"),
            correct = "Good job, strategy 4 is dominated by strategy 3 because 3 provides more QALYs at a lower costs.",
-           incorrect = "Too bad, this is not correct. Strategy 4 is dominated by strategy 3 because 3 provides more QALYs at a lower costs."
+           incorrect = "Too bad, this is not correct. Strategy 4 is dominated by strategy 3 because 3 provides more QALYs at a lower costs.",
+           allow_retry = TRUE
            ),
   question("Which strategy(ies) is(are) extendedly dominated?",
            answer("Strategy 1"),
@@ -539,7 +550,8 @@ quiz(
            answer("Strategy 4"),
            answer("None"),
            correct = "Good job, strategy 3 is extendedly dominated by strategies 1 and 2.",
-           incorrect = "Too bad, this is not correct. Strategy 3 is extendedly dominated by strategies 1 and 2."
+           incorrect = "Too bad, this is not correct. Strategy 3 is extendedly dominated by strategies 1 and 2.",
+           allow_retry = TRUE
            ),
   question("Which strategies are on the cost-effectiveness acceptability frontier?",
            answer("Strategy 1", correct = TRUE),
@@ -547,14 +559,15 @@ quiz(
            answer("Strategy 3"),
            answer("Strategy 4"),
            answer("None"),
-           incorrect = "Too bad, this is not correct. Strategies 1 and 4 are on the frontier."
+           incorrect = "Too bad, this is not correct. Strategies 1 and 4 are on the frontier.",
+           allow_retry = TRUE
            ),
     question("What are the ICERs in this comparison?",
            answer("Strategy 2 versus Strategy 1, ICER = 3,000 euros per QALY gained", correct = TRUE),
            answer("Strategy 3 versus Strategy 1, ICER = 4,000 euros per QALY gained"),
-           answer("Strategy 2 versus Strategy 3, ICER = 2,667 euros per QALY gained")
+           answer("Strategy 2 versus Strategy 3, ICER = 2,667 euros per QALY gained"),
+           allow_retry = TRUE
            )
-  
 )
 ```
 
