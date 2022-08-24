@@ -953,7 +953,7 @@ quiz(
            answer("Intervention B"), 
            answer("They provide the same number of QALYs", correct = TRUE),
   correct = "Good job, this is correct (because the interventions provide the same number of QALYs)!",
-  incorrect = "This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life",
+  try_again = "This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life",
   allow_retry = TRUE
   )
 )
