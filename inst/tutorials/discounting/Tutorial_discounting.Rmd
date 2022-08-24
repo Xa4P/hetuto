@@ -187,9 +187,9 @@ First, define the discount weight as 5%, and call it `r_disc`. Use `r_disc` to c
 
 ```{r create_v_disc, exercise = TRUE}
 # define r_disc
-r_disc
+#r_disc <- ___
 # define v_disc
-v_disc
+#v_disc <- ___
 ```
 
 ```{r create_v_disc-solution}
