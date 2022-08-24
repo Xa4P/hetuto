@@ -107,13 +107,17 @@ question("Based on these results, which intervention provides the most health be
   answer("A"),
   answer("B"),
   answer("C"),
-  answer("They all provide the same amount of health benefits", correct = TRUE)
+  answer("They all provide the same amount of health benefits", correct = TRUE),
+  allow_retry = TRUE,
+  try_again = "Unfortunately, this was not correct. Please try again!"
 ),
 question("Based on these results, which intervention costs the most?",
   answer("A"),
   answer("B"),
   answer("C"),
-  answer("They all cost the same", correct = TRUE)
+  answer("They all cost the same", correct = TRUE),
+  allow_retry = TRUE,
+  try_again = "Unfortunately, this was not correct. Please try again!"
 )
 )
 ```
