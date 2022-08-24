@@ -346,7 +346,7 @@ data.frame(round(m_tp_comp, 4)) # show
 ```
 
 ### Validation check  
-```{r m_tp_1_init}
+```{r m_tp_1_setup}
 ## Calculated parameters
 p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
 p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
@@ -382,11 +382,10 @@ m_tp_comp["Post-MI", "Death_other"] <- r_mort
 m_tp_comp["Death_stroke", "Death_stroke"] <- 1
 m_tp_comp["Death_MI", "Death_MI"] <- 1
 m_tp_comp["Death_other", "Death_other"] <- 1
-data.frame(round(m_tp_comp, 4)) # show
 ```
 Check whether the sum of all rows equals 1 to ensure you will not "add" or "loose" individuals in the simulation because the sum of probabilities do not sum up to 1 for each health states.  
 
-```{r check_tp, exercise = TRUE, exercise.setup = "m_tp_1_init"}
+```{r check_tp, exercise = TRUE, exercise.setup = "m_tp_1_setup"}
 # check the sum of all rows
 ```
 
@@ -410,7 +409,7 @@ Assume all 100,000 individuals (`n_ind` object) start in the "Well" health state
 - `m_hs_comp`: a matrix to store the number of individuals in each health state during each cycle for the comparator. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states 75). Numerate the rows from 0 to `n_cycles` and name the column with the names of the health states ("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other").  
 `m_tp_comp`, `n_cycles`, and `n_ind` are already loaded. First, define `v_start_hs` and `m_hs_comp`. Second, use `v_start_hs` to determine the starting position of the individuals in the simulation, i.e. the first row of `m_hs_comp`. Finally, fill in `m_hs_comp` using matrix multiplication and the objects: `m_tp_comp` and `m_hs_comp`.  
 
-```{r cohort_comp, exercise = TRUE, exercise.setup = "m_tp_1_init"}
+```{r cohort_comp, exercise = TRUE, exercise.setup = "m_tp_1_setup"}
 # Define cohort simulation matrix
 
 # Define the starting position of the individuals in each health state
@@ -733,8 +732,6 @@ a_tp_comp["Post-MI", "Death_other", ] <- v_p_mort
 a_tp_comp["Death_stroke", "Death_stroke",] <- 1
 a_tp_comp["Death_MI", "Death_MI",] <- 1
 a_tp_comp["Death_other", "Death_other",] <- 1
-
-a_tp_comp[, , c(1, 2, 9, 10)]
 ```
 It is now time to define and fill in the transition array for the "Aspirin" strategy, the intervention which will be compared to the "No aspirin" strategy.  
 To do so, we have to perform the following:  
@@ -2323,7 +2320,7 @@ legend("topleft",                    # Add legend to plot
 
 ```
 
-### Questions
+### Quiz
 ```{r quiz_dist}
 
 quiz(caption = "Have a look at the plot above.", 
@@ -2336,6 +2333,7 @@ quiz(caption = "Have a look at the plot above.",
 )
 ```
 
+### Follow-up questions
 1. Could we have used a Normal distribution? Explain your answer.  
 ```{r}
 textInput("Answer0", "Type your answer")
