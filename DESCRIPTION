@@ -20,6 +20,7 @@ Imports:
     learnr,
     magrittr,
     plotly,
+    rlang (>= 1.0.2),
     shiny,
     shinyjs,
     shinyWidgets,
