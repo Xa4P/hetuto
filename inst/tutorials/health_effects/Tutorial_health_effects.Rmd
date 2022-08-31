@@ -991,7 +991,7 @@ textInput("Answer_Q_comp2", "2. What if the quality of life with intervention A 
 2. In that case, intervention A would be preferred because it would provide more QALYs.  
 
 ## EQ-5D-5L
-This assignment aims to get you acquainted with measuring health through the EQ-5D-5L. It is based on the sample version of the EQ-5D-5L that is available at https://euroqol.org/eq-5d-instruments/sample-demo/. It is composed of both a questionnaire and the visual analog scale (VAS).  
+This assignment aims to get you acquainted with measuring health-related quality of life through the EQ-5D-5L. It is based on the sample version of the EQ-5D-5L that is available at https://euroqol.org/eq-5d-instruments/sample-demo/. It is composed of both a questionnaire and the visual analog scale (VAS).  
 `r paste("&copy;")` EuroQol Research Foundation. EQ-5D^TM^ is a trade mark of the EuroQol Research Foundation. Reproduced by permission of EuroQol Research Foundation. Reproduction of this version is not allowed. For reproduction, use or modification of the EQ-5D (any version), please register your study by using the online EQ registration page: www.euroqol.org.  
 **Instructions:** Under each heading, please tick the ONE box that best describes your health TODAY. Then rate your quality of life using the VAS.
 
@@ -1054,7 +1054,7 @@ div(style = "display:inline-block",
     width = "300px")
 tags$hr()
 h3("Visual analog scale")
-h4("We would like to know how good or bad your health is TODAY. This scale is numbered from 0 to 100. 100 means the best health you can imagine. 0 means the worst health you can imagine. Please slide the button to indicate how your health is TODAY.")
+p("We would like to know how good or bad your health is TODAY. This scale is numbered from 0 to 100. 100 means the best health you can imagine. 0 means the worst health you can imagine. Please slide the button to indicate how your health is TODAY.")
 div(
 	HTML("The best health you can imagine"),
 	shinyWidgets::noUiSliderInput(
