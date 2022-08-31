@@ -1118,7 +1118,7 @@ output$VAS <- renderText({
 
 ## Determining utility values
 This assignment aims to teach you how to use the Dutch EQ-5D-5L tariff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
-Instructions: For each health state description, calculate the utility value using the tariff provided in the table. The EQ-5D codes are organised as follows: mobility, self-care , usual activities, pain/ discomfort level, anxiety/ discomfort level. Provide your answer until 3 decimals".  
+Instructions: For each health state description, calculate the utility value using the tariff provided in the table. The EQ-5D codes are organised as follows: mobility (mo), self-care (sc), usual activities (ua), pain/ discomfort level (pd), anxiety/ discomfort level (ad). Provide your answer until 3 decimals. Example: sc4 means self-care level 4.  
 Hint: Level 1 means that someone has no impairment in a dimension. For each dimension with a Level different than 1, a disutility is applied to the constant.  
 Example: the code 12345 is interpreted as: I have no problems in walking about, I have slight problems washing or dressing myself, I have moderate problems doing my usual activities, I have severe pain or discomfort, I am extremely anxious or depressed.  
 Reference: Matthijs M. Versteegh, Karin M. Vermeulen, Silvia M. A. A. Evers, G. Ardine de Wit, Rilana Prenger, Elly A. Stolk, Dutch Tariff for the Five-Level Version of EQ-5D, Value in Health, Volume 19, Issue 4, 2016, Pages 343-352, https://doi.org/10.1016/j.jval.2016.01.003").  
@@ -1164,25 +1164,28 @@ EQ-5D description first health state (12423): I have no problems in walking abou
 
 ```{r hs_value_shiny}
 h3("Standard Gamble")
-h4("At which probability of immediate death would you be indifferent between the Gamble and remaining in health state 12423 for 10 years?")
+p("At which probability of immediate death would you be indifferent between the gamble and remaining in health state 12423 for 10 years?")
 helpText("Please indicate this probability using the slider")
 sliderInput("sg_hs1", "Probability of death in the gamble",
-            min = 0, max = 1, value = 0.5, step = 0.01)
+            min = 0, 
+            max = 1, 
+            value = 0.5, 
+            step = 0.01)
 h3("Standard Gamble health state 12423")
 plotOutput("plot_sg_hs1")
-h4(textOutput("res_sg_hs1"))
+p(textOutput("res_sg_hs1"))
 tags$hr()
 h3("Time trade off")
-h4("How much years of life in this health state (12423) would you trade to become indifferent between a) remaining in this health state for 10 years and b) living for 10 life years minus - the amount of traded life years in perfect health?")
+p("How much years of life in this health state (12423) would you trade to become indifferent between a) remaining in this health state for 10 years and b) living for 10 life years minus - the amount of traded life years in perfect health?")
 helpText("Please indicate this number of years using the slider")
 sliderInput("tto_hs1", "Number of traded years", 
             min = 0, max = 10, value = 5, step = 0.1)
 h3("Time trade off health state 12423")
 plotOutput("plot_tto_hs1")
-h4(textOutput("res_tto_hs1"))
+p(textOutput("res_tto_hs1"))
 tags$hr()
 h3("Visual analog scale")
-h4("How do you rate the quality of life in this health state (12423)?")
+p("How do you rate the quality of life in this health state (12423)?")
 helpText("Please indicate this on the visual analog scale using the slider")
 div(
 	HTML("The best health you can imagine"),
@@ -1212,7 +1215,7 @@ div(
 	 )
 	)
 h3("Visual analog scale health state 12423")
-h4(textOutput("res_vas_hs1"))
+p(textOutput("res_vas_hs1"))
 ```
 
 ```{r hs_value_shiny_serv, context = "server"}
@@ -1268,35 +1271,37 @@ output$res_vas_hs1 <- renderText({
 
 
 ## Vignettes
-In this assignment, you will value the two health states that are described as vignettes using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. A vignette is a narrative description of a certain health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
-Instructions: read the vignettes and fill in the Standard Gamble, Time-trade-off, and Visual analog scale.  
+In this assignment, you will value two health states that are described as vignettes using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. A vignette is a narrative description of a health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
+**Instructions**: read the vignettes and fill in the Standard Gamble, Time-trade-off, and Visual analog scale.  
 
 ### Vignette 1: Reumatoid arthritis (mild variant)  
 Your mobility is limited by pain. Walking long distances and standing still increase these complaints/ When you exercise, you experience increased joint complaints the day after. You are fully capable of bathing and clothing yourself. However, putting on shoes with laces is not an option. Activities that require lots of movement or physical strength cannot be performed. You require some help with usual activities such as doing groceries. It is important to take things slowly! You experience a constant mild pain in the joints and there is always a chance a relapse occurs. During a relapse, you are often feeling depressed, but you experience no cognitive symptoms. Your vision is normal for your age and you have no hearing problems. Your speech is normal but you experience mild to severe problems using your hands. Typing and other light activities are still possible, but every exercise that requires strength from your fingers is painful. The coordination of your fingers is also poor. Since other people do not directly observe where your pain is located, you experience some misunderstanding and miscomprehension. You are capable of maintaining normal social contacts, although the duration and frequency of such contacts are somewhat limited.
 
 ```{r vignettes_shiny_1}
 h3("Standard Gamble")
-h4("At which probability of immediate death would you be indifferent between the Gamble and remaining in the above-described health state for 30 years?")
+p("At which probability of immediate death would you be indifferent between the gamble and remaining in the above-described health state for 30 years?")
 helpText("Please indicate this probability using the slider")
-div(style = "display:inline-block",
-  sliderInput("sg_v1", "Probability of death in the gamble", 
-            min = 0, max = 1, value = 0.5, step = 0.01),
-  width = "400px")
+sliderInput("sg_v1", "Probability of death in the gamble", 
+            min = 0, 
+            max = 1, 
+            value = 0.5, 
+            step = 0.01)
 plotOutput("plot_sg_v1")
-h4(textOutput("res_sg_v1"))
+p(textOutput("res_sg_v1"))
 tags$hr()
 h3("Time trade off")
-h4("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
+p("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
 helpText("Please indicate this number of years using the slider")
-div(style = "display:inline-block",
-    sliderInput("tto_v1", "Number of traded years", 
-            min = 0, max = 30, value = 15, step = 0.1),
-    width = "400px")
+sliderInput("tto_v1", "Number of traded years", 
+            min = 0, 
+            max = 30, 
+            value = 15, 
+            step = 0.1)
 plotOutput("plot_tto_v1")
-h4(textOutput("res_tto_v1"))
+p(textOutput("res_tto_v1"))
 tags$hr()
 h3("Visual analog scale")
-h4("How do you rate the quality of life in the above-described health state?")
+p("How do you rate the quality of life in the above-described health state?")
 helpText("Please indicate this on the visual analog scale using the slider")
 div(style = "display:inline-block",
 	HTML("The best health you can imagine"),
@@ -1336,27 +1341,29 @@ Your mobility is severely limited. You are in a wheelchair during the day. Getti
              
 ```{r vignettes_shiny_2}
 h3("Standard Gamble")
-h4("At which probability of immediate death would you be indifferent between the Gamble and remaining in the above-described health state for 30 years?")
+p("At which probability of immediate death would you be indifferent between the Gamble and remaining in the above-described health state for 30 years?")
 helpText("Please indicate this probability using the slider")
-div(style = "display:inline-block",
-    sliderInput("sg_v2", "Probability of death in the gamble",
-            min = 0, max = 1, value = 0.5, step = 0.01),
-    width = "400px")
+sliderInput("sg_v2", "Probability of death in the gamble",
+            min = 0, 
+            max = 1, 
+            value = 0.5, 
+            step = 0.01)
 plotOutput("plot_sg_v2")
-h4(textOutput("res_sg_v2"))
+p(textOutput("res_sg_v2"))
 tags$hr()
 h3("Time trade off")
-h4("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
+p("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
 helpText("Please indicate this number of years using the slider")
-div(style = "display:inline-block",
-    sliderInput("tto_v2", "Number of traded years", 
-            min = 0, max = 30, value = 15, step = 0.1),
-    width = "400px")
+sliderInput("tto_v2", "Number of traded years", 
+            min = 0, 
+            max = 30, 
+            value = 15, 
+            step = 0.1)
 plotOutput("plot_tto_v2")
-h4(textOutput("res_tto_v2"))
+p(textOutput("res_tto_v2"))
 tags$hr()
 h3("Visual analog scale")
-h4("How do you rate the quality of life in the above-described health state?")
+p("How do you rate the quality of life in the above-described health state?")
 helpText("Please indicate this on the visual analog scale using the slider")
 div(style = "display:inline-block",
 	HTML("The best health you can imagine"),
