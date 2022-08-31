@@ -134,9 +134,8 @@ knitr::include_graphics("Tutorial_health_effects_files/images/Image_solution.png
 [Link to figures](https://education.rstudio.com/blog/2020/05/learnr-for-remote/)
 
 ## SF-36
-In this assignment you will experience what it is like to fill out the SF-36 Health Survey, a descriptive health-related quality of life instrument. You will start by filling in the SF-36 questionnaire. Subsequently you will enter your individual responses using the button below. These answers will automatically be rescored in the 8 sub-scales of the SF-36. Below a table and a graph will be drawn with your scores ('Respondent’). In these, the scores of a group of patients with migraine and a healthy control group are also displayed for comparison purposes.  
-Instructions for completing the questionnaire: Please answer every question. Some questions may look like others, but each one is different. Please take the time to read and answer each question carefully by selecting in the description that best represents your health status.  
-Your results are plotted in the graph below, in comparison with the results of a group of migraine patients (N = 340) and a control group of healthy individuals (N = 467).
+In this assignment you will experience what it is like to fill out the SF-36 Health Survey, a descriptive health-related quality of life instrument. You will start by filling in the SF-36 questionnaire. Subsequently you will enter your individual responses using the button below. These answers will automatically be rescored in the 8 sub-scales of the SF-36. Below a table and a graph will be drawn with your scores ('Respondent’). In this table and graph, the scores of a group of patients with migraine and a healthy control group are also displayed for comparison purposes.  
+**Instructions for completing the questionnaire**: Please answer every question. Some questions may look similar to others, but each one is different. Please take the time to read and answer each question carefully by selecting in the description that best represents your health status.  
 ```{r sf-36_shiny}
 div(style = "display:inline-block",
     tags$div(class = "panel-heading", "1. In general, would you say your health is:"),
@@ -524,12 +523,13 @@ div(style = "display:inline-block",
     width = "250px")
 tags$hr()
 h2("SF-36 results")
+p("Your results are plotted in the graph and described in the table below, in comparison with the results of a group of migraine patients (N = 340) and a control group of healthy individuals (N = 467).")
 plotOutput("SF_36_calc")
 tableOutput("SF_36_calc2")
 ```
 
 A score of 100 indicates no impairment in the specific domain.  
-Abreviation of the domains  
+Abreviation of the domains:  
 BP = Bodily Pain  
 GH = General Health  
 MH = Mental Health  
