@@ -121,7 +121,7 @@ estimate_utility <- function(mo = 1, sc = 1, ua = 1, pd = 1, ad = 1, tbl_decreme
 
 ### Aims and instructions
 The overall aim of this assignment is to get you acquainted with measuring and valuing quality of life using different instruments.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copied & pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk.  
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_health_effects_files/images/Image_hint.png")
