@@ -1117,8 +1117,8 @@ output$VAS <- renderText({
 ```
 
 ## Determining utility values
-This assignment aims to teach you how to use the Dutch EQ-5D-5L tarriff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
-Instructions: For each health state description, calculate the utility value using the tarriff provided in the table. The EQ-5D codes are organised as follows: mobility, self-care , usual activities, pain/ discomfort level, anxiety/ discomfort level. Provide your answer until 3 decimals".  
+This assignment aims to teach you how to use the Dutch EQ-5D-5L tariff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
+Instructions: For each health state description, calculate the utility value using the tariff provided in the table. The EQ-5D codes are organised as follows: mobility, self-care , usual activities, pain/ discomfort level, anxiety/ discomfort level. Provide your answer until 3 decimals".  
 Hint: Level 1 means that someone has no impairment in a dimension. For each dimension with a Level different than 1, a disutility is applied to the constant.  
 Example: the code 12345 is interpreted as: I have no problems in walking about, I have slight problems washing or dressing myself, I have moderate problems doing my usual activities, I have severe pain or discomfort, I am extremely anxious or depressed.  
 Reference: Matthijs M. Versteegh, Karin M. Vermeulen, Silvia M. A. A. Evers, G. Ardine de Wit, Rilana Prenger, Elly A. Stolk, Dutch Tariff for the Five-Level Version of EQ-5D, Value in Health, Volume 19, Issue 4, 2016, Pages 343-352, https://doi.org/10.1016/j.jval.2016.01.003").  
