@@ -67,11 +67,14 @@ The `df_thx` object contains 4 variables and 9 observations (the outcomes of the
 - `Costs` = the total costs of the screening strategy    
 - `QALYs` = the total QALYs gained through the screening strategy 
 
-The `df_thx` object is displayed herebelow. Have a look at this data.frame and before starting the assignment.
+The `df_thx` object is displayed herebelow. Have a look at this dataframe before starting the assignment.
 
 ```{r show_data}
 df_thx
+```
 
+The graph below displays the strategies in a cost-effectiveness plane.
+```{r show_data_plot}
 ggplot(data = df_thx, aes(x = QALYs, Costs, colour = Strategy)) +
   geom_point() + 
   geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
