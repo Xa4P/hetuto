@@ -94,9 +94,11 @@ bootstrap_effects_costs <- function(df, num_it = 5000) {
 
 ## Trial-based economic evaluations
 
-### Aims and instructions
+### Aims
 The aim of this practical assignment is to perform a health economic analysis using data collected during a clinical trials. The data used in this assignment was obtained during a randomised controlled trial (RCT) comparing two interventions for treating esophageal cancer. In total, 200 patients were randomized between usual care (open transthoracic esophagectomy) and the new intervention (robot-assisted thoraco-laparoscopic esophagectomy). For each patient, data was collected on the time required for the procedure in the operating room, the occurrence of complications, the length of stay in the hospital, and the quality of life after the procedure. In addition, data on the cost of resources was collected from the literature.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
+
+### Instructions
+The provided solutions are one way to perform the calculations. You can obtain the same results using other fomula's or R commands. The last 'Hint' is always the solution to the assignment. Solutions can be copied and pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk or using the shortcut CRTL+Enter.   
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_trial_based_cea_files/images/Image_hint.png")
@@ -128,7 +130,7 @@ A dataframe `df`. This dataframe contains 9 variables, each row of the dataframe
 - `Minor_compl` = 'Did the participant experience a minor complication?'; 1 = yes, 0 = no  
 - `Length_icu` = Length of stay at the intensive care unit (ICU) in days  
 - `Length_mcu` = Length of stay at the intensive care unit (MCU) in days  
-- `Death`      = 'Did the participant experience die at the hospital?'; 1 = yes, 0 = no   
+- `Death`      = 'Did the participant die at the hospital?'; 1 = yes, 0 = no   
 - `Qol` = Quality of life of the participant after the procedure  
 
 The following tables show the dataframe `df`. Familiarise yourself with it.  
@@ -138,7 +140,7 @@ df
 ```
 
 
-Other objects, which represent the costs of the surgeries, hospital days, adverse events, and hourly costs of using the operating room:  
+Other objects have also been loaded in R's memory. These represent the costs of the surgeries, hospital days, adverse events, and hourly costs of using the operating room. All costs are provided in euros.  
 
 - `c_Open` =  costs of the open transthoracic esophagectomy (usual care)  
 - `c_Robot` = costs of the robot-assisted thoraco-laparoscopic esophagesctomy (new intervention)  
@@ -165,6 +167,8 @@ c_MCU_day <- 550
 Calculate the mean operating time (`OR_time`), risk of complications (`Major_compl` & `Minor_compl`), length of stay at ICU (`Length_icu`) and MCU (`Length_mcu`), risk of death (`Death`), and quality of life (`Qol`) after procedure, for both trial arms using the `df` dataframe described in the previous tab.  
 
 ```{r mean_eff, exercise = TRUE}
+# calculate mean effects for each group separately
+
 
 ```
 
@@ -204,7 +208,7 @@ round(df %>%
 
 ```{r quiz_mean_eff}
 quiz(
-  question("Which treatment provides the best health outcomes (in terms of quality of life)?", 
+  question("Which treatment provides the best health outcomes in terms of quality of life?", 
            answer("Open transthoracic esophagectomy (usual care)"),
            answer("Robot-assisted surgery (new intervention)", correct = TRUE)),
   question("Is robot-assisted surgery an improvement upon usual care with respect to all outcomes displayed above? Select the outcomes for which open transthoracic esophagectomy (usual care) provides better results.",
@@ -226,8 +230,7 @@ quiz(
 ## Assignment 2
 
 ### Costs calculations
-Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per group. As a reminder, these are the costs.  
-
+Create three new variables in `df` called `Cost_procedure`, `Cost_compl`, `Cost_hosp`, which respectively contain the costs related to the procedure (operatime time + procedure), the costs related to complications, and the costs related to hospitalisation for each participant. To do so, use the objects beginning with `c_`. Create also a new variable in `df` called `Total_costs`, which contains the total costs per participant. Finally, calculate the mean costs per participant per group.  
 ```{r show_c_inputs2, echo = TRUE}
 # Declare costs inputs for the analysis
 c_Robot <- 3000 
@@ -240,12 +243,18 @@ c_MCU_day <- 550
 ```
 
 ```{r calc_t_costs, exercise = TRUE}
+# calculate procedure costs
 
+# calculate complication costs
+
+# calculate hospitalisation costs
+
+# calculate total costs
 
 ```
 
 ```{r calc_t_costs-hint-1}
-"To fill in the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, multiply the column of the dataframe `df` by the corresponding objects. For `Cost_procedure`, the ifelse() function should be used to make a difference between the costs of open transthoracic esophagectomy and robot-assisted thoraco-laparoscopic esophagesctomy. For the `Total_costs`, the sum of the other columns should be calculated.  "
+"To fill in the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, multiply the column of the dataframe `df` by the corresponding objects. For `Cost_procedure`, the ifelse() function should be used to make a difference between the costs of open transthoracic esophagectomy and robot-assisted thoraco-laparoscopic esophagesctomy. For the `Total_costs`, the sum of the other columns should be calculated."
 ```
 
 ```{r calc_t_costs-hint-2}
@@ -255,7 +264,7 @@ df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_h
 
 ```{r calc_t_costs-solution}
 # Creating new columns
-df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # costs procedure
 df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
 df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
 df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
@@ -276,7 +285,7 @@ df %>%
 ```
 
 ### Questions
-The correct results are displayed here below. You can check your answer based in these results and answer the questions of the quizz.
+The correct results are displayed in the table below. You can check your answer based in these results and answer the questions of the quiz.
 
 ```{r calc_to_c_good}
 df %>%
@@ -358,7 +367,7 @@ What do you think is the probability that the new intervention leads to health g
 ## Assignment 3  
 
 ### Calculation of incremental results  
-Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
+Calculate the difference in mean quality of life and mean total costs between the new intervention (robot-assisted) and usual care (open surgery). Calculate the ICER using this information. To allow you to perform the calculation, the `df` dataframe now contains the variables `Cost_procedure`, `Cost_compl`, `Cost_hosp`, and `Total_costs`.  
 
 ```{r setup_calc_icer}
 df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
@@ -368,6 +377,11 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 ```
 
 ```{r calc_icer, exercise = TRUE, exercise.setup = "setup_calc_icer"}
+# calculate mean per group
+
+# calculate incremental quality of life and costs
+
+# calculate ICER
 
 ```
 
@@ -376,21 +390,21 @@ df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
 ```
 
 ```{r calc_icer-hint-2}
-t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean quality of life per patient in the robot-assisted surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
 ```
 
 ```{r calc_icer-solution}
-t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean costs per patient in the robot-assisted surgery strategy
-t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean costs per patient in the open surgery strategy
+t_qol_robot <- mean(df[which(df$Procedure == 2), "Qol"]) # mean qol per patient in the robot-assisted surgery strategy
+t_qol_open <- mean(df[which(df$Procedure == 1), "Qol"]) # mean qol per patient in the open surgery strategy
 t_costs_robot <- mean(df[which(df$Procedure == 2), "Total_costs"]) # mean costs per patient in the robot-assisted surgery strategy
 t_costs_open  <- mean(df[which(df$Procedure == 1), "Total_costs"]) # mean costs per patient in the open surgery strategy
-diff_qol   <- t_qol_robot - t_qol_open # difference in qol
-diff_costs <- t_costs_robot - t_costs_open # difference in costs
-ICER <- diff_costs / diff_qol # difference in ICER
-diff_qol
-diff_costs
-ICER
+inc_qol   <- t_qol_robot - t_qol_open # difference in qol
+inc_costs <- t_costs_robot - t_costs_open # difference in costs
+ICER <- inc_costs / inc_qol # difference in ICER
+c(`increental QoL`= inc_qol,
+  `increental costs`= inc_costs,
+  ICER = ICER) # show results
 ```
 
 ### Question
@@ -412,8 +426,8 @@ diff_costs <- t_costs_robot - t_costs_open
 
 ICER <- diff_costs / diff_qol
 data.frame(
-  Difference_qol = diff_qol,
-  Difference_costs = diff_costs,
+  Incremental_qol = diff_qol,
+  Incremental_costs = diff_costs,
   ICER = ICER
 )
 ```
@@ -432,7 +446,7 @@ quiz(
 ## Assignment 4
 
 ### Bootstrapping
-The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments. For an explanation of bootstrapping, have a look at [this video](https://www.youtube.com/watch?v=Xz0x-8-cgaQ). In this case, we bootstrap to calculate the mean effects and costs of each strategy.    
+The following assignment focuses on interpreting the results of bootstrapping the `df` dataframe to assess the uncertainty surrounding the results obtained in the previous assignments. For an explanation of bootstrapping, have a look at [this video](https://www.youtube.com/watch?v=Xz0x-8-cgaQ). In this case, we bootstrap to calculate the mean effects and costs of each strategy and obtain the corresponding uncertainty surrounding these estimates.    
 To perform the bootstrap: Determine the number of the random seed to use and choose a number of bootstrap samples (at least 1,000 and up to 20,000). Perform bootstrapping by pushing the button (this may take several seconds to minutes). The results will automatically appear on the screen. The results that you see are related to the uncertainty that remains after observing this set of trial data. In addition to the bootstrap results, the mean results of the sample data (that you have calculated earlier), are also provided. Answer the questions below based on your observations.  
 
 ```{r bootstrap}
@@ -569,7 +583,7 @@ output$det_tbl<- renderTable({
 ```
 
 ### Questions
-Answer the following questions using the results displayed above. The discussion of these answers are provided below.  
+Answer the following questions using the results displayed above. The discussion of these answers are provided below by clicking the 'Continue' button.  
 
 a. Check the average estimates from the bootstrap samples. Do these results correspond to the point estimates from the observed data? Why (not)?  
 ```{r open_q4a}
