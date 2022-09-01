@@ -41,9 +41,11 @@ df_thx[, "Strategy"] <- as.factor(as.character(df_thx[, "Strategy"]))
 
 ## Cost-effectiveness acceptability frontier (CEAF)
 
-### Aims and instructions
-This assignment aims to familiarise you with the concept of the cost-effectiveness acceptability frontier (CEAF), by constructing one yourself, based on a fictive example. The aim of this assignment is to identify which of the following screening strategy is the most cost effective.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk.    
+### Aims
+This assignment aims to familiarise you with the concept of the cost-effectiveness acceptability frontier (CEAF), by constructing one yourself, based on a fictive example. The aim of this assignment is to identify which of the screening strategies is the most cost effective.  
+
+### Instructions
+The provided solutions are one way to perform the calculations. You can obtain the same results using other fomula's or R commands. The last 'Hint' is always the solution to the assignment. Solutions can be copied and pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk or using the shortcut CRTL+Enter.    
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_ceaf_files/images/Image_hint.png")
