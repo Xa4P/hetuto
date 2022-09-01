@@ -50,8 +50,12 @@ determine_m_tp <- function() {
 
 ## Health state transition model - 1
 
-## Aim and instructions
+### Aim
 The aim of this practical assignment is to get you acquainted with the principle of health state transition models (HSTM). To do so, you will define a transition matrix for a simple HSTM and explore how you can use it to define your cohort simulation. The example used in the practical focuses on evaluating the life course of patients at risk of developing intracranial aneurysms using a HSTM. The model structure is provided in the next tab.    
+
+### Instructions
+The provided solutions are one way to perform the calculations. You can obtain the same results using other fomula's or R commands. The last 'Hint' is always the solution to the assignment. Solutions can be copied and pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk or using the shortcut CRTL+Enter.   
+
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_hstm_1_files/images/Image_hint.png")
@@ -73,7 +77,7 @@ You should be able to use the following commands to perform this exercise:
 ### Model structure
 This section provides an explaination of the health state transition model (HSTM) used in this practical assignment. The HSTM represents the disease progression and treatment of patients who may develop an aneurysm. All patients start in the "Healthy" health state. From there, they can die from other causes of disease than an aneurysm, or they can develop a new intracranial aneurysm.  If they develop an aneurysm, the aneurysm can be detected, or they can die. If the aneurysm is detected, it is assumed that patients receive treatment. The treatment can either be succesful and the patients return to "Healthy", or the treatment can be fatal and patients die. When patients die (from any causes), they remain in that health state ('dead' is an absorbing health state).  
 In this model, patients move as an homogeneous cohort, all individuals start in the "Healthy" health state, the time cycle (or cycle length) in this model is **1 month**. Costs and health effects are not included in this simple model.  
-In the following exercises, the health states are called as follows:
+In the following exercises, the health states' names are abbreviated as follows in the R objects:
 
 - "Healthy" = "Healthy"  
 - "Death due to other causes" = "DeathOther"  
@@ -97,22 +101,25 @@ p_DeathOther        <- 	0.10 # Probability of death due to causes unrelated to a
 
 
 ### Questions
-Use these transition probabilities and the model structure to calculate the following probabilities/quantities (subquestions a to j). For your convenience, the probabilities have been loaded.    
+Use these transition probabilities and the model structure to calculate the following probabilities/quantities (subquestions a to j). For your convenience, the above-described probabilities have been loaded.    
 
-a. The probability that an individual dies from aneurysm treatment in month 2  
+a. The number of individuals who died from aneurysm treatment in month 2  
 
 ```{r 1a, exercise = TRUE}
- 
+# type your answer
+
 ```
 
 ```{r 1a-solution}
- 
+0 
 ```
 
 b. The probability that an individual starts in the "Healthy" state and remains there, that is, survives and does not develop an aneurysm, in 1 year  
 
 ```{r 1b, exercise = TRUE}
- 
+# type your answer
+
+
 ```
 
 ```{r 1b-solution}
@@ -122,6 +129,8 @@ b. The probability that an individual starts in the "Healthy" state and remains 
 c. The probability that an individual develops 2 aneurysms and is treated successfully twice (starting health state for this calculation is "Healthy")  
 
 ```{r 1c, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -133,6 +142,8 @@ c. The probability that an individual develops 2 aneurysms and is treated succes
 d. The probability that an individual dies of other causes within the first month  
 
 ```{r 1d, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -143,6 +154,8 @@ p_DeathOther
 e. The probability that an individual dies of other causes within the first 2 months  
 
 ```{r 1e, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -154,6 +167,8 @@ p_DeathOther + p_DeathOther * (1 - p_DeathOther - p_NewAneurysm) + p_DeathOther 
 f. The probability that an individual with a new and untreated aneurysm (that remains untreated) develops an additional, new aneurysm, in 2 years’ time  
 
 ```{r 1f, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -164,6 +179,8 @@ f. The probability that an individual with a new and untreated aneurysm (that re
 g. The excess mortality risk (expressed as relative risk) of individuals with successfully treated aneurysms compared to healthy individuals  
 
 ```{r 1g, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -174,6 +191,8 @@ g. The excess mortality risk (expressed as relative risk) of individuals with su
 h. The risk of death from a car accident for an individual with a detected unruptured aneurysm  
 
 ```{r 1h, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -184,6 +203,8 @@ h. The risk of death from a car accident for an individual with a detected unrup
 i. [OPTIONAL] The sensitivity of the (unknown) test used to detect aneurysms after 4 months/repetitions  
 
 ```{r 1i, exercise = TRUE}
+# type your answer
+
 
 ```
 
@@ -196,6 +217,8 @@ p_AneurysmDetection + p_AneurysmDetection * (1 - p_AneurysmDetection - p_DeathOt
 j. [OPTIONAL] The probability that an individual with a new aneurysm dies before it is detected (you can give an approximation, or the exact value)  
 
 ```{r 1j, exercise = TRUE}
+# type your answer
+
 
 ```
 
