@@ -173,7 +173,6 @@ digraph {
       S [label = J]
       T [label = K]
       
-      
       1 [label = 'e_path_A, c_path_A']
       2 [label = 'e_path_B, c_path_B']
       3 [label = 'e_path_C, c_path_C']
@@ -366,17 +365,18 @@ Calculate the probabilities of each pathway using the probabilities defined in t
 Allocate the probabilities to the objects below. `p_path_` means "Probability of pathway".  
 
 ```{r calc_p_pathways, exercise = TRUE, exercise.setup = "setup_p_path"}
-p_path_A
-p_path_B
-p_path_C
-p_path_D
-p_path_E
-p_path_F
-p_path_G
-p_path_H
-p_path_I
-p_path_J
-p_path_K
+# calculate and assign the probabilty of each path, remove the `#` to perform the calculations
+#p_path_A
+#p_path_B
+#p_path_C
+#p_path_D
+#p_path_E
+#p_path_F
+#p_path_G
+#p_path_H
+#p_path_I
+#p_path_J
+#p_path_K
 ```
 
 ```{r calc_p_pathways-hint-1}
@@ -475,17 +475,18 @@ u_Death    <- 0    # Utility of dying
 
 In the code chunk below `e_path_A` means "effects associated with pathway A".
 ```{r assign_utils, exercise = TRUE}
-e_path_A 
-e_path_B  
-e_path_C 
-e_path_D 
-e_path_E 
-e_path_F 
-e_path_G 
-e_path_H 
-e_path_I 
-e_path_J 
-e_path_K 
+# calculate and assign the effects of each path, remove the `#` to perform the calculations
+#e_path_A 
+#e_path_B  
+#e_path_C 
+#e_path_D 
+#e_path_E 
+#e_path_F 
+#e_path_G 
+#e_path_H 
+#e_path_I 
+#e_path_J 
+#e_path_K 
 ```
 
 ```{r assign_utils-hint-1}
@@ -523,17 +524,18 @@ c_Disabled  <- 5000  # Cost of disabled patient
 
 In the code chunk below `c_path_A` means "costs associated with pathway A".
 ```{r assign_costs, exercise = TRUE}
-c_path_A 
-c_path_B  
-c_path_C 
-c_path_D 
-c_path_E 
-c_path_F 
-c_path_G 
-c_path_H 
-c_path_I 
-c_path_J 
-c_path_K 
+# calculate and assign the costs of each path, remove the `#` to perform the calculations
+#c_path_A 
+#c_path_B  
+#c_path_C 
+#c_path_D 
+#c_path_E 
+#c_path_F 
+#c_path_G 
+#c_path_H 
+#c_path_I 
+#c_path_J 
+#c_path_K 
 ```
 
 ```{r assign_costs-hint-1}
@@ -630,7 +632,7 @@ data.frame(
 We have just calculated the utility values and costs of each pathway. These utility values and costs are the outcomes that an individual would obtain if he/she would follow a specific pathway. However, only a proportion of individuals will follow a specific pathway, based on the probabilities of each of these pathways. Therefore, to calculate the total expected outcomes of each strategy, we first have to calculate the **expected** utility values and costs of each pathway. These are obtained by multiplying the probabilities of each pathway by their outcomes: their utility value and costs.  
 
 ### Calculations  
-Calculate the expected utility values and costs of each pathway in the following chunk. To do so, use the probabilities, utility values, and costs of each pathway that we have defined in Steps 2 and 3. In the following code chunk, `t_e_path_A` means "total expected utility values (effects) of pathway A" and `t_c_path_A` means "total expected costs of pathway A" and so on for the other pathways. For your convenience, the probabilities (`p_path_` objects), utility values (`e_path_` objects), and costs (`c_path_` objects) of each pathway have been loaded and can be used to perform these calculations.  
+Calculate the expected utility values and costs of each pathway in the following chunk. These are obtained by multiplying the probability of the path by its outcomes (effects and costs). To do so, use the probabilities, utility values, and costs of each pathway that we have defined in Steps 2 and 3. In the following code chunk, `t_e_path_A` means "total expected utility values (effects) of pathway A" and `t_c_path_A` means "total expected costs of pathway A" and so on for the other pathways. For your convenience, the probabilities (`p_path_` objects), utility values (`e_path_` objects), and costs (`c_path_` objects) of each pathway have been loaded and can be used to perform these calculations.  
 
 ```{r setup_calc_out}
 p_Stable <- 1 - p_Rupture 
@@ -679,30 +681,30 @@ c_path_K <- c_Coiling
 
 ```{r calc_outcomes, exercise = TRUE, exercise.setup = "setup_calc_out"}
 # Expected effects
-t_e_path_A
-t_e_path_B
-t_e_path_C
-t_e_path_D
-t_e_path_E
-t_e_path_F
-t_e_path_G
-t_e_path_H
-t_e_path_I
-t_e_path_J
-t_e_path_K
+#t_e_path_A
+#t_e_path_B
+#t_e_path_C
+#t_e_path_D
+#t_e_path_E
+#t_e_path_F
+#t_e_path_G
+#t_e_path_H
+#t_e_path_I
+#t_e_path_J
+#t_e_path_K
 
 # Expected costs
-t_c_path_A
-t_c_path_B
-t_c_path_C
-t_c_path_D
-t_c_path_E
-t_c_path_F
-t_c_path_G
-t_c_path_H
-t_c_path_I
-t_c_path_J
-t_c_path_K
+#t_c_path_A
+#t_c_path_B
+#t_c_path_C
+#t_c_path_D
+#t_c_path_E
+#t_c_path_F
+#t_c_path_G
+#t_c_path_H
+#t_c_path_I
+#t_c_path_J
+#t_c_path_K
 ```
 
 ```{r calc_outcomes-hint-1}
@@ -856,10 +858,10 @@ data.frame(
 ```
 
 ## Step 5: Calculate expected effects and costs of each strategy
-Now that we have calculated the expected outcomes of each pathway, we can finally calculate the expected outcomes of each strategy! This can be done by summing up all expected outcomes per strategy 
+Now that we have calculated the expected outcomes of each pathway, we can finally calculate the expected outcomes of each strategy! This can be done by summing up all expected outcomes of the pathways of each strategy. 
 
 ### Calculations
-Calculate these expected outcomes in the following chunk. for your convenience, the `t_e_path_` and `t_c_path_` have been loaded and can be used to perform these calculations.  
+Calculate these expected outcomes in the following chunk. For your convenience, the `t_e_path_` and `t_c_path_` have been loaded and can be used to perform these calculations.  
 
 ```{r setup_calc_strat_out}
 # Calculation missing probabilities
@@ -934,11 +936,11 @@ t_c_path_K <- p_path_K * c_path_K
 ```
 
 ```{r calc_out_strat, exercise = TRUE, exercise.setup = "setup_calc_strat_out"}
-t_e_ww  # expected effects "watchful waiting" strategy
-t_c_ww  # expected costs "watchful waiting" strategy
+#t_e_ww <- ___ # expected effects "watchful waiting" strategy
+#t_c_ww <- ___ # expected costs "watchful waiting" strategy
 
-t_e_trt # expected effects treatment strategy
-t_c_trt # expected costs treatment strategy
+#t_e_trt <- ___ # expected effects treatment strategy
+#t_c_trt <- ___ # expected costs treatment strategy
 
 ```
 
@@ -1038,10 +1040,8 @@ data.frame(
 ```
 
 ## Step 6: Calculate incremental effects, costs, and incremental cost-effectiveness ratio
-Based on the total expected utility value (effects) and costs of both strategies, we can now calculate the incremental effects and costs of the treatment strategy versus "watchful waiting". We can also calculate the incremental cost-effectiveness ratio of the treatment strategy versus "watchful waiting".  
-
-### Calculation  
-The total effects and costs defined in previous step have been loaded and can be used to perform these calculations.  
+Based on the total expected utility value (effects) and costs of both strategies, you can now calculate the incremental effects and costs of the treatment strategy versus "watchful waiting". You can also calculate the incremental cost-effectiveness ratio of the treatment strategy versus "watchful waiting". Please do so in the following chunk
+The total effects and costs defined in the previous step (`t_e_ww`, `t_c_ww`, `t_e_trt`, `t_c_trt`) have been loaded and can be used to perform these calculations.  
 ```{r set_up_comparison}
 p_Stable <- 1 - p_Rupture 
 p_DeathClipping  <- 1 - p_DisabledClipping - p_SurvivalClipping
@@ -1114,9 +1114,9 @@ t_c_trt <- sum(t_c_path_F, t_c_path_G, t_c_path_H, t_c_path_I, t_c_path_J, t_c_p
 ```
 
 ```{r calc_final, exercise = TRUE, exercise.setup = "set_up_comparison"}
-inc_e_trt # incremental effects
-inc_c_trt # incremental costs
-icer# incremental cost-effectiveness ratio
+#inc_e_trt <- ___ # incremental effects
+#inc_c_trt <- ___ # incremental costs
+#icer <- ___ # incremental cost-effectiveness ratio
 ```
 
 ```{r calc_final-hint}
@@ -1227,7 +1227,7 @@ data.frame(
 ```
 
 ## Decision tree complete
-In this tab, the decision tree has been filled with the input values of the previous steps. You can change the input values and evaluate what the impact of changing these inputs is on the results. This completed decision tree can be used to answer the questions in the following tab.  
+In this tab, the decision tree has been filled with the input values of the previous steps. You can change the input values and evaluate what the impact of changing these inputs is on the results. This completed decision tree can be used to answer the questions below.  
 
 ```{r interact_dt}
 # Shiny component
@@ -1258,7 +1258,6 @@ numericInput(inputId = "p_Coiling",
              max = 1)
 tags$hr()
 tableOutput("results")
-
 ```
 
 ```{r interact_dt_server, context = "server"}
@@ -1369,13 +1368,10 @@ data.frame(
            )
 )
   })
-
 ```
 
-## Questions concerning the results
-
-### Questions
-1. Look at your final results:  
+### Questions concerning the results
+1. Look at the final results:  
 
 1.a. What is your conclusion?  
 ```{r open_q_1}
@@ -1413,7 +1409,7 @@ textInput("Answer_6", "Explain your answer")
 textInput("Answer_7", "Explain your answer")
 ```
 
-### Discussion answers  
+## Discussion answers  
 1.a. What is your conclusion?  
 **Answer:** From the results we can conclude that the Aneurysm Treatment strategy results in additional health gain at additional costs compared to the Watchful waiting strategy.  
 1.b. Which strategy has the most favorable cost-effectiveness if we are willing to pay €20,000 for a gain in utility of 1 (or 1 additional QALY if we assume a one-year time horizon for this decision tree)?  
