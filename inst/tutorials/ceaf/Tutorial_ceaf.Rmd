@@ -87,34 +87,36 @@ ggplot(data = df_thx, aes(x = QALYs, Costs, colour = Strategy)) +
 ```{r quiz_start}
 quiz(
   question("Based on this graph, can you already guess which strategy is dominated?",
-    answer("Strategy 1", correct = TRUE),
-    answer("Strategy 2", correct = TRUE),
-    answer("Strategy 3", correct = TRUE),
-    answer("Strategy 4", correct = TRUE),
-    answer("Strategy 5", correct = TRUE),
-    answer("Strategy 6", correct = TRUE),
-    answer("Strategy 7", correct = TRUE),
-    answer("Strategy 8", correct = TRUE),
-    answer("Strategy 9", correct = TRUE),
-    answer("None", correct = TRUE),
-    correct = "Let's have a look whether you guessed it right by performing the assignment!",
-    incorrect = "Let's have a look whether you guessed it right by performing the assignment!"
-    ),
+           type = "radio",
+           answer("Strategy 1", correct = TRUE),
+           answer("Strategy 2", correct = TRUE),
+           answer("Strategy 3", correct = TRUE),
+           answer("Strategy 4", correct = TRUE),
+           answer("Strategy 5", correct = TRUE),
+           answer("Strategy 6", correct = TRUE),
+           answer("Strategy 7", correct = TRUE),
+           answer("Strategy 8", correct = TRUE),
+           answer("Strategy 9", correct = TRUE),
+           answer("None", correct = TRUE),
+           correct = "Let's have a look whether you guessed it right by performing the assignment!",
+           incorrect = "Let's have a look whether you guessed it right by performing the assignment!"
+           ),
   question("Based on this graph, can you already guess which strategy is extendedly dominated?",
-    answer("Strategy 1", correct = TRUE),
-    answer("Strategy 2", correct = TRUE),
-    answer("Strategy 3", correct = TRUE),
-    answer("Strategy 4", correct = TRUE),
-    answer("Strategy 5", correct = TRUE),
-    answer("Strategy 6", correct = TRUE),
-    answer("Strategy 7", correct = TRUE),
-    answer("Strategy 8", correct = TRUE),
-    answer("Strategy 9", correct = TRUE),
-    answer("None", correct = TRUE),
-    correct = "Let's have a look whether you guessed it right by performing the assignment!",
-    incorrect = "Let's have a look whether you guessed it right by performing the assignment!"
-    )
-)
+           type = "radio",
+           answer("Strategy 1", correct = TRUE),
+           answer("Strategy 2", correct = TRUE),
+           answer("Strategy 3", correct = TRUE),
+           answer("Strategy 4", correct = TRUE),
+           answer("Strategy 5", correct = TRUE),
+           answer("Strategy 6", correct = TRUE),
+           answer("Strategy 7", correct = TRUE),
+           answer("Strategy 8", correct = TRUE),
+           answer("Strategy 9", correct = TRUE),
+           answer("None", correct = TRUE),
+           correct = "Let's have a look whether you guessed it right by performing the assignment!",
+           incorrect = "Let's have a look whether you guessed it right by performing the assignment!"
+           )
+  )
 ```
 
 ### Assignment and questions
