@@ -148,7 +148,8 @@ question("Based on the table where strategies are ordered by increasing total nu
   answer("Strategy 7"),
   answer("Strategy 8"),
   answer("Strategy 9"),
-  answer("None")
+  answer("None"),
+  allow_retry = TRUE
 )
 ```
 
@@ -200,7 +201,7 @@ textInput("icer_8", "ICER of strategy 8", width = "300px")
 ```
 
 ### Step 3: Explanations
-The results in the table below are obtained by calculating the difference in costs and effects between consecutive strategies in the table.
+The results in the table below were obtained by calculating the difference in costs and effects between consecutive strategies in the table.
 ```{r calc_icer1}
 df_thx <- df_thx[order(df_thx$QALYs),]
 rownames(df_thx) <- NULL
@@ -214,7 +215,6 @@ df_thx2
 ### Step 4: Identify extendedly dominated strategies
 Based on the table above, we can now identify the extendedly dominated strategies!
 ```{r quiz_ext_dom}
-quiz(
 question("Based on the table above, which strategy(ies) is(are) extendedly dominated? ",
   answer("Strategy 1"),
   answer("Strategy 2", correct = TRUE),
@@ -228,7 +228,6 @@ question("Based on the table above, which strategy(ies) is(are) extendedly domin
   allow_retry = TRUE,
   try_again = "Did you select all the correct answers?"
   )
-)
 ```
 
 Can you explain your answer?
@@ -272,7 +271,7 @@ textInput("icer_8b", "ICER of strategy 8", width = "300px")
 ```
 
 ### Step 5: Explanations
-The results in the table below are obtained by calculating the difference in costs and effects between consecutive strategies in the table
+The results in the table below were obtained by calculating the difference in costs and effects between consecutive strategies in the table
 ```{r calc_icer2}
 df_thx <- df_thx[order(df_thx$QALYs),]
 rownames(df_thx) <- NULL
@@ -288,7 +287,6 @@ df_thx2
 ### Step 5: Identify extendedly dominated strategies
 Based on the table above, we can now identify the extendedly dominated strategies!
 ```{r quiz_ext_dom2}
-quiz(
 question("Based on the table above, which strategy(ies) is (are) extendedly dominated?",
   answer("Strategy 1"),
   answer("Strategy 3"),
@@ -300,7 +298,6 @@ question("Based on the table above, which strategy(ies) is (are) extendedly domi
   type = "learnr_radio",
   incorrect = "The right answer is strategy 5, see the explanation to the previous step.",
   allow_retry = TRUE
-)
 )
 ```
 
@@ -337,7 +334,7 @@ textInput("icer_8c", "ICER of strategy 8", width = "300px")
 ```
 
 ### Step 6: Explanations
-The results in the table below are obtained by calculating the difference in costs and effects between consecutive strategies in the table
+The results in the table below were obtained by calculating the difference in costs and effects between consecutive strategies in the table.
 ```{r calc_icer3}
 df_thx <- df_thx[order(df_thx$QALYs),]
 rownames(df_thx) <- NULL
@@ -354,7 +351,6 @@ df_thx3
 ### Step 6: Identify extendedly dominated strategies
 Based on the table above, we can now identify the extendedly dominated strategies!
 ```{r quiz_ext_dom3}
-quiz(
 question("Based on the table above, which strategy(ies) is(are) extendedly dominated? ",
   answer("Strategy 1"),
   answer("Strategy 3"),
@@ -366,7 +362,6 @@ question("Based on the table above, which strategy(ies) is(are) extendedly domin
   incorrect = "Too bad... The right answer is that none of these strategies are extendedly dominated since all ICERs are increasing! Strategies 1, 3, 7, 8, 9 are thus all on the cost-effectiveness acceptability frontier!",
   correct = "Good job! This means that strategies 1, 3, 7, 8, 9 are all on the cost-effectiveness acceptability frontier!",
   allow_retry = TRUE
-)
 )
 ```
 
@@ -522,6 +517,7 @@ quiz(
 
 ### Try again!
 Determine which strategies are on the CEAF and calculate the ICERs for the strategies in the following table. Use a pen, paper, and calculator or the R code chunck below to perform the calculations.  
+You can see the answers by clicking the 'Continue' button.
 
 ```{r extra}
 df_thx_extra <- data.frame(
