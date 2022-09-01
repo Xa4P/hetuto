@@ -229,10 +229,10 @@ sum((p_DeathOther) * (1 - p_DeathOther - p_AneurysmDetection) ^ c(0:1000)) # lim
 
 ### Explanations
 a. It is not possible to reach the "DeathTreatment" state in 2 cycles because individuals have to develop the aneurysm, the aneurysm has to be detected, and then be treated to be fatal.  
-b. Survival without new aneurysm has probability 0.8 per cycle. This probability is multiplied 12 times by itself because the cycle length is 1 month.  
-c. This is calculated as the probability of new anerism x probability it is detected * probability it is sucessfully treated. This has to be exponentiated by because this process should occur twice in a row to answer this question.  
+b. Survival without new aneurysm has probability a probability of 80% (0.8) per cycle. This probability is multiplied 12 times by itself because the cycle length is 1 month.  
+c. This is calculated as the probability of new aneurysm x probability it is detected x probability it is sucessfully treated. This has to be exponentiated by 2 because this process should occur twice in a row to answer this question.  
 d. This is just the probability of dying from other causes (`p_DeathOther` or 10%)  
-e. This is calculated as the probability of Death from Healthy in cycle 1 (`p_DeathOther`) plus the probability of remaining health and dying from other causes in cycle 2 (`p_DeathOther` * (1 - `p_DeathOther` - `p_NewAneurysm`)) plus death from a new aneurysm in cycle 2 (`p_DeathOther` * `p_NewAneurysm`).  
+e. This is calculated as the probability of Death from Healthy in cycle 1 (`p_DeathOther`) plus the probability of remaining health and dying from other causes in cycle 2 (`p_DeathOther` * (1 - `p_DeathOther` - `p_NewAneurysm`)) plus death from a other causes while having a new aneurysm in cycle 2 (`p_DeathOther` * `p_NewAneurysm`).  
 f. In this health economic model, it is not possible to have more than 1 untreated aneurysm. This cannot be calculated based on this model.  
 g. Given they survive treatment, all treated individuals will return to the "Healthy" health state in the cycle following treatment. This Markov model has no 'memory': all individuals in a health state are similar, regardless of their history. Consequently, having survived aneurysm treatment does not affect the survival of individuals once they have transited to the "Healthy" health state.    
 h. Due to the severity of aneurysm treatment death from other causes is ignored in the cycle patients are treated.  
