@@ -253,10 +253,11 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Decision tree
 
-### Aim and instructions
+### Aim
 The aim of this practical assignment is to perform a health economic analysis using a decision tree. You are asked to evaluating the cost-effectiveness of a treatment strategy for patients with unruptured intracranial aneurysms versus watchful waiting.  
 
-**NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Soultions can be copy/paste in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by pushing the 'Run code' button on the upper-right side of the chunk.  
+### Instructions
+The provided solutions are one way to perform the calculations. You can obtain the same results using other fomula's or R commands. The last 'Hint' is always the solution to the assignment. Solutions can be copied and pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk or using the shortcut CRTL+Enter.   
 
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
