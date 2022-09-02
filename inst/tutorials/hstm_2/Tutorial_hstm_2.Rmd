@@ -84,9 +84,11 @@ df_mort <- data.frame(
 
 ## Health state transition model - 2
 
-### Aim and instructions
+### Aim
 The aim of this practical assignment is to get you acquainted with the principle of HSTM. This assignmment focuses on evaluating the cost-effectiveness of aspirin treatment versus no aspirin treatment for the primary prevention of cardiovascular disease events using a HSTM, also called Markov model. During this assignment, you will first define the cohort simulation of both strategies (using transition probabilities, and matrix multiplication) and then calculate the outcomes (quality-adjusted life years, costs). First, familiarise yourself with the model structure.  
 The method described in this practical is more extensively described in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824).  
+
+### Instructions
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_hstm_2_files/images/Image_hint.png")
@@ -106,13 +108,19 @@ You should be able to use the following commands to perform this exercise:
 - using the command `for()` to perform forward loop  
 
 ## Model structure & parameters  
-**DISCLAIMER: FOR THE FOLLOWING ASSIGNMENT, ASSUME THAT PROBABILITIES ARE THE SAME AS RATES. SEE *[Fleurence & Hollenbeak 2007]*(https://doi.org/10.2165/00019053-200725010-00002) FOR AN EXPLANATION OF THE DIFFERENCES BETWEEN RATES AND PROBABILITIES AND REMEMBER THAT WE USUALLY USE PROBABILITIES IN HEALTH ECONOMIC MODELLING** 
+**DISCLAIMER: FOR THE FOLLOWING ASSIGNMENT, ASSUME THAT PROBABILITIES ARE THE SAME AS RATES. SEE Fleurence & Hollenbeak 2007 (https://doi.org/10.2165/00019053-200725010-00002) FOR AN EXPLANATION OF THE DIFFERENCES BETWEEN RATES AND PROBABILITIES AND REMEMBER THAT WE USUALLY USE PROBABILITIES IN HEALTH ECONOMIC MODELLING** 
 
 ### Model structure
 In this HSTM, individuals either receive aspirin or not (the two strategies we compare).In this model, individuals may remain "Well", or they can experience a stroke or a myocardial infarction (MI). These two events may be fatal or individuals may remain alive in the "Post-minor stroke", "Post-major stroke", or "Post-MI" health states when they survive these events. From all health states, individuals may die from general causes of death to "Death other".  
   
 ```{r, fig.align = 'center', out.width = "90%", echo = F}
 knitr::include_graphics("Tutorial_hstm_2_files/images/Fig_model_structure.png")
+```
+
+This model structure, which is the same for both strategies, can also be visualised as follows.  
+
+```{r, fig.align = 'center', out.width = "90%", echo = F}
+knitr::include_graphics("Tutorial_hstm_2_files/images/Fig_model_structure_2.png")
 ```
 
 ### Model inputs
@@ -131,38 +139,38 @@ v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the mo
 # Input parameters
 
 ## Rates & probabilities
-r_fatal_mi	<- 0.25 # rate fatal MI - no-Aspirin strategy
-r_fatal_stroke	<- 0.3 # rate fatal stroke - no-Aspirin strategy
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
 
 ## Treatment effectiveness
-eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
-eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+eff_mi	<- 0.6 # treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # treatment effectiveness of Aspirin on the probability of experiencing a stroke
 
 ## Utility values 
-u_healthy	<- 1 # utility value health state: Well
-u_post_mi	<- 0.85 # utility value health state: Post-MI
-u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
-u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
-u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+u_healthy	<- 1 # utility value of health state: Well
+u_post_mi	<- 0.85 # utility value of health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value of health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value of health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value of health state: Well when using aspiring
 
 ## Costs
 c_aspirin_use	<- 100 # yearly costs of using aspirin
 c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
 c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
-c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON-FATAL major stroke
 ```
 
 
 When developing a health economic model we often have to combine evidence from different sources of literature. Assume that there was evidence that 235 out of 1,000 patients **who had a stroke and survived** moved into a post major stroke state (the remaining patients experienced a minor stroke). Based on this evidence, please define the parameter `p_minor_stroke` (probability of transiting to the "post-minor stroke" health state **after having experienced a NON-FATAL stroke** and `p_major_stroke` (probability of transiting to the "post-major stroke" health state **after having experienced a NON-FATAL stroke**.   
-1.b. From other sources, you found that the incidence rates for myocardial infarction (MI), stroke, and death from other causes were respectively **400, 50, and 650 per 100,000 person-years**. Calculate the yearly incidence rates of MI, stroke, and death from other causes than MI and stroke in the placeholder of parameters `r_inc_mi`, `r_inc_stroke`, and `r_mort`.  
+From other sources, you found that the incidence rates for myocardial infarction (MI), stroke, and death from other causes were respectively **400, 50, and 650 per 100,000 person-years**. Calculate the yearly incidence rates of MI, stroke, and death from other causes than MI and stroke in the placeholder of parameters `r_inc_mi`, `r_inc_stroke`, and `r_mort`.  
 
 ```{r calc_inputs, exercise = TRUE}
-# Parameters to calculate
-# probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
-# probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
-# yearly incidence rate MI
-# yearly incidence rate stroke
-# yearly rate of death
+# Please calculate (based on the information in the text)
+# the probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+# the probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+# the yearly incidence rate MI
+# the yearly incidence rate stroke
+# the yearly rate of death
 ```
 
 ```{r calc_inputs-hint}
@@ -177,7 +185,7 @@ p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post
 r_inc_mi <- 400 / 100000 # yearly incidence rate MI
 r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
 r_mort <- 650 / 100000 # yearly rate of death
-#data.frame(c(p_post_major_stroke, p_post_minor_stroke, r_inc_mi, r_inc_stroke, r_mort)) # show
+#c(`Prob_post-major_stoke` = p_post_major_stroke, `Prob_post-minor_stoke` = p_post_minor_stroke, `Rate_inc_nonfatal_MI`= r_inc_mi, `Rate_inc_nonfatal_stroke`= r_inc_stroke, `Rate_deathothercauses`= r_mort) # show
 ```
 
 ## Transition matrices - "No aspirin" 
@@ -216,7 +224,14 @@ u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
 c_aspirin_use	<- 100 # yearly costs of using aspirin
 c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
 c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
-c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON-FATAL major stroke
+
+## Calculated parameters
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
 ```
 
 ```{r inputs_complete_setup, echo = TRUE}
@@ -260,18 +275,17 @@ r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
 r_mort <- 650 / 100000 # yearly rate of death
 ```
 
-```{r m_tp_1, exercise = TRUE, exercise.setup = "inputs_complete_setup"}
+To do so, create a matrix of 7 by 7, and use the evidence `p_` and `r_` parameters to fill it in. Use the model structure to fill in the transition matrix.  
+Once an individuals die, that person remains in that health state.  
+The transition probabilities to the post-minor stroke health states are the product of experiencing a non-fatal stroke and of the consequences being minor or major.
 
+```{r m_tp_1, exercise = TRUE, exercise.setup = "inputs_complete_setup"}
+# Create transition matrix 7x7
+# Fill in transition matrix using above-defined paramteres
 
 ```
 
 ```{r m_tp_1-hint-1}
-"To do so, create a matrix of 7 by 7, and use the evidence `p_` and `r_` parameters to fill it in. Use the model structure to fill in the transition matrix."  
-"Once an individuals die, that person remains in that health state."  
-"The transition probabilities to the post-minor stroke health states are the product of experiencing a non-fatal stroke and of the consequences being minor or major."
-```
-
-```{r m_tp_1-hint-2}
 # Create transition matrix
 m_tp_comp <- matrix(0, 
                     ncol = n_hs, 
@@ -406,7 +420,8 @@ Assume all 100,000 individuals (`n_ind` object) start in the "Well" health state
 - `n_cycles`: the number of cycles to simulate, assume 10 years (yearly cycles)  
 - `n_ind`: the number of individuals to simulate, assume 100,000  
 - `v_start_hs`: a vector determining the starting position of the individuals over the different cycles (assume all individuals start in the "Well" health state)  
-- `m_hs_comp`: a matrix to store the number of individuals in each health state during each cycle for the comparator. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states 75). Numerate the rows from 0 to `n_cycles` and name the column with the names of the health states ("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other").  
+- `m_tp_comp`: a transition matrix  
+- `m_hs_comp`: a matrix to store the number of individuals in each health state during each cycle for the comparator. This matrix has `n_cycles` + 1 row (because we need to account for the start position), and as much columns as health states (N=7). Numerate the rows from 0 to `n_cycles` and name the columns with the names of the health states ("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other").  
 `m_tp_comp`, `n_cycles`, and `n_ind` are already loaded. First, define `v_start_hs` and `m_hs_comp`. Second, use `v_start_hs` to determine the starting position of the individuals in the simulation, i.e. the first row of `m_hs_comp`. Finally, fill in `m_hs_comp` using matrix multiplication and the objects: `m_tp_comp` and `m_hs_comp`.  
 
 ```{r cohort_comp, exercise = TRUE, exercise.setup = "m_tp_1_setup"}
@@ -550,7 +565,6 @@ r_fatal_mi	<- 0.25 # rate fatal MI
 r_fatal_stroke	<- 0.3 # rate fatal stroke
 r_inc_mi <- 400 / 100000 # yearly incidence rate MI
 r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
-r_mort <- 650 / 100000 # yearly rate of death
 
 p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
 p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
@@ -575,9 +589,9 @@ c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL
 
 ### Age-dependent mortality data  
 As you can see in the R chunk above, there are no transition probabilities defined for the yearly rate of death (from other causes), `r_mort`. This is because we will now make this probability of death dependent on the age of individuals in the health economic model.  
-To do so, we need the rate of death for each age. For this assignment, these rates have been obtained from the central bureau of statistics and are displayed below per 10,000 individuals. These rates are stored in the `df_mort` dataframe displayed below. The `df_mort` dataframe contain two variables:  
+To do so, we need the rate of death for each age. For this assignment, these rates have been obtained from the central bureau of statistics and are displayed below per 10,000 individuals. These rates are stored in the `df_mort` dataframe displayed below. The `df_mort` dataframe contains two variables:  
 
-- `Age` contains the age of Dutch individuals  
+- `Age` contains the age at with mortality rates are defined  
 - `R_mort_10000` contains the mortality rate, per 10,000 individuals  
 
 ```{r mort_data}
@@ -598,7 +612,7 @@ df_mort[, c("Age", "R_mort")] # show
 
 
 ### Filling in the "No aspirin" strategy transition array
-Now that we have calculated the per person mortality rates for each age, we can include them in the transition array that we will use in the health economic model. To include these age-dependent transition probabilities in the model, we have to use 3-dimentional (3D) arrays instead of fixed transition matrices. The use of these 3D arrays allow to select a different transition matrix (containing different transition probabilities) for each cycle of the model. Arrays are defined using the `array()` function. The code chunk below shows how to define the transition array for the "No aspirin group. The comments describe what is happening. Have a look at the code and try to understand it! Below the code chunk, you can see the two first and two last transition matrix contained in the array. As you can see, the transition of to the `Death_other` health state has increased between the first and last cycles, as we expected!       
+Now that we have calculated the per person mortality rates for each age, we can include them in the transition array that we will use in the health economic model. To include these age-dependent transition probabilities in the model, we have to use 3-dimentional (3D) arrays instead of fixed transition matrices. The use of these 3D arrays allow to select a different transition matrix (containing different transition probabilities) for each cycle of the model. Arrays are defined using the `array()` function. The code chunk below shows how to define the transition array for the "No aspirin group. The comments describe what is happening. Have a look at the code and try to understand it! Below the code chunk, you can see the first two and the last two transition matrices contained in the 3D array. As you can see, the transition of to the `Death_other` health state has increased between the first and last cycles, as we expected!       
 *NOTE: elements in a array are called by the number of dimension of the array. Thus, a single element of a 3D array is called via a x, y, and z dimension. If only the x and y coordinates are provided, the vector of elements with the coordinates x and y is returned. In this case, the third dimension (the 'z') represents the cycle number while the rows and columns represent the same as in the transition matrix (transition from - to).*  
 
 ```{r a_tp_1, echo = TRUE}
@@ -611,15 +625,13 @@ n_start_age <- 45
 df_mort$R_mort <- df_mort$R_mort_10000 / 10000
 
 # Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9
-v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
-                        which(df_mort$Age == n_start_age + (n_cycles - 1)
-                              )
-                      ), "R_mort"]
+v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):which(df_mort$Age == n_start_age + (n_cycles - 1))), "R_mort"]
 
 # Initialise 3D array which will contain the transition probabilities
-a_tp_comp <- array(0, dim = c(n_hs, n_hs, n_cycles),
-                               dimnames = list(v_names_hs, v_names_hs, 1:n_cycles)
-                               )
+a_tp_comp <- array(0, 
+                   dim = c(n_hs, n_hs, n_cycles), # define length of the dimensions (7, 7, 10)
+                   dimnames = list(v_names_hs, v_names_hs, 1:n_cycles) # define names of the dimensions
+                   )
 
 # Fill in the arrays using the background mortality for each age 
 a_tp_comp["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi - r_inc_stroke  
@@ -668,7 +680,6 @@ r_fatal_mi	<- 0.25 # rate fatal MI
 r_fatal_stroke	<- 0.3 # rate fatal stroke
 r_inc_mi <- 400 / 100000 # yearly incidence rate MI
 r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
-r_mort <- 650 / 100000 # yearly rate of death
 
 p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
 p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
@@ -735,8 +746,9 @@ a_tp_comp["Death_other", "Death_other",] <- 1
 ```
 It is now time to define and fill in the transition array for the "Aspirin" strategy, the intervention which will be compared to the "No aspirin" strategy.  
 To do so, we have to perform the following:  
-1. Make a copy of `a_tp_comp` and call it `a_tp_int`. This will be the transition array we will use for the "Aspirin" strategy.  
-2. Aspirin has an effect on the probability of experiencing an MI (object `eff_mi`) and stroke (object `eff_stroke`). Use these two input parameters to adjust the probabilities to experience these cardiovascular events in the `a_tp_int` array. Again you may use the rates as probabilities when calculating the transitions. Assume that once individuals had an event they will no longer use aspirin.  
+- Make a copy of `a_tp_comp` and call it `a_tp_int`. This will be the transition array we will use for the "Aspirin" strategy.  
+- Aspirin has an effect on the probability of experiencing an MI (object `eff_mi`) and stroke (object `eff_stroke`). Use these two input parameters to adjust the probabilities to experience these cardiovascular events in the `a_tp_int` array. Again you may use the rates as probabilities when calculating the transitions.  
+Assume that once individuals had an event they will no longer use aspirin.  
 
 ```{r a_tp_2, exercise = TRUE, exercise.setup = "a_tp_2_setup"}
 # Make a copy of `a_tp_comp` and call it `a_tp_int`
@@ -872,7 +884,7 @@ Since we now have transition matrices for both strategies, we can perform the co
 
 The R code chunk below shows how to do this for the "No aspirin" strategy.  
 
-```{r time_dep_cohort_show}
+```{r time_dep_cohort_show, echo = TRUE}
 #### Fill the cohort simulation for the "No aspirin" strategy ----
 
 # Create a matrix to store the cohort simulation (`m_hs_comp`)
@@ -1112,7 +1124,7 @@ for(cycle in 1:n_cycles){
   m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
 }
 ```
-Now that we know the life course of the hypothetical individuals in both strategies, we can calculate the (un)discounted costs and effects (LYs and QALYs) over time. For convenience, account for state membership at the end of the year. Not all 100,000 individuals are considered to be "Well" at the start of year 1. You do not have to apply half-cycle correction. Practically, this means that you do not account for the state membership at cycle 0, the starting position.  
+Now that we performed the cohort simulations, we can calculate the (un)discounted costs and effects (LYs and QALYs) over time. For convenience, account for state membership at the end of the year for these calculation. Practically, this means that you do not account for the state membership at cycle 0, the starting position. You do not have to apply half-cycle correction.  
 
 ### Life years
 Calculate the life years of both strategies and the cumulative life years over the 10 years of the model. This is done in two steps:  
@@ -1154,8 +1166,8 @@ n_t_ly_int <- sum(v_t_ly_int)
 ```
 
 ### QALYs
-Using the utility values per health state defined below, calculate the total quality adjusted life-years (QALYs) in each year for the 100,000 hypothetical individuals in each group. Use the same approach as for the life years calculations, except that the state rewards are different and may differ across strategies. Calculate also the cumulative and total QALY gained.  
-**Assumptions:** Individuals in the "Well" health state have a utility value equal to`u_healthy` in the "No Aspirin" group, while in the "Aspirin" group, they have the utility associated with use of aspirin, `u_aspiring_use`. Individuals in the "Death" health states do not accrue QALYs. 
+Using the utility values per health state defined below, calculate the total quality adjusted life-years (QALYs) in each year for the 100,000 hypothetical individuals in each group. Use the same approach as for the life years calculations, except that the state rewards are different across health states and may differ across strategies. Calculate also the cumulative and total QALY gained.  
+**Assumptions:** Individuals in the "Well" health state have a utility value equal to `u_healthy` in the "No Aspirin" group, while in the "Aspirin" group, they have the utility associated with the use of aspirin, `u_aspiring_use`. Individuals in the "Death" health states do not accrue QALYs. 
 
 ```{r show_utils, echo = TRUE, eval = FALSE}
 # Utility values 
@@ -1240,10 +1252,13 @@ v_cum_qaly_int <- cumsum(v_t_qaly_int)
 ## Determine the total number of QALYs gained (sum of all cycles; rewards at the end of the cycle!)
 n_t_qaly_comp <- sum(v_t_qaly_comp)
 n_t_qaly_int  <- sum(v_t_qaly_int)
+
+c(`Total QALYs No aspirin group`= n_t_qaly_comp,
+  `Total QALYs Aspirin group`= n_t_qaly_int) # show
 ```
 
 ### Costs
-Using the annual costs per health state defined below, calculate the total costs in each year for the 100,000 hypothetical individuals. Use the same approach as for the life years calculation, except that the state rewards are different and may differ across strategies. Calculate also the cumulative and total costs.  
+Using the annual costs per health state defined below, calculate the total costs in each year for the 100,000 hypothetical individuals. Use the same approach as for the (quality-adjusted) life years calculation, except that the state rewards are different axross health states and may differ across strategies. Calculate also the cumulative and total costs.  
 **Assumptions:** Individuals in the "Well" health state do not incur any costs in the "No aspirin" group. However, in the "Apsirin" group, individuals in the "Well" health state incur the costs associated with aspirin use. Assume that after a MI or stroke, individuals stop with aspirin. Individuals in the "Death" health states do not incur any costs.   
 
 ```{r show_costs, echo = TRUE, eval = FALSE}
@@ -1295,6 +1310,9 @@ v_cum_c_int  <- cumsum(v_t_c_int)
 ## Determine the total costs accrued (sum of all cycles; rewards at the end of the cycle!)
 n_t_c_comp <- sum(v_t_c_comp)
 n_t_c_int  <- sum(v_t_c_int)
+
+c(`Total costs No aspirin group`= n_t_c_comp,
+  `Total costs Aspirin group`= n_t_c_int) # show
 ```
 
 ### Mean outcomes and comparison
@@ -1535,15 +1553,15 @@ n_t_c_int  <- sum(v_t_c_int)
 ```
 
 ```{r calc_out, exercise = TRUE, exercise.setup = "calc_out_setup"}
-ly_comp # mean LY per individuals of the "No aspirin" strategy  
-ly_int # mean LY per individuals of the "Aspirin" strategy  
-qaly_comp # mean QALY of the "No aspirin" strategy  
-qaly_int # mean QALY of the "Aspirin" strategy  
-c_comp # mean costs of the "No aspirin" strategy  
-c_int # mean costs of the "Aspirin" strategy  
-inc_q # incremental QALY of the "Aspirin" strategy versus the "No aspirin" strategy
-inc_c # incremental costs of the "Aspirin" strategy versus the "No aspirin" strategy  
-ICER # ICER per QALY
+#ly_comp <- ___ # mean LY per individuals of the "No aspirin" strategy  
+#ly_int <- ___ # mean LY per individuals of the "Aspirin" strategy  
+#qaly_comp <- ___ # mean QALY of the "No aspirin" strategy  
+#qaly_int <- ___ # mean QALY of the "Aspirin" strategy  
+#c_comp <- ___ # mean costs of the "No aspirin" strategy  
+#c_int <- ___ # mean costs of the "Aspirin" strategy  
+#inc_q <- ___ # incremental QALY of the "Aspirin" strategy versus the "No aspirin" strategy
+#inc_c <- ___ # incremental costs of the "Aspirin" strategy versus the "No aspirin" strategy  
+#ICER <- ___ # ICER per QALY
 ```
 
 ```{r calc_out-hint}
@@ -1560,10 +1578,22 @@ c_int <- n_t_c_int / n_ind # mean costs of the "Aspirin" strategy
 inc_q <- qaly_int - qaly_comp# incremental QALY of the "Aspirin" strategy versus the "No aspirin" strategy
 inc_c <- c_int - c_comp# incremental costs of the "Aspirin" strategy versus the "No aspirin" strategy  
 ICER <- inc_c / inc_q # ICER per QALY
+
+data.frame(
+      LY_NoAspirin = round(n_t_ly_comp / n_ind, 2),
+      LY_Aspirin = round(n_t_ly_int / n_ind, 2),
+      QALY_NoAspirin = round(n_t_qaly_comp / n_ind, 2),
+      QALY_Aspirin = round(n_t_qaly_int / n_ind, 2),
+      COSTS_NoAspirin = round(n_t_c_comp / n_ind, 0),
+      COSTS_NoAspirin = round(n_t_c_int / n_ind, 0),
+      INCREMENTAL_QALY = round(((n_t_qaly_int - n_t_qaly_comp) / n_ind), 2),
+      INCREMENTAL_COSTS = round(((n_t_c_int - n_t_c_comp) / n_ind), 0),
+      ICER = round(((n_t_c_int - n_t_c_comp) / n_ind) / ((n_t_qaly_int - n_t_qaly_comp) / n_ind), 0)
+      ) # show
 ```
 
 ### Undiscounted outcomes  
-The outcomes look as follows.  
+The outcomes are the following  
 ```{r calc_out_display}
 #### Calculate life years, quality-adjusted life years, and costs for both strategy ---
 
@@ -1656,12 +1686,12 @@ n_t_c_comp <- sum(v_t_c_comp)
 n_t_c_int  <- sum(v_t_c_int)
 
 data.frame(Strategy = c("No aspirin", "Aspirin"),
-      LY = round( c(n_t_ly_comp, n_t_ly_int) / n_ind, 2),
-      QALY = round( c(n_t_qaly_comp, n_t_qaly_int) / n_ind, 2),
-      COSTS = round( c(n_t_c_comp, n_t_c_int) / n_ind, 0),
+      LY = round(c(n_t_ly_comp, n_t_ly_int) / n_ind, 2),
+      QALY = round(c(n_t_qaly_comp, n_t_qaly_int) / n_ind, 2),
+      COSTS = round(c(n_t_c_comp, n_t_c_int) / n_ind, 0),
       INC_QALY = c("-", round(((n_t_qaly_int - n_t_qaly_comp) / n_ind), 2)),
       INC_COSTS = c("-", round(((n_t_c_int - n_t_c_comp) / n_ind), 0)),
-      ICER = c("-", round( ((n_t_c_int - n_t_c_comp) / n_ind) / ((n_t_qaly_int - n_t_qaly_comp) / n_ind), 0))
+      ICER = c("-", round(((n_t_c_int - n_t_c_comp) / n_ind) / ((n_t_qaly_int - n_t_qaly_comp) / n_ind), 0))
       )
 ```
 
@@ -1670,9 +1700,9 @@ Since individuals attach more value to outcomes happening in the present than in
 We will now focus on calculating the discounted results. We will use the suffix `_d` to indicate that the objects contain discounted results.  
 
 ### Life years
-To calculate discounted results, the following steps should be performed:
-1. Define a vector of length `n_cycles`, which contain the discount weights for each cycle. Name the discount weights vector for health effects `v_dw_e` and for costs `v_dw_c`. The yearly discount rates for health effects and costs are provided under the objects `r_d_effects` and `r_d_costs`. The discount rates are set to 1.5% (0.015) for health effects and 4% (0.04) for costs according to the Dutch guideline for economic evaluation in health care.  
-2. Use matrix multiplication of the vector of total outcomes (LY, QALYs, or costs) defined in the previous step by the vector of discount weights.  
+To calculate discounted results, the following steps should be performed:  
+1. Define a vector of length `n_cycles`, which contain the discount weights for each cycle. Name the discount weights vector for health effects `v_dw_e` and for costs `v_dw_c`. The yearly discount rates for health effects and costs are provided under the objects `r_d_effects` and `r_d_costs`. The discount rates are set to 1.5% (0.015) for health effects and 4% (0.04) for costs according to the [Dutch guideline for economic evaluation in health care](https://english.zorginstituutnederland.nl/publications/reports/2016/06/16/guideline-for-economic-evaluations-in-healthcare).  
+2. Use matrix multiplication of the vector of total outcomes (LY, QALYs, or costs) defined in the previous step (these are already loaded) by the vector of discount weights.  
 The calculations are performed for discounted life years in the following R code chunk.  
 
 ```{r calc_ly_d_show, echo = T}
@@ -1741,10 +1771,287 @@ inc_qaly_d <- qaly_int_d - qaly_comp_d
 inc_c_d <- c_int_d - c_comp_d
 
 ICER_d <- inc_c_d / inc_qaly_d
+
+c(`Incremental QALYs`= inc_qaly_d,
+  `Incremental Costs` = inc_c_d,
+  ICER = ICER_d) # show
+```
+
+### Check your answer
+The results are the following.  
+
+```{r res_disc_show, echo = FALSE}
+#### 0. Define model parameters ----
+
+# Setting parameters
+n_cycles <- 10 # number of cycles
+r_d_effects <- 0.015 # annual discount rate, health effects
+r_d_costs <- 0.04 # annual discount rate, costs
+v_names_hs <- c("Well", "Post-minor_stroke", "Post-major_stroke", "Post-MI", "Death_stroke", "Death_MI", "Death_other") # vector of names of health states
+n_hs <- length(v_names_hs) # number of health states
+n_ind <- 100000 # number of individuals to simulate  
+v_start_hs <- c(n_ind, 0, 0, 0, 0, 0, 0) # vector of starting position in the model  
+
+# Input parameters
+
+## Rates & probabilities
+r_fatal_mi	<- 0.25 # rate fatal MI
+r_fatal_stroke	<- 0.3 # rate fatal stroke
+r_inc_mi <- 400 / 100000 # yearly incidence rate MI
+r_inc_stroke <- 50 / 100000 # yearly incidence rate stroke
+r_mort <- 650 / 100000 # yearly rate of death
+
+p_post_major_stroke	<- 235 / 1000 # probability to transit to "Post-major stroke" after a NON-FATAL stroke occured
+p_post_minor_stroke	<- 1 - p_post_major_stroke # probability to transit to "Post-minor stroke" after a NON-FATAL stroke occured
+
+## Treatment effectiveness
+eff_mi	<- 0.6 # Treatment effectiveness of Aspirin on the probability of experiencing a MI
+eff_stroke	<- 1.2 # Treatment effectiveness of Aspirin on the probability of experiencing a stroke
+
+## Utility values 
+u_healthy	<- 1 # utility value health state: Well
+u_post_mi	<- 0.85 # utility value health state: Post-MI
+u_post_minor_stroke	<- 0.75 # utility value health state: Post-minor stroke
+u_post_major_stroke	<- 0.5 # utility value health state: Post-major stroke
+u_aspirin_use	<- 0.999 # utility value health state: Well when using aspiring
+
+## Costs
+c_aspirin_use	<- 100 # yearly costs of using aspiring
+c_post_mi	<- 8000 # yearly costs after having experienced a NON-FATAL MI
+c_post_minor_stroke	<- 2000 # yearly costs after having experienced a NON-FATAL minor stroke
+c_post_major_stroke	<- 20000 # yearly costs after having experienced a NON_FATAL major stroke
+
+#### 1. Define 3D array for each group ----
+
+# Define start age cohort
+n_start_age <- 45
+
+# Calculate per person mortality rate
+df_mort$R_mort <- df_mort$R_mort_10000 / 10000
+
+# Create a vector containing the mortality probability values for the age `n_start_age` to `n_start_age`+9
+v_p_mort <- df_mort[c(which(df_mort$Age == n_start_age):
+                        which(df_mort$Age == n_start_age + (n_cycles - 1)
+                              )
+                      ), "R_mort"]
+
+# Initialise 3D array which will contain the transition probabilities
+a_tp_comp <- array(0, dim = c(n_hs, n_hs, n_cycles),
+                               dimnames = list(v_names_hs, v_names_hs, 1:n_cycles)
+                               )
+
+# Fill in the arrays using the background mortality for each age 
+a_tp_comp["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi - r_inc_stroke  
+##!!Notice, that only using the first 2 elements of the array will fill these transition probabilities for all 10 transition matrices used in all cycles!!
+
+a_tp_comp["Well", "Post-minor_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_comp["Well", "Post-major_stroke", ] <- r_inc_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_comp["Well", "Post-MI", ] <- r_inc_mi * (1 - r_fatal_mi)
+a_tp_comp["Well", "Death_stroke", ] <- r_inc_stroke * r_fatal_stroke
+a_tp_comp["Well", "Death_MI", ] <- r_inc_mi * r_fatal_mi
+a_tp_comp["Well", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-minor_stroke", "Post-minor_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-minor_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-major_stroke", "Post-major_stroke", ] <- 1 - v_p_mort
+a_tp_comp["Post-major_stroke", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Post-MI", "Post-MI", ] <- 1 - v_p_mort
+a_tp_comp["Post-MI", "Death_other", ] <- v_p_mort
+
+a_tp_comp["Death_stroke", "Death_stroke",] <- 1
+a_tp_comp["Death_MI", "Death_MI",] <- 1
+a_tp_comp["Death_other", "Death_other",] <- 1
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+#### 2. Calculate cohort simulation for each group ----
+
+### Fill the cohort simulation for the "No aspirin" strategy
+
+# Create a matrix to store the cohort simulation (`m_hs_comp`)
+m_hs_comp <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+                    ) 
+
+# Define the start position of individuals (all in "well")
+m_hs_comp[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_comp[cycle + 1,] <- m_hs_comp[cycle,] %*% a_tp_comp[, , cycle]
+}
+
+# Make a copy of `a_tp_comp` and call it `a_tp_int`
+a_tp_int <- a_tp_comp
+
+# Modify the transition probabilities in `a_tp_int` since Aspirin has an effect on the occurence of MI and stroke
+a_tp_int["Well", "Well", ]   <- 1 - v_p_mort - r_inc_mi * eff_mi - r_inc_stroke * eff_stroke
+a_tp_int["Well", "Post-minor_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_minor_stroke
+a_tp_int["Well", "Post-major_stroke", ] <- r_inc_stroke * eff_stroke * (1 - r_fatal_stroke) * p_post_major_stroke
+a_tp_int["Well", "Post-MI", ] <- r_inc_mi * eff_mi * (1 - r_fatal_mi)
+a_tp_int["Well", "Death_stroke", ] <- r_inc_stroke * eff_stroke * r_fatal_stroke
+a_tp_int["Well", "Death_MI", ] <- r_inc_mi * eff_mi * r_fatal_mi
+
+### Fill the cohort simulation for the "Aspirin" group
+# Create a matrix to store the cohort simulation (`m_hs_int`)
+m_hs_int <- matrix(0,
+                    ncol = length(v_names_hs),
+                    nrow = n_cycles + 1,
+                    dimnames = list(c(0:n_cycles),
+                                    v_names_hs)
+) 
+
+# Define the start position of individuals (all in "well")
+m_hs_int[1,] <- v_start_hs
+
+# Perform the matrix multiplication using the 3D array.
+for(cycle in 1:n_cycles){
+  m_hs_int[cycle + 1,] <- m_hs_int[cycle,] %*% a_tp_int[, , cycle]
+}
+
+#### 3.Calculate life years, quality-adjusted life years, and costs for both strategy ---
+
+## Determine the number of life year won by 1 individual during 1 cycle
+v_ly_comp <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+v_ly_int <- c("Well" = 1,
+               "Post-minor_stroke" = 1, 
+               "Post-major_stroke" = 1, 
+               "Post-MI" = 1, 
+               "Death_stroke" = 0, 
+               "Death_MI" = 0, 
+               "Death_other" = 0)
+
+## Determine the number of life year gained over the cycles (reward at the end of the cycle!)
+v_t_ly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_ly_comp
+v_t_ly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_ly_int
+
+## Determine the cumulative number of life year gained over the cycles (reward at the end of the cycle!)
+v_cum_ly_comp <- cumsum(v_t_ly_comp)
+v_cum_ly_int  <- cumsum(v_t_ly_int)
+
+## Determine the total number of life year gained (sum of all cycles; reward at the end of the cycle!)
+n_t_ly_comp <- sum(v_t_ly_comp)
+n_t_ly_int <- sum(v_t_ly_int)
+
+# QALY's
+## Determine the number of QALYs won by 1 individual during 1 cycle
+v_qaly_comp <- c("Well" = u_healthy,
+                 "Post-minor_stroke" = u_post_minor_stroke, 
+                 "Post-major_stroke" = u_post_major_stroke, 
+                 "Post-MI" = u_post_mi, 
+                 "Death_stroke" = 0, 
+                 "Death_MI" = 0, 
+                 "Death_other" = 0)
+
+v_qaly_int <- c("Well" = u_aspirin_use,
+                "Post-minor_stroke" = u_post_minor_stroke, 
+                "Post-major_stroke" = u_post_major_stroke, 
+                "Post-MI" = u_post_mi, 
+                "Death_stroke" = 0, 
+                "Death_MI" = 0, 
+                "Death_other" = 0)
+
+## Determine the number of QALYs gained over the cycles (reward at the end of the cycle!)
+v_t_qaly_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_qaly_comp
+v_t_qaly_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_qaly_int
+
+## Determine the cumulative number of QALYsr gained over the cycles (reward at the end of the cycle!)
+v_cum_qaly_comp <- cumsum(v_t_qaly_comp)
+v_cum_qaly_int <- cumsum(v_t_qaly_int)
+
+## Determine the total number of QALYs gained (sum of all cycles; reward at the end of the cycle!)
+n_t_qaly_comp <- sum(v_t_qaly_comp)
+n_t_qaly_int  <- sum(v_t_qaly_int)
+
+# Costs
+## Determine the costs accrued by 1 individual during 1 cycle
+v_c_comp <- c("Well" = 0,
+              "Post-minor_stroke" = c_post_minor_stroke, 
+              "Post-major_stroke" = c_post_major_stroke, 
+              "Post-MI" = c_post_mi, 
+              "Death_stroke" = 0, 
+              "Death_MI" = 0, 
+              "Death_other" = 0)
+
+v_c_int <- c("Well" = c_aspirin_use,
+             "Post-minor_stroke" = c_post_minor_stroke, 
+             "Post-major_stroke" = c_post_major_stroke, 
+             "Post-MI" = c_post_mi, 
+             "Death_stroke" = 0, 
+             "Death_MI" = 0, 
+             "Death_other" = 0)
+
+## Determine the costs accrued over the cycles (reward at the end of the cycle!)
+v_t_c_comp <- m_hs_comp[2:nrow(m_hs_comp),] %*% v_c_comp
+v_t_c_int  <- m_hs_int[2:nrow(m_hs_int),] %*% v_c_int
+
+## Determine the costs accrued over the cycles (reward at the end of the cycle!)
+v_cum_c_comp <- cumsum(v_t_c_comp)
+v_cum_c_int  <- cumsum(v_t_c_int)
+
+## Determine the total costs accrued (sum of all cycles; reward at the end of the cycle!)
+n_t_c_comp <- sum(v_t_c_comp)
+n_t_c_int  <- sum(v_t_c_int)
+
+# 4. Calculate discounted outcomes ----
+
+# QALYs
+## Define discount weights per cycle (years in this case)
+v_dw_e <- 1 / (1 + r_d_effects) ^ c(1:n_cycles)
+
+## Total discounted life years, using matrix multiplication
+n_t_qaly_comp_d <- t(v_t_qaly_comp) %*% v_dw_e
+n_t_qaly_int_d  <- t(v_t_qaly_int) %*% v_dw_e
+
+# Costs
+## Define discount weights per cycle (years in this case)
+v_dw_c <- 1 / (1 + r_d_costs) ^ c(1:n_cycles)
+
+## Total discounted life years, using matrix multiplication
+n_t_c_comp_d <- t(v_t_c_comp) %*% v_dw_c
+n_t_c_int_d  <- t(v_t_c_int) %*% v_dw_c
+
+# Calculate mean discounted QALYs and costs per individual
+qaly_comp_d <- n_t_qaly_comp_d / n_ind
+qaly_int_d <- n_t_qaly_int_d / n_ind
+
+c_comp_d <- n_t_c_comp_d / n_ind
+c_int_d <- n_t_c_int_d / n_ind
+
+# Calculate incrementals and ICER
+inc_qaly_d <- qaly_int_d - qaly_comp_d
+inc_c_d <- c_int_d - c_comp_d
+
+ICER_d <- inc_c_d / inc_qaly_d
+
+data.frame(`Incremental QALYs`= round(inc_qaly_d, 3),
+  `Incremental Costs` = round(inc_c_d, 0),
+  ICER = round(ICER_d, 0)
+  )# show
 ```
 
 ## The whole game
-In this part of the assignment, the entire health economic model (all previous steps) has been wrapped in a function and is used to calculate final (un)discounted outcomes and plot the graphs below. This model is used to illustrate how discounting and the starting age of the cohort of a health state transition model may affect the outcomes of the model.  
+In this part of the assignment, the entire health economic model (all previous steps) has been wrapped in a function and is used to calculate the final (un)discounted outcomes and plot the graphs below. This model is used to illustrate how discounting and the starting age of the cohort of a health state transition model may affect the outcomes of the model.  
 Use this model to answer the questions below. Modify the discount rates and starting age to investigate the impact it has on the results.  
 
 ### Complete model
@@ -2255,11 +2562,11 @@ quiz(caption = "Have a look at the expected life-years, costs, and effects of bo
               answer("Aspirin", correct = TRUE),
               answer("No aspirin"),
               incorrect = "Too bad, this is incorrect. The 'Aspirin' provide most QALYs when looking at the discounted results."),
-     question("Would you consider the'Aspirin' strategy to be cost effective when using a willingness-to-pay threshold of 20,000 euro per QALY?",
+     question("Would you consider the 'Aspirin' strategy to be cost effective when using a willingness-to-pay threshold of 20,000 euro per QALY?",
               answer("Yes"),
               answer("No", correct = TRUE),
               incorrect = "Too bad, this is incorrect. The 'Aspirin' is not considered to be cost effective when looking at the discounted results because the ICER is above 20,000 euro per QALY."),
-     question("Would you consider the'Aspirin' strategy to be cost effective when using a willingness-to-pay threshold of 50,000 euro per QALY?",
+     question("Would you consider the 'Aspirin' strategy to be cost effective when using a willingness-to-pay threshold of 50,000 euro per QALY?",
               answer("Yes", correct = TRUE),
               answer("No"),
               incorrect = "Too bad, this is incorrect. The 'Aspirin' is considered to be cost effective when looking at the discounted results because the ICER is below 50,000 euro per QALY.")
@@ -2287,14 +2594,14 @@ Set the discount rates back to 4% for costs and 1.5% for effects.
 
 ## Probabilistic analysis
 This final part of the assignment focuses on the probabilistic (sensitivity) analysis (PA), using the health economic model that you've build in the previous steps.  
-The PA is performed using the following steps:
+The PA is performed using the following steps:  
 1. Selecting & assigning distribution for each input parameter  
 2. Drawing random value from these distribution for each input parameter  
 3. Calculating the outcomes using the random values of each input parameter  
 4. Repeat steps 2 & 3 a LOT of time (at least 1,000)  
 
 ### Selecting distribution for input parameter
-Please select the most adequate distribution for the `r_inc_mi` input parameter. In the plot below, you can see different density distribution plotted to the mean value and standard error of this parameters.  
+Please select the most adequate distribution for the `r_inc_mi` input parameter. The plot below displays the  different density distribution of a normal, uniform, and beta distributions defined using the mean value and standard error of this parameters.  
 
 ```{r plots_dist}
 r_inc_mi_mean <- 400 / 100000
@@ -2320,7 +2627,7 @@ legend("topleft",                    # Add legend to plot
 
 ```
 
-### Quiz
+### Questions
 ```{r quiz_dist}
 
 quiz(caption = "Have a look at the plot above.", 
@@ -2328,7 +2635,8 @@ quiz(caption = "Have a look at the plot above.",
               answer("Normal"),
               answer("Beta", correct = TRUE),
               answer("Uniform"),
-              incorrect = "Too bad, the correct answer is the beta distribution. The beta distribution will be most appropriate as it is smooth, and its range does not include negative values, which is appropriate for probabilities. "
+              incorrect = "Too bad, the correct answer is the beta distribution. The beta distribution will be most appropriate as it is smooth, and its range does not include negative values, which is appropriate for probabilities.",
+              allow_retry = TRUE
      )
 )
 ```
@@ -2351,13 +2659,13 @@ textInput("Answer00", "Type your answer")
 ### Intepreting probabilistic analysis results
 This part of the assignment illustrates the principle of the probabilistic analysis and focuses on the interpretation of the probabilistic results.
 
-Perform the probabilistic analysis by pushing the button ("Push to perform the Probabilistic Analysis!"). Once your have pushed the button, the following panels provide:  
+You can perform the probabilistic analysis by clicking the button "Perform the Probabilistic Analysis!". Once your have pushed the button, the following panels provide:  
 - the mean parameters (used for the deterministic analysis), their standard error and the distribution used for the probabilistic analysis  
 - the summary statistics of the probabilistic parameters  
-- the first 25 sets of parameters are shown, these are used in the first 25 iterations of the probabilistic analysis  
+- the first 25 sets of input parameters are shown, these are used in the first 25 iterations of the probabilistic analysis  
 - the (incremental) cost-effectiveness plane and cost-effectivenss acceptability curves. You can hover your cursor on the incremental cost-effectiveness plane to see which combination of input parameters has led to a specific outcome (a dot on the plane). By selecting a surface on this incremental cost-effectiveness plane, you obtain the summary statistics of the input parameters that have led to the outcomes captured by your selection.  
 
-**To perform the probabilistic analysis:** Determine the number of simulation you want to run (at least 1,000), determine the seed number to use, and push the button to run the probabilistic analysis. You can also modify the mean and standard error of the efficacy of aspirin and starting age of the cohort. It can take some time before the results appear.  
+**To perform the probabilistic analysis:** Determine the number of simulation you want to run (at least 1,000), determine the seed number to use (which determines which random number are used to draw random values from the distributions), and click the button to run the probabilistic analysis. You can also modify the mean and standard error of the efficacy of aspirin and starting age of the cohort. It can take some time before the results appear.  
 
 ```{r shiny_pa}
 div(style = "display:inline-block",
@@ -2401,7 +2709,7 @@ numericInput(inputId = "n_start_age_pa",
              width = "175px")
 )
 actionButton(inputId = "do_pa",
-            label = "Push to perform the Probabilistic Analysis!")
+            label = "Perform the Probabilistic Analysis!")
 tags$hr()
 h3("Mean parameters, standard error, and associated distribution")
 tableOutput("inputs_det")
@@ -2409,7 +2717,7 @@ tags$hr()
 h3("Summary statistics of probabilistic inputs")
 tableOutput("inputs_pa_summary")
 tags$hr()
-h3("First 25 probabilistic inputs")
+h3("First 25 probabilistic model inputs sets")
 tableOutput("inputs_pa")
 tags$hr()
 h3("Cost-effectiveness plane")
@@ -2756,12 +3064,12 @@ textInput("Answer01", "Type your answer")
 textInput("Answer02", "Type your answer")
 ```
 
-3.	Looking at the incremental cost-effectiveness plane, what do you think is the probability that the aspirin treatment strategy will be effective (QALYs will be gained)? Note that this is calculated right of the plane.   
+3.	Looking at the incremental cost-effectiveness plane, what do you think is the probability that the aspirin treatment strategy will be effective (QALYs will be gained)? Note that this is displayed through the cost-effectiveness acceptability curves.   
 ```{r}
 textInput("Answer03", "Type your answer")
 ```
 
-Above, the cost-effectiveness acceptability curves are drawn for both strategies and the probability that each strategy is cost effective is provided in the table right from the figure.  
+Above, the cost-effectiveness acceptability curves are drawn for both strategies and the probability that each strategy is cost effective is provided in the table below the figure.  
 
 4. What would you advise in case of a willingness to pay (WTP) of €10.000? And what would you advise in case of a WTP of €100.000?
 ```{r}
@@ -2780,12 +3088,12 @@ We saw that for some (ranges of) values of the WTP there may not be a very clear
 textInput("Answer06", "Type your answer")
 ```
 
-7.	Investigate what would happen if you would perform a study to be more sure about the treatment effect of aspirin on MI. In order to do this, change the standard error (in the "Assignment HSTM 2C - inputs"-tab) from 0.15 to 0.02 and rerun the probabilistic analysis by pushing the button. What has happened to the clouds in the CE and ICE plane? What would you conclude from the CEAC now?  
+7.	Investigate what would happen if you would perform a study to be more sure about the treatment effect of aspirin on MI. In order to do this, change the standard error of the treatment effect of aspirin on MI from 0.15 to 0.02 and rerun the probabilistic analysis by pushing the button. What has happened to the clouds in the cost-effectiveness and incremental cost-effectiveness plane? What would you conclude from the cost-effectiveness acceptability curves now?  
 ```{r}
 textInput("Answer07", "Type your answer")
 ```
 
-8.	Cost-effectiveness results may be very different across subgroups. We have now looked at the results for a starting age of 45. Investigate the cost-effectiveness for aspirin use for hypothetical individuals with a starting age of 75 (reset the standard error for the effectiveness of aspirin, change the starting age in the in the "Assignment HSTM 2C - inputs"-tab and re-running the analysis). What would your advice now be in case of a WTP of €10.000, €40.000, and €100.000?  
+8.	Cost-effectiveness results may be very different across subgroups. We have now looked at the results for a starting age of 45. Investigate the cost-effectiveness for aspirin use for hypothetical individuals with a starting age of 75 (reset the standard error for the effectiveness of aspirin, change the starting age re-run the analysis). What would your advice now be in case of a WTP of €10.000, €40.000, and €100.000?  
 ```{r}
 textInput("Answer08", "Type your answer")
 ```
@@ -2794,10 +3102,10 @@ textInput("Answer08", "Type your answer")
 1. Your results may differ from each other if you changes the seed number and the number of iterations.  
 2. The cloud of results covers the northwest (incremental costs, but a loss of QALYs), northeast (gain in QALYs at incremental costs), and southeast quadrant (gain in QALYs while saving costs).  
 3. Approximately 90% of the iterations is located in the east quadrants, representing a gain in QALYs.  
-4. At a WTP €10,000 the strategy of "No Aspirin" has the highest probability (~79%) of being cost-effective. At a WTP €100,000 the strategy of "Aspirin" has the highest probability (~75%) of being cost-effective.  
-5. At a WTP €40,000 the "Aspirin" strategy has the highest probability of being cost-effective. However, this probability is "only" ~58%, indicating that there is a ~42% chance that it is not cost-effective.  
+4. At a WTP €10,000 the strategy of "No Aspirin" has the highest probability (~79%) of being cost effective. At a WTP €100,000 the strategy of "Aspirin" has the highest probability (~75%) of being cost effective.  
+5. At a WTP €40,000 the "Aspirin" strategy has the highest probability of being cost effective. However, this probability is "only" ~58%, indicating that there is a ~42% chance that it is not cost effective.  
 6.	Gain better (more accurate) evidence for instance in literature, by synthesizing evidence, or performing a trial.  
 7.	The clouds become somewhat more dense. The probability of "Aspirin being cost-effective becomes somewhat higher, it increases from ~58% to ~60%. This is still not a very high probability, indicating that the current uncertainty in the treatment effect of aspirin on MI does not translate into large uncertainty in our results/conclusion. It is likely that there are other parameters, also with large uncertainty and a wide distribution, that cause the uncertainty in our results.  
-8.	At a WTP of €10,000 the "No aspirin" strategy has the highest probability (~85%) of being cost-effective. At a WTP €100,000 the "Aspirin" strategy has the highest probability (~72%) of being cost-effective. At a WTP €40,000 the probabilities of each of the strategies being cost-effective is approximately equal.  
+8.	At a WTP of €10,000, the "No aspirin" strategy has the highest probability (~85%) of being cost effective. At a WTP €100,000 the "Aspirin" strategy has the highest probability (~72%) of being cost-effective. At a WTP €40,000 the probabilities of each of the strategies being cost effective is approximately equal.  
 
 **THE END**
