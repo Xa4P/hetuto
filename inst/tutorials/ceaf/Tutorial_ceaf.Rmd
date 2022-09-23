@@ -562,7 +562,7 @@ quiz(
            answer("Strategy 3"),
            answer("Strategy 4"),
            answer("None"),
-           incorrect = "Too bad, this is not correct. Strategies 1 and 4 are on the frontier.",
+           incorrect = "Too bad, this is not correct. Strategies 1 and 2 are on the frontier.",
            allow_retry = TRUE
            ),
     question("What are the ICERs in this comparison?",
