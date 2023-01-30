@@ -12,12 +12,12 @@ Description: This package contains tutorials to introduce health economic
     principles.
 License: GPL (>= 3)
 Imports: 
-    cli,
+    cli (>= 3.3.0),
     diagram,
     DiagrammeR,
     dplyr,
     ggplot2,
-    htmltools,
+    htmltools (>= 0.5.4),
     knitr,
     learnr,
     magrittr,
