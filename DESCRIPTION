@@ -22,7 +22,7 @@ Imports:
     learnr,
     magrittr,
     plotly,
-    rlang (>= 1.0.2),
+    rlang (>= 1.0.6),
     shiny,
     shinyjs,
     shinyWidgets,
