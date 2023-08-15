@@ -990,10 +990,6 @@ textInput("Answer_Q_comp2", "2. What if the quality of life with intervention A 
 1. In theory, you should not prefer the one over the other because they provide the same number of QALYs. None of these strategies is thus more effective than the other.  
 2. In that case, intervention A would be preferred because it would provide more QALYs.  
 
-## EQ-5D-5L
-This assignment aims to get you acquainted with measuring health-related quality of life through the EQ-5D-5L. Please follow [this link](https://utwentebs.eu.qualtrics.com/jfe/form/SV_8ANIxL2MZTgObSC) to fill in the EQ-5D-5L. This is the link to paste in your browser: https://utwentebs.eu.qualtrics.com/jfe/form/SV_8ANIxL2MZTgObSC. The survey is password protected. The password is provided on the Canvas page.  
-`r paste("&copy;")` EuroQol Research Foundation. EQ-5D^TM^ is a trade mark of the EuroQol Research Foundation. Reproduced by permission of EuroQol Research Foundation. Reproduction of this version is not allowed. For reproduction, use or modification of the EQ-5D (any version), please register your study by using the online EQ registration page: www.euroqol.org.  
-
 ## Determining utility values
 This assignment aims to teach you how to use the Dutch EQ-5D-5L tariff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
 Instructions: For each health state description, calculate the utility value using the tariff provided in the table. The EQ-5D codes are organised as follows: mobility (mo), self-care (sc), usual activities (ua), pain/ discomfort level (pd), anxiety/ discomfort level (ad). Provide your answer until 3 decimals. Example: sc4 means self-care level 4.  
@@ -1152,7 +1148,7 @@ output$res_vas_hs1 <- renderText({
 In this assignment, you will value two health states that are described as vignettes using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. A vignette is a narrative description of a health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
 **Instructions**: read the vignettes and fill in the Standard Gamble, Time-trade-off, and Visual analog scale.  
 
-### Vignette 1: Reumatoid arthritis (mild variant)  
+### Vignette 1: Rheumatoid arthritis (mild variant)  
 Your mobility is limited by pain. Walking long distances and standing still increase these complaints/ When you exercise, you experience increased joint complaints the day after. You are fully capable of bathing and clothing yourself. However, putting on shoes with laces is not an option. Activities that require lots of movement or physical strength cannot be performed. You require some help with usual activities such as doing groceries. It is important to take things slowly! You experience a constant mild pain in the joints and there is always a chance a relapse occurs. During a relapse, you are often feeling depressed, but you experience no cognitive symptoms. Your vision is normal for your age and you have no hearing problems. Your speech is normal but you experience mild to severe problems using your hands. Typing and other light activities are still possible, but every exercise that requires strength from your fingers is painful. The coordination of your fingers is also poor. Since other people do not directly observe where your pain is located, you experience some misunderstanding and miscomprehension. You are capable of maintaining normal social contacts, although the duration and frequency of such contacts are somewhat limited.
 
 ```{r vignettes_shiny_1}
