@@ -263,13 +263,13 @@ Steps 2 & 3 will be performed under the "Cohort simulation" tab.
 ### Defining the transition matrix  
 To evaluate the life course of individuals over a large number of time cycles we need a transition matrix. Create a transition matrix called `m_tp`. `m_tp` should contain 5 rows and 5 columns because we have 5 health state ("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment"). To do so, use the `matrix()` function. Assign the value NA or 0 to all cells of the matrix to start with. Name the rows and columns (`dimnames` argument of the function) with the following names: "Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment". You can also create a vector with these names, `v_names_hs`, that you then use within the `dimnames` argument.    
 
-```{r trans_mat1, exercise = TRUE}
+```{r trans_mat, exercise = TRUE}
 # define vector of names
 # define 5 by 5 matrix
 
 ```
 
-```{r trans_mat1-solution}
+```{r trans_mat-solution}
 v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment") # define vector of health state names
 n_hs <- length(v_names_hs) # this equals 5
 
@@ -282,7 +282,7 @@ m_tp <- matrix(0,
 #data.frame(m_tp) # show, data.frame() used because prettier
 ```
 
-```{r trans_mat-solution}
+```{r fill_trans_mat_setup}
 v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment") # define vector of names
 n_hs <- length(v_names_hs) # this equals 5
 
@@ -298,7 +298,7 @@ m_tp <- matrix(0,
 ### Filling the transition matrix with transition probabilities
 Fill in the matrix with the values of the transition probabilities. The rows indicate the health state from which persons transit. The columns indicate the health state to which persons transit. You can use the names of the rows and columns to assign the transition probabilities to each cell. Do not forget to define the probability of remaining in a health state!  
 
-```{r fill_trans_mat, exercise = TRUE, exercise.setup = "trans_mat-solution"}
+```{r fill_trans_mat, exercise = TRUE, exercise.setup = "fill_trans_mat_setup"}
 
 ```
 
