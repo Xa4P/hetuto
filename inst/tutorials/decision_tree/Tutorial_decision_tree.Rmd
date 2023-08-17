@@ -20,10 +20,10 @@ require(magrittr, quietly = TRUE)
 
 diagram_1 <- "
 digraph {
-
+      graph[splines = ortho]
       # graph attributes
-      graph [overlap = true, 
-             rankdir = LR]
+      graph [rankdir = LR,
+      labeljust=r]
 
       # edge attributes
       edge [color = gray]
@@ -93,17 +93,17 @@ digraph {
       D -> F [label = 'Aneurysm rupture'] 
       D -> G [label = 'Aneurysm remains stable']
       E -> H [label = 'Aneurysm is clipped']
-      E -> I [label = 'Aneurysm is coiled']
-      F -> J [label = 'Patient dies']
+      E -> I [xlabel = 'Aneurysm is coiled']
+      F -> J [xlabel = 'Patient dies']
       F -> K [label = 'Patient becomes disabled']
-      F -> L [label = 'Patient survives in good health']
+      F -> L [xlabel = 'Patient survives in good health']
       G -> M [label = 'Patient anxious from aneurysm']
       G -> N [label = 'Patient not anxious and in good health']
       H -> O [label = 'Patient dies']
       H -> P [label = 'Patient becomes disabled']
       H -> Q [label = 'Patient survives in good health']
       I -> R [label = 'Patient dies']
-      I -> S [label = 'Patient becomes disabled']
+      I -> S [xlabel = 'Patient becomes disabled']
       I -> T [label = 'Patient survives in good health']
       J -> 1
       K -> 2
@@ -123,7 +123,8 @@ digraph {
 
       # graph attributes
       graph [overlap = true, 
-             rankdir = LR]
+             rankdir = LR,
+             splines = ortho]
 
       # edge attributes
       edge [color = gray]
@@ -190,10 +191,10 @@ digraph {
       A -> C [arrowhead = none]
       B -> D 
       C -> E
-      D -> F [label = 'p_Rupture'] 
+      D -> F [xlabel = 'p_Rupture'] 
       D -> G [label = 'p_Stable']
       E -> H [label = 'p_Clipping']
-      E -> I [label = 'p_Coiling']
+      E -> I [xlabel = 'p_Coiling']
       F -> J [label = 'p_DeathRupture']
       F -> K [label = 'p_DisabledRupture']
       F -> L [label = 'p_SurvivalRupture']
@@ -331,7 +332,7 @@ c_Coiling   <- 13000 # Cost of Aneurysm coiling
 c_Disabled  <- 5000  # Cost of disabled patient
 ```
 
-As you can see, the `p_Stable`, `p_DeathClipping` and `p_DisabledCoiling` are not defined. Calculate `p_Stable`, `p_DeathClipping` and `p_DisabledCoiling` using the already defined probabilities and the diagram of the decision tree diagram displayed provided on the previous tab.  
+As you can see, the `p_Stable`, `p_DeathClipping` and `p_DisabledCoiling` are not defined. Calculate `p_Stable`, `p_DeathClipping` and `p_DisabledCoiling` using the already defined probabilities and the diagram of the decision tree diagram displayed on the previous tab.  
 
 ```{r calc_probs, exercise = TRUE}
 p_Stable  
@@ -340,7 +341,7 @@ p_DisabledCoiling
 ```
 
 ```{r calc_probs-hint}
-"Use <- to assign the values. remember that the sum of probabilities stemming from a decision node should be equal to 1."
+"Use <- to assign the values. remember that the sum of probabilities following a chance node should be equal to 1."
 ```
 
 ```{r calc_probs-solution}
@@ -1041,6 +1042,8 @@ data.frame(
 ```
 
 ## Step 6: Calculate incremental effects, costs, and incremental cost-effectiveness ratio
+
+### Calculations
 Based on the total expected utility value (effects) and costs of both strategies, you can now calculate the incremental effects and costs of the treatment strategy versus "watchful waiting". You can also calculate the incremental cost-effectiveness ratio of the treatment strategy versus "watchful waiting". Please do so in the following chunk
 The total effects and costs defined in the previous step (`t_e_ww`, `t_c_ww`, `t_e_trt`, `t_c_trt`) have been loaded and can be used to perform these calculations.  
 ```{r set_up_comparison}
