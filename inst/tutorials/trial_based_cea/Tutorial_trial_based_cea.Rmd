@@ -120,8 +120,7 @@ To perform this assignment, you should be able to:
 
 ## Objects of this practical
 Different objects have already been loaded in R's memory to perform this practical assignment.  
-
-A dataframe `df`. This dataframe contains 9 variables, each row of the dataframe contains the outcomes from one participant:  
+The main object you will use during the practical is the dataframe `df`. This dataframe contains 9 variables, each row of the dataframe contains the outcomes from one participant:  
 
 - `ID` = Participant ID  
 - `Procedure`  = Group to which the participant belongs; 1 = usual care (open transthoracic esophagectomy), 2 = the new intervention (robot-assisted thoraco-laparoscopic esophagectomy)  
@@ -402,8 +401,8 @@ t_costs_open  <- mean(df[which(df$Procedure == 1), "Total_costs"]) # mean costs 
 inc_qol   <- t_qol_robot - t_qol_open # difference in qol
 inc_costs <- t_costs_robot - t_costs_open # difference in costs
 ICER <- inc_costs / inc_qol # difference in ICER
-c(`increental QoL`= inc_qol,
-  `increental costs`= inc_costs,
+c(`incremental QoL`= inc_qol,
+  `incremental costs`= inc_costs,
   ICER = ICER) # show results
 ```
 
@@ -478,16 +477,22 @@ tableOutput("perc_tbl")
 
 ```{r bootstrap_serv, context = "server"}
 bootstrap <- eventReactive(input$run_boot, {
-    
+  
   set.seed(as.numeric(as.character(input$seed_num)))
   
-  df$Cost_procedure <- ifelse(df$Procedure == 1, c_Open + df$OR_time / 60 * c_OK_hour, c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
-  df$Cost_compl <- df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
-  df$Cost_hosp  <- df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
+  df$Cost_procedure <-
+    ifelse(df$Procedure == 1,
+           c_Open + df$OR_time / 60 * c_OK_hour,
+           c_Robot + df$OR_time / 60 * c_OK_hour) # cost procedure
+  df$Cost_compl <-
+    df$Major_compl * c_Major_compl + df$Minor_compl * c_Minor_compl # costs complications
+  df$Cost_hosp  <-
+    df$Length_icu * c_ICU_day + df$Length_mcu * c_MCU_day # costs hospitalisation
   df$Total_costs <- df$Cost_procedure + df$Cost_compl + df$Cost_hosp
   
-  df_res <- bootstrap_effects_costs(df, num_it = as.numeric(as.character(input$num_it)))
-    
+  df_res <-
+    bootstrap_effects_costs(df, num_it = as.numeric(as.character(input$num_it)))
+  
    return(df_res)
       
   }
