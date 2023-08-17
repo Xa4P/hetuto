@@ -56,7 +56,6 @@ The aim of this practical assignment is to get you acquainted with the principle
 ### Instructions
 The provided solutions are one way to perform the calculations. You can obtain the same results using other fomula's or R commands. The last 'Hint' is always the solution to the assignment. Solutions can be copied and pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk or using the shortcut CRTL+Enter.   
 
-
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_hstm_1_files/images/Image_hint.png")
 ```
@@ -264,10 +263,23 @@ Steps 2 & 3 will be performed under the "Cohort simulation" tab.
 ### Defining the transition matrix  
 To evaluate the life course of individuals over a large number of time cycles we need a transition matrix. Create a transition matrix called `m_tp`. `m_tp` should contain 5 rows and 5 columns because we have 5 health state ("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment"). To do so, use the `matrix()` function. Assign the value NA or 0 to all cells of the matrix to start with. Name the rows and columns (`dimnames` argument of the function) with the following names: "Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment". You can also create a vector with these names, `v_names_hs`, that you then use within the `dimnames` argument.    
 
-```{r trans_mat, exercise = TRUE}
+```{r trans_mat1, exercise = TRUE}
 # define vector of names
 # define 5 by 5 matrix
 
+```
+
+```{r trans_mat1-solution}
+v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment") # define vector of health state names
+n_hs <- length(v_names_hs) # this equals 5
+
+m_tp <- matrix(0, 
+               ncol = n_hs, # or 5
+               nrow = n_hs, # or 5
+               dimnames = list(from = v_names_hs,
+                               to = v_names_hs)
+               )
+#data.frame(m_tp) # show, data.frame() used because prettier
 ```
 
 ```{r trans_mat-solution}
@@ -291,11 +303,11 @@ Fill in the matrix with the values of the transition probabilities. The rows ind
 ```
 
 ```{r fill_trans_mat-hint}
-m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther # Example: probability of remaining healthy when healthy
+m_tp["Healthy", "Healthy"]     <- 1 - p_NewAneurysm - p_DeathOther # Example: probability of remaining healthy when healthy
 ```
 
 ```{r fill_trans_mat-solution}
-m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
+m_tp["Healthy", "Healthy"]     <- 1 - p_NewAneurysm - p_DeathOther
 m_tp["Healthy", "DeathOther"]  <- p_DeathOther
 m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
 m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
@@ -314,7 +326,7 @@ m_tp["DeathTreatment", "DeathTreatment"] <- 1
 m_tp <- determine_m_tp()
 ```
 
-Check whether all rows sum up to one.  
+Check whether all rows of `m_tp` sum up to one.  
 ```{r check_trans_mat, exercise = TRUE, exercise.setup = "trans_mat_setup"}
 # check row sum
 
