@@ -1034,7 +1034,13 @@ quiz(
 
 ## Valuing health states
 In this assignment, you will value the first health state which is described in the previous assignment using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. These methods are originally used to determine the decrements associated with each level of the EQ-5D-5L (for instance).  
-EQ-5D description first health state (12423): I have no problems in walking about, I have slight problems washing or dressing myself, I have severe problems doing my usual activities,I have slight pain or discomfort, and I am moderately anxious or depressed
+
+**EQ-5D description first health state (12423)**:  
+- I have no problems in walking about,  
+- I have slight problems washing or dressing myself,  
+- I have severe problems doing my usual activities,  
+- I have slight pain or discomfort,  
+- and I am moderately anxious or depressed.  
 
 ```{r hs_value_shiny}
 h3("Standard Gamble")
