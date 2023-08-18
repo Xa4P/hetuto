@@ -716,8 +716,60 @@ head(m_hs)
 ```
 
 ### Cohort simulation - complete
+The cohort simulation can be generated using this code.
+```{r, echo = FALSE, eval = FALSE}
+# Model parameters
+n_cycles <- 36 # the number of cycles to simulate
+n_pt <- 10000  # the size of the cohort
+v_names_hs <- c("Healthy", "NewAneurysm",	"DetectedAneurysm", "DeathOther",	"DeathTreatment")
+
+# Probabilities
+p_NewAneurysm  	    <- 0.10 # Probability that an individual develops a new intracranial aneurysm 
+p_AneurysmDetection <- 0.50 # Probability that a newly developed aneurysm is detected
+p_TreatmentIsFatal  <- 0.20 # Probability that treatment of a detected aneurysm induces a fatal complication
+p_DeathOther  	    <- 0.10 # Probability of death due to causes unrelated to aneurysms
+
+# Define transition matrix
+m_tp <- matrix(0, 
+               ncol = length(v_names_hs),
+               nrow = length(v_names_hs),
+               dimnames = list(from = v_names_hs,
+                               to = v_names_hs))
+
+m_tp["Healthy", "Healthy"]     <- 1- p_NewAneurysm - p_DeathOther
+m_tp["Healthy", "DeathOther"]  <- p_DeathOther
+m_tp["Healthy", "NewAneurysm"] <- p_NewAneurysm
+m_tp["NewAneurysm", "DetectedAneurysm"] <- p_AneurysmDetection
+m_tp["NewAneurysm", "DeathOther"] <- p_DeathOther
+m_tp["NewAneurysm", "NewAneurysm"] <- 1 - p_AneurysmDetection - p_DeathOther
+m_tp["DetectedAneurysm", "Healthy"] <- 1 - p_TreatmentIsFatal
+m_tp["DetectedAneurysm", "DeathTreatment"] <- p_TreatmentIsFatal
+m_tp["DeathOther", "DeathOther"] <- 1
+m_tp["DeathTreatment", "DeathTreatment"] <- 1
+
+# Initiate cohort simulation
+m_hs <- matrix(
+  0,
+  nrow = n_cycles + 1,
+  ncol = length(v_names_hs),
+  dimnames = list(c(0:n_cycles),
+                  v_names_hs)
+)
+
+v_start <- c(n_pt, 0, 0, 0, 0)
+m_hs[1,] <- v_start
+
+for (cycle in 1:n_cycles) {
+  # For your matrix of health state
+  m_hs[cycle + 1,] <-
+    m_hs[cycle,] %*% m_tp # matrix multiplication
+  
+}
+  
+```
+
 The cohort simulation looks as follows.  
-```{r }
+```{r}
 m_tp <- determine_m_tp()
 
 n_cycles <- 36 
