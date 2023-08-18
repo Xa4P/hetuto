@@ -717,7 +717,7 @@ head(m_hs)
 
 ### Cohort simulation - complete
 The cohort simulation can be generated using this code.
-```{r, echo = FALSE, eval = FALSE}
+```{r show_cohort_script, eval = FALSE, include = TRUE}
 # Model parameters
 n_cycles <- 36 # the number of cycles to simulate
 n_pt <- 10000  # the size of the cohort
