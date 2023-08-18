@@ -86,7 +86,7 @@ df_mort <- data.frame(
 
 ### Aim
 The aim of this practical assignment is to get you acquainted with the principle of HSTM. This assignmment focuses on evaluating the cost-effectiveness of aspirin treatment versus no aspirin treatment for the primary prevention of cardiovascular disease events using a HSTM, also called Markov model. During this assignment, you will first define the cohort simulation of both strategies (using transition probabilities, and matrix multiplication) and then calculate the outcomes (quality-adjusted life years, costs). First, familiarise yourself with the model structure.  
-The method described in this practical is more extensively described in [Alarid Escudero et al. 2021](https://arxiv.org/abs/2001.07824).  
+The method described in this practical is more extensively described in [Alarid Escudero et al. 2023](https://dx.doi.org/10.1177/0272989X221103163).  
 
 ### Instructions
 
@@ -2598,7 +2598,7 @@ The PA is performed using the following steps:
 1. Selecting & assigning distribution for each input parameter  
 2. Drawing random value from these distribution for each input parameter  
 3. Calculating the outcomes using the random values of each input parameter  
-4. Repeat steps 2 & 3 a LOT of time (at least 1,000)  
+4. Repeat steps 2 & 3 a LOT of times (at least 1,000)  
 
 ### Selecting distribution for input parameter
 Please select the most adequate distribution for the `r_inc_mi` input parameter. The plot below displays the  different density distribution of a normal, uniform, and beta distributions defined using the mean value and standard error of this parameters.  
@@ -2629,7 +2629,6 @@ legend("topleft",                    # Add legend to plot
 
 ### Questions
 ```{r quiz_dist}
-
 quiz(caption = "Have a look at the plot above.", 
      question("Which distribution would be the the most suitable to respresent `r_inc_mi` in the probabilistic analysis?",
               answer("Normal"),
