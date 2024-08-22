@@ -17,7 +17,6 @@ rm(list = ls())
 options(scipen = 999)
 require(learnr, quietly = TRUE)
 require(shiny, quietly = TRUE)
-require(hetuto, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(plotly, quietly = TRUE)
 
