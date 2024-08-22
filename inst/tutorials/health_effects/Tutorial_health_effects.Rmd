@@ -121,7 +121,7 @@ estimate_utility <- function(mo = 1, sc = 1, ua = 1, pd = 1, ad = 1, tbl_decreme
 
 ### Aims and instructions
 The overall aim of this assignment is to get you acquainted with measuring and valuing quality of life using different instruments.  
-**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other fomula's. The last 'Hint' is always the solution of the assignment. Solutions can be copied & pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk.  
+**OF NOTE**: the solutions which are provided are one way to perform the calculations, you can obtain the same results using other formula's. The last 'Hint' is always the solution of the assignment. Solutions can be copied & pasted in the chunk as shown in the figures below. Once you have completed a code chunk, you can run it by clicking the 'Run code' button on the upper-right side of the chunk.  
 
 ```{r, fig.align = 'center', out.width = "70%", echo = F}
 knitr::include_graphics("Tutorial_health_effects_files/images/Image_hint.png")
@@ -134,7 +134,7 @@ knitr::include_graphics("Tutorial_health_effects_files/images/Image_solution.png
 [Link to figures](https://education.rstudio.com/blog/2020/05/learnr-for-remote/)
 
 ## SF-36
-In this assignment you will experience what it is like to fill out the SF-36 Health Survey, a descriptive health-related quality of life instrument. You will start by filling in the SF-36 questionnaire. Subsequently you will enter your individual responses using the button below. These answers will automatically be rescored in the 8 sub-scales of the SF-36. Below a table and a graph will be drawn with your scores ('Respondent’). In this table and graph, the scores of a group of patients with migraine and a healthy control group are also displayed for comparison purposes.  
+In this assignment you will experience what it is like to fill out the SF-36 Health Survey, a descriptive health-related quality of life instrument. You will start by filling in the SF-36 questionnaire. These answers will automatically be transformed into the 8 sub-scales of the SF-36. Below a table and a graph will be drawn with your scores ('Respondent’). In this table and graph, the scores of a group of patients with migraine and a healthy control group are also displayed for comparison purposes.  
 **Instructions for completing the questionnaire**: Please answer every question. Some questions may look similar to others, but each one is different. Please take the time to read and answer each question carefully by selecting in the description that best represents your health status.  
 ```{r sf-36_shiny}
 div(style = "display:inline-block",
@@ -993,7 +993,7 @@ textInput("Answer_Q_comp2", "2. What if the quality of life with intervention A 
 ## Determining utility values
 This assignment aims to teach you how to use the Dutch EQ-5D-5L tariff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
 Instructions: For each health state description, calculate the utility value using the tariff provided in the table. The EQ-5D codes are organised as follows: mobility (mo), self-care (sc), usual activities (ua), pain/ discomfort level (pd), anxiety/ discomfort level (ad). Provide your answer until 3 decimals. Example: sc4 means self-care level 4.  
-Hint: Level 1 means that someone has no impairment in a dimension. For each dimension with a Level different than 1, a disutility is applied to the constant.  
+**Remember**: Level 1 means that someone has no impairment in a dimension. For each dimension with a Level different than 1, a disutility is applied to the constant.  
 Example: the code 12345 is interpreted as: I have no problems in walking about, I have slight problems washing or dressing myself, I have moderate problems doing my usual activities, I have severe pain or discomfort, I am extremely anxious or depressed.  
 Reference: Matthijs M. Versteegh, Karin M. Vermeulen, Silvia M. A. A. Evers, G. Ardine de Wit, Rilana Prenger, Elly A. Stolk, Dutch Tariff for the Five-Level Version of EQ-5D, Value in Health, Volume 19, Issue 4, 2016, Pages 343-352, https://doi.org/10.1016/j.jval.2016.01.003").  
 The table below shows the decrements associated with each level of each dimension.  
@@ -1150,73 +1150,11 @@ output$res_vas_hs1 <- renderText({
 ```
 
 
-## Vignettes
-In this assignment, you will value two health states that are described as vignettes using the following techniques: Standard Gamble, Time-trade-off, and Visual analog scale. A vignette is a narrative description of a health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
-**Instructions**: read the vignettes and fill in the Standard Gamble, Time-trade-off, and Visual analog scale.  
+## Vignette
+In this assignment, you will value a health state that is described as a vignette using the following techniques: Standard Gamble, Time-trade-off, and Visual Analog Scale. A vignette is a narrative description of a health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
+**Instructions**: read the vignette and fill in the Standard Gamble, Time-trade-off, and Visual Analog Scale .  
 
-### Vignette 1: Rheumatoid arthritis (mild variant)  
-Your mobility is limited by pain. Walking long distances and standing still increase these complaints/ When you exercise, you experience increased joint complaints the day after. You are fully capable of bathing and clothing yourself. However, putting on shoes with laces is not an option. Activities that require lots of movement or physical strength cannot be performed. You require some help with usual activities such as doing groceries. It is important to take things slowly! You experience a constant mild pain in the joints and there is always a chance a relapse occurs. During a relapse, you are often feeling depressed, but you experience no cognitive symptoms. Your vision is normal for your age and you have no hearing problems. Your speech is normal but you experience mild to severe problems using your hands. Typing and other light activities are still possible, but every exercise that requires strength from your fingers is painful. The coordination of your fingers is also poor. Since other people do not directly observe where your pain is located, you experience some misunderstanding and miscomprehension. You are capable of maintaining normal social contacts, although the duration and frequency of such contacts are somewhat limited.
-
-```{r vignettes_shiny_1}
-h3("Standard Gamble")
-p("At which probability of immediate death would you be indifferent between the gamble and remaining in the above-described health state for 30 years?")
-helpText("Please indicate this probability using the slider")
-sliderInput("sg_v1", "Probability of death in the gamble", 
-            min = 0, 
-            max = 1, 
-            value = 0.5, 
-            step = 0.01)
-plotOutput("plot_sg_v1")
-p(textOutput("res_sg_v1"))
-tags$hr()
-h3("Time trade off")
-p("How much years of life in the above-described health state would you trade to become indifferent between a) remaining in this health state for 30 years and b) living for 30 life years minus - the amount of traded life years in perfect health?")
-helpText("Please indicate this number of years using the slider")
-sliderInput("tto_v1", "Number of traded years", 
-            min = 0, 
-            max = 30, 
-            value = 15, 
-            step = 0.1)
-plotOutput("plot_tto_v1")
-p(textOutput("res_tto_v1"))
-tags$hr()
-h3("Visual analog scale")
-p("How do you rate the quality of life in the above-described health state?")
-helpText("Please indicate this on the visual analog scale using the slider")
-div(style = "display:inline-block",
-	HTML("The best health you can imagine"),
-	shinyWidgets::noUiSliderInput(
-		inputId = "vas_v1",
-		label = "",
-		tooltips = T,
-    min = 0, max = 100,
-    # color = "#EC008C",
-    step = NULL,
-    direction = "rtl",
-    pips = list(
-    	mode = "positions",
-      values = seq(0, 100, by = 5),
-      density = 1
-      ),
-		format = wNumbFormat(
-			decimals = 0
-		),
-		value = 0,
-    orientation = "vertical",
-    width = 300,
-    height = 300
-    ),
-   div(
-	 	style = "margin-top:-20px", HTML("The worst health you can imagine")
-	 )
-	)
-div(style = "display:inline-block; margin-top: -1px",
-    textOutput("res_vas_v1"),
-    width = "300px"
-)
-```
-
-### Vignette 2: Neurological disorder - Cerebral Vascular Accident (serious case)
+### Neurological disorder - Cerebral Vascular Accident (serious case)
 Your mobility is severely limited. You are in a wheelchair during the day. Getting in and out of bed is only possible with (professional) help. You have to be straightened in your wheelchair several times per day and you are incapable of bathing and clothing yourself. You are incontinent and you are severely limited in the amount of daily activities that you can perform. You are still able to read a newspaper, listen to music, and watch television. You experience no pain but you experience some discomfort from sitting the whole day in your wheelchair. You are unable to swallow and are therefore fed intravenously. You experience emotional swings at least twice per day (spontaneous crying) and you are restless in the dark. You are able to see, but you are not able to recognize anything in your left visual space. You have severe aphasia (you cannot form sentences and have trouble finding the correct words). Only your partner and the nurses understand some of what you are trying to communicate. You are fully paralyzed on the right side of your body and you experience severe problems with coordination on the left side. There is only a limited form of social contact possible with the nursing staff and even with people who experience the same type of disorder.
              
 ```{r vignettes_shiny_2}
