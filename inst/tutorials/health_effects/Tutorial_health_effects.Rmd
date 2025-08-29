@@ -636,6 +636,7 @@ output$SF_36_calc2 <- renderTable({
 ```
 
 ### Questions
+**Please copy-paste the table above with the SF-36 results in Question 1 of the Canvas quizz.**
 ```{r open_q_sf36_1}
 textInput("sf36_1", "How do you feel about this result? Did you expect to score higher or lower? and why?")
 quiz(
@@ -682,53 +683,56 @@ div(style = "display:inline-block",
              step = 0.1),
     width = "300px")
 plotOutput("QALY_calc")
-numericInput(inputId = "n_QALYs",
-             label = "How much QALY does this person accrue over the 25 years? Write your answer and check by clicking the button",
-             value = 0,
-             min = 0,
-             max = 1,
-             step = 0.1)
-tags$hr()
-actionButton(inputId = "check_QALY_calc",
-             label = "Click to check your answer!")
-h3(textOutput("TEXT_QALY_calc", container = span))
+# numericInput(inputId = "n_QALYs",
+#              label = "How much QALY does this person accrue over the 25 years? Write your answer and check by clicking the button",
+#              value = 0,
+#              min = 0,
+#              max = 1,
+#              step = 0.1)
+# tags$hr()
+# actionButton(inputId = "check_QALY_calc",
+#              label = "Click to check your answer!")
+# h3(textOutput("TEXT_QALY_calc", container = span))
 ```
 
 ```{r calc_qaly_shiny_serv, context = "server"}
-output$QALY_calc <- renderPlot({
-  v_u <-  c(rep(as.numeric(as.character(input$util_first_10)), 11),
-            rep(as.numeric(as.character(input$util_5)), 6),
-            rep(as.numeric(as.character(input$util_last_10)), 11)
-            )# vector of utilities
-  v_time <- c(c(0:10), 
-              c(10:15),
-              c(15:25)
-              )# vector of time
-  plot(x = v_time, y = v_u, type = 'l',
-       xlab = "Time (in years)",
-       ylab = "Utility value",
-       ylim = c(0,1)
-       )
-
-}
-)
-
-text_button_QALY_calc <- eventReactive(input$check_QALY_calc, {
-  if(as.numeric(as.character(input$n_QALYs)) == 15){
-    
-    paste("Good job, this is correct! 
-          The calculation behind this answer is 10 * 0.9 + 5 * 0.6 + 10 * 0.3")
-    
-  } else {
-    paste("This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life")
-  }
-  
-})
-  
-output$TEXT_QALY_calc <- renderText({
-  text_button_QALY_calc()
-})
+# output$QALY_calc <- renderPlot({
+#   v_u <-  c(rep(as.numeric(as.character(input$util_first_10)), 11),
+#             rep(as.numeric(as.character(input$util_5)), 6),
+#             rep(as.numeric(as.character(input$util_last_10)), 11)
+#             )# vector of utilities
+#   v_time <- c(c(0:10), 
+#               c(10:15),
+#               c(15:25)
+#               )# vector of time
+#   plot(x = v_time, y = v_u, type = 'l',
+#        xlab = "Time (in years)",
+#        ylab = "Utility value",
+#        ylim = c(0,1)
+#        )
+# 
+# }
+# )
+# 
+# text_button_QALY_calc <- eventReactive(input$check_QALY_calc, {
+#   if(as.numeric(as.character(input$n_QALYs)) == 15){
+#     
+#     paste("Good job, this is correct! 
+#           The calculation behind this answer is 10 * 0.9 + 5 * 0.6 + 10 * 0.3")
+#     
+#   } else {
+#     paste("This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life")
+#   }
+#   
+# })
+#   
+# output$TEXT_QALY_calc <- renderText({
+#   text_button_QALY_calc()
+# })
 ```
+
+### Question
+Fill in the Canvas quizz (Question 2) how much QALY this person accrues over the 25 years. The answer will be discussed the next session or shared on Canvas.
 
 ## QALYs comparison
 The aim of this assignment is to compare the number of QALY gained by two interventions. Intervention A has a survival of 10 years after the intervention with a utility of 0.7. Intervention B has a survival of 5 years after the intervention with a utility of 0.9 followed by 5 years in a health state with a utility of 0.5. Use the fields to fill in the graph and answer the questions.  
@@ -919,6 +923,7 @@ div(style = "display:inline-block",
 tags$hr()
 h3("Graphs displaying utility values of each intervention over time")
 plotOutput("QALY_comp")
+
 ```
 
 ```{r QALY_comp_shiny_serv, context = "server"}
@@ -963,32 +968,38 @@ output$QALY_comp <- renderPlot({
          lty = c(1, 1),           # Line types
          col = c(1, 2)           # Line colors
          )             
-  
-  
 }
 )
+tags$hr()
+p(strong("Fill in the Canvas quizz (question 3) how much QALY this person accrues over the 25 years?"),
+  br(),
+  "The answer will be discussed the next session or shared on Canvas.")
+
 ```
 
-### Questions
+<!-- ### Questions -->
 ```{r QALY_comp_quiz}
-quiz(
-  question("Which intervention provides the most QALYs?",
-           answer("Intervention A"),
-           answer("Intervention B"), 
-           answer("They provide the same number of QALYs", correct = TRUE),
-  correct = "Good job, this is correct (because the interventions provide the same number of QALYs)!",
-  try_again = "This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life",
-  allow_retry = TRUE
-  )
-)
-textInput("Answer_Q_comp1", "1. Based on the total number of QALYs gained, which intervention would you prefer?")
-textInput("Answer_Q_comp2", "2. What if the quality of life with intervention A was 0.8, which one would you then prefer?")
+# quiz(
+#   question("Which intervention provides the most QALYs?",
+#            answer("Intervention A"),
+#            answer("Intervention B"), 
+#            answer("They provide the same number of QALYs", correct = TRUE),
+#   correct = "Good job, this is correct (because the interventions provide the same number of QALYs)!",
+#   try_again = "This is not the correct answer, try again! Hint: QALYs = quality of life (utility) x length of life",
+#   allow_retry = TRUE
+#   )
+# )
+# textInput("Answer_Q_comp1", "1. Based on the total number of QALYs gained, which intervention would you prefer?")
+# textInput("Answer_Q_comp2", "2. What if the quality of life with intervention A was 0.8, which one would you then prefer?")
 ```
 
-### Answers/discussion  
+<!-- ### Answers/discussion   -->
 
-1. In theory, you should not prefer the one over the other because they provide the same number of QALYs. None of these strategies is thus more effective than the other.  
-2. In that case, intervention A would be preferred because it would provide more QALYs.  
+<!-- 1. In theory, you should not prefer the one over the other because they provide the same number of QALYs. None of these strategies is thus more effective than the other.   -->
+<!-- 2. In that case, intervention A would be preferred because it would provide more QALYs.   -->
+
+### Question
+Fill in the Canvas quizz (Question 3) which intervention provides the most QALYs. The answer will be discussed the next session or shared on Canvas.
 
 ## Determining utility values
 This assignment aims to teach you how to use the Dutch EQ-5D-5L tariff (Versteegh et al. - 2016) to calculate utility values based on a health state description.  
@@ -1003,33 +1014,39 @@ NL_tariff
 ```
 *Abbreviations table: mo = mobility, sc = self-care , ua = usual activities, pd = pain/ discomfort level, ad = anxiety/ discomfort level*
 
+### Question
+Fill in Question 6 of the Canvas Quiz with the utility values of the following descriptions:  
+1. 12423  
+2. 25431  
+3. 11122  
+
 ```{r eq5d_calc_quiz}
-quiz(
-  question("What is the utility value associated with the following EQ-5D-5L description: 12423?",
-           answer("0.512", correct = TRUE),
-           answer("0.432"),
-           answer("0.662"),
-           answer("0.842"),
-           allow_retry = TRUE,
-           random_answer_order = TRUE
-           ),
-  question("What is the utility value associated with the following EQ-5D-5L description: 25431?",
-           answer("0.223"),
-           answer("0.368"),
-           answer("0.587"),
-           answer("0.466", correct = TRUE),
-           allow_retry = TRUE,
-           random_answer_order = TRUE
-           ),
-  question("What is the utility value associated with the following EQ-5D-5L description: 11122?",
-           answer("0.985"),
-           answer("0.817", correct = TRUE),
-           answer("0.754"),
-           answer("0.647"),
-           allow_retry = TRUE,
-           random_answer_order = TRUE
-           )
-)
+# quiz(
+#   question("What is the utility value associated with the following EQ-5D-5L description: 12423?",
+#            answer("0.512", correct = TRUE),
+#            answer("0.432"),
+#            answer("0.662"),
+#            answer("0.842"),
+#            allow_retry = TRUE,
+#            random_answer_order = TRUE
+#            ),
+#   question("What is the utility value associated with the following EQ-5D-5L description: 25431?",
+#            answer("0.223"),
+#            answer("0.368"),
+#            answer("0.587"),
+#            answer("0.466", correct = TRUE),
+#            allow_retry = TRUE,
+#            random_answer_order = TRUE
+#            ),
+#   question("What is the utility value associated with the following EQ-5D-5L description: 11122?",
+#            answer("0.985"),
+#            answer("0.817", correct = TRUE),
+#            answer("0.754"),
+#            answer("0.647"),
+#            allow_retry = TRUE,
+#            random_answer_order = TRUE
+#            )
+# )
 ```
 
 ## Valuing health states
@@ -1150,11 +1167,14 @@ output$res_vas_hs1 <- renderText({
 ```
 
 
+### Question
+Fill in the utility values you have estimated using the SG, TTO and VAS for this health status in Question 5 of the Canvas Quizz.  
+
 ## Vignette
 In this assignment, you will value a health state that is described as a vignette using the following techniques: Standard Gamble, Time-trade-off, and Visual Analog Scale. A vignette is a narrative description of a health state. These vignettes are used to value the quality of life of a group of individuals when these individuals may not be able to participate in their own quality of life elicitation (for example).  
 **Instructions**: read the vignette and fill in the Standard Gamble, Time-trade-off, and Visual Analog Scale .  
 
-### Neurological disorder - Cerebral Vascular Accident (serious case)
+### Neurological disorder - Cerebrovascular Accident (serious case)
 Your mobility is severely limited. You are in a wheelchair during the day. Getting in and out of bed is only possible with (professional) help. You have to be straightened in your wheelchair several times per day and you are incapable of bathing and clothing yourself. You are incontinent and you are severely limited in the amount of daily activities that you can perform. You are still able to read a newspaper, listen to music, and watch television. You experience no pain but you experience some discomfort from sitting the whole day in your wheelchair. You are unable to swallow and are therefore fed intravenously. You experience emotional swings at least twice per day (spontaneous crying) and you are restless in the dark. You are able to see, but you are not able to recognize anything in your left visual space. You have severe aphasia (you cannot form sentences and have trouble finding the correct words). Only your partner and the nurses understand some of what you are trying to communicate. You are fully paralyzed on the right side of your body and you experience severe problems with coordination on the left side. There is only a limited form of social contact possible with the nursing staff and even with people who experience the same type of disorder.
              
 ```{r vignettes_shiny_2}
@@ -1309,3 +1329,7 @@ output$res_vas_v2 <- renderText({
  paste0("The quality of life (utility) you assign to this health state is ", as.numeric(as.character(input$vas_v2)) / 100, ".")
 })
 ```
+
+
+#### Question
+Fill in the utility values you have estimated using the SG, TTO and VAS for this health status in Question 4 of the Canvas Quiz.  
