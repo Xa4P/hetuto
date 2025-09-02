@@ -696,24 +696,24 @@ plotOutput("QALY_calc")
 ```
 
 ```{r calc_qaly_shiny_serv, context = "server"}
-# output$QALY_calc <- renderPlot({
-#   v_u <-  c(rep(as.numeric(as.character(input$util_first_10)), 11),
-#             rep(as.numeric(as.character(input$util_5)), 6),
-#             rep(as.numeric(as.character(input$util_last_10)), 11)
-#             )# vector of utilities
-#   v_time <- c(c(0:10), 
-#               c(10:15),
-#               c(15:25)
-#               )# vector of time
-#   plot(x = v_time, y = v_u, type = 'l',
-#        xlab = "Time (in years)",
-#        ylab = "Utility value",
-#        ylim = c(0,1)
-#        )
-# 
-# }
-# )
-# 
+output$QALY_calc <- renderPlot({
+  v_u <-  c(rep(as.numeric(as.character(input$util_first_10)), 11),
+            rep(as.numeric(as.character(input$util_5)), 6),
+            rep(as.numeric(as.character(input$util_last_10)), 11)
+            )# vector of utilities
+  v_time <- c(c(0:10),
+              c(10:15),
+              c(15:25)
+              )# vector of time
+  plot(x = v_time, y = v_u, type = 'l',
+       xlab = "Time (in years)",
+       ylab = "Utility value",
+       ylim = c(0,1)
+       )
+
+}
+)
+
 # text_button_QALY_calc <- eventReactive(input$check_QALY_calc, {
 #   if(as.numeric(as.character(input$n_QALYs)) == 15){
 #     
